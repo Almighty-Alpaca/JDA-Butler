@@ -119,7 +119,7 @@ public class EventListener extends ListenerAdapter {
 
 						Bot.ROLE_JDA_UPDATES.getManager().setMentionable(true).block();
 
-						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).queue();
+						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).block();
 
 						Bot.ROLE_JDA_UPDATES.getManager().setMentionable(false).queue();
 
@@ -220,7 +220,7 @@ public class EventListener extends ListenerAdapter {
 
 						Bot.ROLE_JDA_PLAYER_UPDATES.getManager().setMentionable(true).block();
 
-						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).queue();
+						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).block();
 
 						Bot.ROLE_JDA_PLAYER_UPDATES.getManager().setMentionable(false).queue();
 
@@ -251,7 +251,7 @@ public class EventListener extends ListenerAdapter {
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						builder.appendString("**JDA 3 Dev** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.ROLE_JDA_PLAYER_UPDATES)
+						builder.appendString("**JDA 3 Dev** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.ROLE_JDA_3_UPDATES)
 								.appendString("\n\n");
 
 						if (changeSets.length() > 0) {
@@ -285,7 +285,7 @@ public class EventListener extends ListenerAdapter {
 
 						Bot.ROLE_JDA_3_UPDATES.getManager().setMentionable(true).block();
 
-						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).queue();
+						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).block();
 
 						Bot.ROLE_JDA_3_UPDATES.getManager().setMentionable(false).queue();
 
