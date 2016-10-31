@@ -50,7 +50,7 @@ public class EventListener extends ListenerAdapter {
 				// Bot.config.save();
 				// final MessageBuilder builder = new MessageBuilder();
 				// builder.appendString("JDA build ").appendString(version, Formatting.BOLD).appendString(" has been released!\n");
-				// builder.appendString("<http://ci.dv8tion.net/job/JDA/" + version.substring(version.lastIndexOf("_") + 1) + ">").appendString("\n");
+				// builder.appendString("<http://home.dv8tion.net:8080/job/JDA/" + version.substring(version.lastIndexOf("_") + 1) + ">").appendString("\n");
 				// builder.appendString("<https://bintray.com/dv8fromtheworld/maven/JDA/" + version + ">").appendString("\n");
 				// Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(builder.build());
 				// }
@@ -95,12 +95,12 @@ public class EventListener extends ListenerAdapter {
 						//						builder.appendString("\n");
 						//						builder.appendString("Downloads:", Formatting.BOLD).appendString("\n");
 						//
-						//						builder.appendString("http://ci.dv8tion.net/job/JDA/").appendString(String.valueOf(build)).appendString("/artifact/build/libs/ \n");
+						//						builder.appendString("http://home.dv8tion.net:8080/job/JDA/").appendString(String.valueOf(build)).appendString("/artifact/build/libs/ \n");
 						//
 						//						for (int i = 0; i < artifacts.length(); i++) {
 						//							final JSONObject artifact = artifacts.getJSONObject(i);
 						//							final String path = artifact.getString("relativePath");
-						//							builder.appendString("<").appendString("http://ci.dv8tion.net/job/JDA/").appendString(String.valueOf(build)).appendString("/artifact/").appendString(path).appendString(
+						//							builder.appendString("<").appendString("http://home.dv8tion.net:8080/job/JDA/").appendString(String.valueOf(build)).appendString("/artifact/").appendString(path).appendString(
 						//									">\n");
 						//						}
 						//
@@ -196,12 +196,12 @@ public class EventListener extends ListenerAdapter {
 						//						builder.appendString("\n");
 						//						builder.appendString("Downloads:", Formatting.BOLD).appendString("\n");
 						//
-						//						builder.appendString("http://ci.dv8tion.net/job/JDA-Player/").appendString(String.valueOf(build)).appendString("/artifact/JDA/build/libs/ \n");
+						//						builder.appendString("http://home.dv8tion.net:8080/job/JDA-Player/").appendString(String.valueOf(build)).appendString("/artifact/JDA/build/libs/ \n");
 						//
 						//						for (int i = 0; i < artifacts.length(); i++) {
 						//							final JSONObject artifact = artifacts.getJSONObject(i);
 						//							final String path = artifact.getString("relativePath");
-						//							builder.appendString("<").appendString("http://ci.dv8tion.net/job/JDA/").appendString(String.valueOf(build)).appendString("/artifact/").appendString(path).appendString(
+						//							builder.appendString("<").appendString("http://home.dv8tion.net:8080/job/JDA/").appendString(String.valueOf(build)).appendString("/artifact/").appendString(path).appendString(
 						//									">\n");
 						//						}
 						//
@@ -251,8 +251,8 @@ public class EventListener extends ListenerAdapter {
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						builder.appendString("**JDA 3 Dev** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.ROLE_JDA_3_UPDATES)
-								.appendString("\n\n");
+						builder.appendString("**JDA 3 Dev** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.ROLE_JDA_3_UPDATES).appendString(
+								"\n\n");
 
 						if (changeSets.length() > 0) {
 							builder.appendString("Commits:", Formatting.BOLD).appendString("\n");
@@ -270,12 +270,12 @@ public class EventListener extends ListenerAdapter {
 						//						builder.appendString("\n");
 						//						builder.appendString("Downloads:", Formatting.BOLD).appendString("\n");
 						//
-						//						builder.appendString("http://ci.dv8tion.net/job/JDA-Player/").appendString(String.valueOf(build)).appendString("/artifact/JDA/build/libs/ \n");
+						//						builder.appendString("http://home.dv8tion.net:8080/job/JDA-Player/").appendString(String.valueOf(build)).appendString("/artifact/JDA/build/libs/ \n");
 						//
 						//						for (int i = 0; i < artifacts.length(); i++) {
 						//							final JSONObject artifact = artifacts.getJSONObject(i);
 						//							final String path = artifact.getString("relativePath");
-						//							builder.appendString("<").appendString("http://ci.dv8tion.net/job/JDA%203.x/").appendString(String.valueOf(build)).appendString("/artifact/").appendString(path)
+						//							builder.appendString("<").appendString("http://home.dv8tion.net:8080/job/JDA%203.x/").appendString(String.valueOf(build)).appendString("/artifact/").appendString(path)
 						//									.appendString(">\n");
 						//						}
 						//
@@ -346,10 +346,22 @@ public class EventListener extends ListenerAdapter {
 		} else if (text.startsWith("!gradle")) {
 			text = text.substring(7);
 
-			if (text.contains("player")) {
-				builder.appendCodeBlock("compile 'net.dv8tion:jda-player:" + Bot.config.getString("jda-player.version.name") + "'", "gradle").appendString("\n");
+			if (text.contains("pretty")) {
+				if (text.contains("player")) {
+					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'jda-player', version: '" + Bot.config.getString("jda-player.version.name") + "'", "gradle").appendString("\n");
+				} else if (text.contains("3")) {
+					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'jda', version: '3.0." + Bot.config.getString("jda3.version.name") + "'", "gradle").appendString("\n");
+				} else {
+					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'JDA', version: '" + Bot.config.getString("jda.version.name") + "'", "gradle").appendString("\n");
+				}
 			} else {
-				builder.appendCodeBlock("compile 'net.dv8tion:JDA:" + Bot.config.getString("jda.version.name") + "'", "gradle").appendString("\n");
+				if (text.contains("player")) {
+					builder.appendCodeBlock("compile 'net.dv8tion:jda-player:" + Bot.config.getString("jda-player.version.name") + "'", "gradle").appendString("\n");
+				} else if (text.contains("3")) {
+					builder.appendCodeBlock("compile 'net.dv8tion:jda:3.0." + Bot.config.getString("jda3.version.name") + "'", "gradle").appendString("\n");
+				} else {
+					builder.appendCodeBlock("compile 'net.dv8tion:JDA:" + Bot.config.getString("jda.version.name") + "'", "gradle").appendString("\n");
+				}
 			}
 
 		} else if (text.startsWith("!maven")) {
@@ -357,6 +369,9 @@ public class EventListener extends ListenerAdapter {
 
 			if (text.contains("player")) {
 				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda-player</artifactId>\n    <version>" + Bot.config.getString("jda-player.version.name")
+						+ "</version>\n</dependency>\n", "html").appendString("\n");
+			} else if (text.contains("3")) {
+				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda</artifactId>\n    <version>3.0." + Bot.config.getString("jda3.version.name")
 						+ "</version>\n</dependency>\n", "html").appendString("\n");
 			} else {
 				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>JDA</artifactId>\n    <version>" + Bot.config.getString("jda.version.name")
@@ -369,31 +384,38 @@ public class EventListener extends ListenerAdapter {
 			if (text.contains("player")) {
 				final String version = Bot.config.getString("jda-player.version.name");
 				final String build = Bot.config.getString("jda-player.version.build");
-				builder.appendString("http://ci.dv8tion.net/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-javadoc.jar").appendString("\n").appendString(
-						"http://ci.dv8tion.net/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-sources.jar").appendString("\n").appendString(
-								"http://ci.dv8tion.net/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + ".jar").appendString("\n").appendString(
-										"http://ci.dv8tion.net/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-withDependencies.jar");
+				builder.appendString("http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-javadoc.jar").appendString("\n").appendString(
+						"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-sources.jar").appendString("\n").appendString(
+								"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + ".jar").appendString("\n").appendString(
+										"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-withDependencies.jar");
 			} else if (text.contains("3")) {
 				final String version = Bot.config.getString("jda3.version.name");
 				final String build = Bot.config.getString("jda3.version.build");
-				builder.appendString("http://ci.dv8tion.net/job/JDA%203.x/" + build + "/artifact/build/libs/JDA-3.0." + version + "-javadoc.jar").appendString("\n").appendString(
-						"http://ci.dv8tion.net/job/JDA%203.x/" + build + "/artifact/build/libs/JDA-3.0." + version + "-sources.jar").appendString("\n").appendString(
-								"http://ci.dv8tion.net/job/JDA%203.x/" + build + "/artifact/build/libs/JDA-3.0." + version + ".jar").appendString("\n").appendString(
-										"http://ci.dv8tion.net/job/JDA%203.x/" + build + "/artifact/build/libs/JDA-withDependencies-3.0." + version + ".jar");
+				builder.appendString("http://home.dv8tion.net:8080/job/JDA%203.x/" + build + "/artifact/build/libs/JDA-3.0." + version + "-javadoc.jar").appendString("\n").appendString(
+						"http://home.dv8tion.net:8080/job/JDA%203.x/" + build + "/artifact/build/libs/JDA-3.0." + version + "-sources.jar").appendString("\n").appendString(
+								"http://home.dv8tion.net:8080/job/JDA%203.x/" + build + "/artifact/build/libs/JDA-3.0." + version + ".jar").appendString("\n").appendString(
+										"http://home.dv8tion.net:8080/job/JDA%203.x/" + build + "/artifact/build/libs/JDA-withDependencies-3.0." + version + ".jar");
 			} else {
 				final String version = Bot.config.getString("jda.version.name");
 				final String build = Bot.config.getString("jda.version.build");
-				builder.appendString("http://ci.dv8tion.net/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").appendString("\n").appendString("http://ci.dv8tion.net/job/JDA/"
-						+ build + "/artifact/build/libs/JDA-" + version + "-sources.jar").appendString("\n").appendString("http://ci.dv8tion.net/job/JDA/" + build + "/artifact/build/libs/JDA-"
-								+ version + ".jar").appendString("\n").appendString("http://ci.dv8tion.net/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
+				builder.appendString("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").appendString("\n").appendString(
+						"http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-sources.jar").appendString("\n").appendString(
+								"http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + ".jar").appendString("\n").appendString(
+										"http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
 			}
 
 		} else if (text.startsWith("!build.gradle")) {
 			text = text.substring(13);
 			if (text.contains("player")) {
 				builder.appendCodeBlock(
-						"plugins {\r\n    id 'java'\r\n    id 'application'\r\n    id 'com.github.johnrengelman.shadow' version '1.2.3'\r\n}\r\n// Change this to the name of your main class\r\nmainClassName = 'com.example.jda.Bot'\r\n\r\n// This version will be appeneded to the jar name\r\nversion '1.0'\r\n\r\ngroup 'com.mydomain.example'\r\n\r\n// The java version\r\nsourceCompatibility = 1.8\r\ntargetCompatibility = 1.8\r\n\r\nrepositories {\r\n    mavenCentral()\r\n    jcenter()\r\n}\r\n\r\n// Add your dependencies here\r\ndependencies {\r\n    compile \"net.dv8tion:jda-player:"
-								+ Bot.config.getString("jda-player.version.name")
+						"plugins {\r\n    id 'java'\r\n    id 'application'\r\n    id 'com.github.johnrengelman.shadow' version '1.2.3'\r\n}\r\n// Change this to the name of your main class\r\nmainClassName = 'com.example.jda.Bot'\r\n\r\n// This version will be appeneded to the jar name\r\nversion '1.0'\r\n\r\ngroup 'com.mydomain.example'\r\n\r\n// The java version\r\nsourceCompatibility = 1.8\r\ntargetCompatibility = 1.8\r\n\r\nrepositories {\r\n    mavenCentral()\r\n    jcenter()\r\n}\r\n\r\n// Add your dependencies here\r\ndependencies {\r\n    compile \"net.dv8tion:JDA:"
+								+ Bot.config.getString("jda.version.name") + "\"\r\n    compile \"net.dv8tion:jda-player:" + Bot.config.getString("jda-player.version.name")
+								+ "\"\r\n}\r\n\r\n// Tell gradle to use UTF-8 as file encoding\r\ncompileJava.options.encoding = 'UTF-8'\r\n\r\n// This task is to set the gradle wrapper version\r\ntask wrapper(type: Wrapper) {\r\n    gradleVersion = '3.1'\r\n}",
+						"gradle").appendString("\n");
+			} else if (text.contains("3")) {
+				builder.appendCodeBlock(
+						"plugins {\r\n    id 'java'\r\n    id 'application'\r\n    id 'com.github.johnrengelman.shadow' version '1.2.3'\r\n}\r\n// Change this to the name of your main class\r\nmainClassName = 'com.example.jda.Bot'\r\n\r\n// This version will be appeneded to the jar name\r\nversion '1.0'\r\n\r\ngroup 'com.mydomain.example'\r\n\r\n// The java version\r\nsourceCompatibility = 1.8\r\ntargetCompatibility = 1.8\r\n\r\nrepositories {\r\n    mavenCentral()\r\n    jcenter()\r\n    maven {\r\n        name \"Repository for JDA 3 Alpha builds kindly provided by Fabricio20\"\r\n        url \"http://nexus.notfab.net/content/repositories/JDA3\"\r\n    }\r\n}\r\n\r\n// Add your dependencies here\r\ndependencies {\r\n    compile \"net.dv8tion:jda:3.0."
+								+ Bot.config.getString("jda3.version.name")
 								+ "\"\r\n}\r\n\r\n// Tell gradle to use UTF-8 as file encoding\r\ncompileJava.options.encoding = 'UTF-8'\r\n\r\n// This task is to set the gradle wrapper version\r\ntask wrapper(type: Wrapper) {\r\n    gradleVersion = '3.1'\r\n}",
 						"gradle").appendString("\n");
 			} else {
