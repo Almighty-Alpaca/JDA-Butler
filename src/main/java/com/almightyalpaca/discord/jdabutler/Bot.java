@@ -7,6 +7,7 @@ import java.util.Date;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpHost;
 
 import com.google.gson.JsonIOException;
@@ -94,8 +95,8 @@ public class Bot {
 		SimpleLog.addListener(new LogListener() {
 
 			@Override
-			public void onError(final SimpleLog log, final Throwable err) {
-				System.out.println("onError() has been called !");
+			public void onError(final SimpleLog log, final Throwable t) {
+				log.log(Level.FATAL, ExceptionUtils.getStackTrace(t));
 			}
 
 			@Override

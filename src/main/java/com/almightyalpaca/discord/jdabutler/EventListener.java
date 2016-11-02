@@ -350,6 +350,8 @@ public class EventListener extends ListenerAdapter {
 				if (text.contains("player")) {
 					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'jda-player', version: '" + Bot.config.getString("jda-player.version.name") + "'", "gradle").appendString("\n");
 				} else if (text.contains("3")) {
+					builder.appendCodeBlock("maven {\r\n    name \"Fab's kindly provided JDA3 Alpha maven repo\"\r\n    url \"http://nexus.notfab.net/content/repositories/JDA3\"\r\n}", "gradle");
+					builder.appendString("\n");
 					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'jda', version: '3.0." + Bot.config.getString("jda3.version.name") + "'", "gradle").appendString("\n");
 				} else {
 					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'JDA', version: '" + Bot.config.getString("jda.version.name") + "'", "gradle").appendString("\n");
@@ -358,6 +360,8 @@ public class EventListener extends ListenerAdapter {
 				if (text.contains("player")) {
 					builder.appendCodeBlock("compile 'net.dv8tion:jda-player:" + Bot.config.getString("jda-player.version.name") + "'", "gradle").appendString("\n");
 				} else if (text.contains("3")) {
+					builder.appendCodeBlock("maven {\r\n    name \"Fab's kindly provided JDA3 Alpha maven repo\"\r\n    url \"http://nexus.notfab.net/content/repositories/JDA3\"\r\n}", "gradle");
+					builder.appendString("\n");
 					builder.appendCodeBlock("compile 'net.dv8tion:jda:3.0." + Bot.config.getString("jda3.version.name") + "'", "gradle").appendString("\n");
 				} else {
 					builder.appendCodeBlock("compile 'net.dv8tion:JDA:" + Bot.config.getString("jda.version.name") + "'", "gradle").appendString("\n");
@@ -371,6 +375,8 @@ public class EventListener extends ListenerAdapter {
 				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda-player</artifactId>\n    <version>" + Bot.config.getString("jda-player.version.name")
 						+ "</version>\n</dependency>\n", "html").appendString("\n");
 			} else if (text.contains("3")) {
+				builder.appendCodeBlock("<repository>\n    <id>fabricio20</id>\n    <name>Fab's kindly provided JDA3 Alpha maven repo</name>\n    <url>http://nexus.notfab.net/content/repositories/JDA3</url>\n</repository>", "html");
+				builder.appendString("\n");
 				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda</artifactId>\n    <version>3.0." + Bot.config.getString("jda3.version.name")
 						+ "</version>\n</dependency>\n", "html").appendString("\n");
 			} else {
