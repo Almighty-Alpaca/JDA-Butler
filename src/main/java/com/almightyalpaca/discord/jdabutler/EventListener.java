@@ -338,8 +338,11 @@ public class EventListener extends ListenerAdapter {
 			builder.appendString("Latest **JDA** version is ").appendString(Bot.config.getString("jda.version.name"), Formatting.BOLD).appendString("\n");
 			builder.appendString("Latest **JDA-Player** version is ").appendString(Bot.config.getString("jda-player.version.name"), Formatting.BOLD).appendString("\n");
 			builder.appendString("Latest **JDA 3** development version is ").appendString(Bot.config.getString("jda3.version.name"), Formatting.BOLD);
-		} else if (text.startsWith("!shutdown") && guild.getMember(user).getRoles().contains(Bot.ROLE_STAFF)) {
-			Bot.shutdown();
+		} else if (text.startsWith("!shutdown")) {
+			Member member = Bot.GUILD_JDA.getMember(user);
+			if (member != null && member.getRoles().contains(Bot.ROLE_STAFF)) {
+				Bot.shutdown();
+			}
 		} else if (text.startsWith("!docs ")) {
 			text = text.substring(6);
 			builder.appendString(DocParser.get(text));
