@@ -8,6 +8,7 @@ package com.kantenkugel.discordbot.moduleutils;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -81,8 +82,8 @@ public class DocParser {
 	}
 
 	private static final SimpleLog							LOG							= SimpleLog.getLog("DocParser");
-	private static final String								JDA_JENKINS_PREFIX			= "http://ci.dv8tion.net/job/JDA/lastSuccessfulBuild/";
-	private static final String								JDA_PLAYER_JENKINS_PREFIX	= "http://ci.dv8tion.net/job/JDA-Player/lastSuccessfulBuild/";
+	private static final String								JDA_JENKINS_PREFIX			= "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/";
+	private static final String								JDA_PLAYER_JENKINS_PREFIX	= "http://home.dv8tion.net:8080/job/JDA-Player/lastSuccessfulBuild/";
 
 	private static final String								ARTIFACT_SUFFIX				= "api/json?tree=artifacts[*]";
 	private static final Path								LOCAL_SRC_PATH				= Paths.get("merged-src.jar");
@@ -120,7 +121,10 @@ public class DocParser {
 					final JSONObject artifact = artifacts.getJSONObject(i);
 					if (artifact.getString("fileName").endsWith("sources.jar")) {
 						final URL artifactUrl = new URL(DocParser.JDA_JENKINS_PREFIX + "artifact/" + artifact.getString("relativePath"));
-						final InputStream is = artifactUrl.openStream();
+						final URLConnection connection = artifactUrl.openConnection();
+						connection.setConnectTimeout(5000);
+						connection.setReadTimeout(5000);
+						final InputStream is = connection.getInputStream();
 						Files.copy(is, DocParser.LOCAL_JDA_SRC_PATH, StandardCopyOption.REPLACE_EXISTING);
 						is.close();
 						DocParser.LOG.info("Done downloading JDA sources");
@@ -140,7 +144,10 @@ public class DocParser {
 					final JSONObject artifact = artifacts.getJSONObject(i);
 					if (artifact.getString("fileName").endsWith("sources.jar") && artifact.getString("fileName").contains("jda")) {
 						final URL artifactUrl = new URL(DocParser.JDA_PLAYER_JENKINS_PREFIX + "artifact/" + artifact.getString("relativePath"));
-						final InputStream is = artifactUrl.openStream();
+						final URLConnection connection = artifactUrl.openConnection();
+						connection.setConnectTimeout(5000);
+						connection.setReadTimeout(5000);
+						final InputStream is = connection.getInputStream();
 						Files.copy(is, DocParser.LOCAL_JDA_PLAYER_SRC_PATH, StandardCopyOption.REPLACE_EXISTING);
 						is.close();
 						DocParser.LOG.info("Done downloading JDA-Player sources");
