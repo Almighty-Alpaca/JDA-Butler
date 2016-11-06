@@ -3,6 +3,8 @@ package com.almightyalpaca.discord.jdabutler;
 import java.lang.management.ManagementFactory;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,17 +26,17 @@ import net.dv8tion.jda.core.utils.SimpleLog;
 
 public class EventListener extends ListenerAdapter {
 
-	static ScheduledExecutorService	executor	= new ScheduledThreadPoolExecutor(1, (r) -> {
-													final Thread t = new Thread(r);
-													t.setDaemon(true);
-													t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) -> {
-																									throwable.printStackTrace();
-																								});
-													t.setPriority(Thread.NORM_PRIORITY);
-													return t;
-												});
+	static ScheduledExecutorService		executor	= new ScheduledThreadPoolExecutor(1, (r) -> {
+														final Thread t = new Thread(r);
+														t.setDaemon(true);
+														t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) -> {
+																											throwable.printStackTrace();
+																										});
+														t.setPriority(Thread.NORM_PRIORITY);
+														return t;
+													});
 
-	private static boolean			started;
+	private static boolean				started;
 
 	private static final OffsetDateTime	startTime	= OffsetDateTime.now();
 
@@ -383,7 +385,9 @@ public class EventListener extends ListenerAdapter {
 				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda-player</artifactId>\n    <version>" + Bot.config.getString("jda-player.version.name")
 						+ "</version>\n</dependency>\n", "html").appendString("\n");
 			} else if (text.contains("3")) {
-				builder.appendCodeBlock("<repository>\n    <id>fabricio20</id>\n    <name>Fab's kindly provided JDA3 Alpha maven repo</name>\n    <url>http://nexus.notfab.net/content/repositories/JDA3</url>\n</repository>", "html");
+				builder.appendCodeBlock(
+						"<repository>\n    <id>fabricio20</id>\n    <name>Fab's kindly provided JDA3 Alpha maven repo</name>\n    <url>http://nexus.notfab.net/content/repositories/JDA3</url>\n</repository>",
+						"html");
 				builder.appendString("\n");
 				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda</artifactId>\n    <version>3.0." + Bot.config.getString("jda3.version.name")
 						+ "</version>\n</dependency>\n", "html").appendString("\n");
@@ -442,24 +446,44 @@ public class EventListener extends ListenerAdapter {
 		} else if (text.startsWith("!notify")) {
 			text = text.substring(7);
 			final Member member = event.getMember();
-			final Role role;
 
-			if (text.contains("player")) {
-				role = Bot.ROLE_JDA_PLAYER_UPDATES;
-			} else if (text.contains("3")) {
-				role = Bot.ROLE_JDA_3_UPDATES;
+			if (text.contains("all")) {
+				List<Role> roles = new ArrayList<>(3);
+				roles.add(Bot.ROLE_JDA_UPDATES);
+				roles.add(Bot.ROLE_JDA_3_UPDATES);
+				roles.add(Bot.ROLE_JDA_PLAYER_UPDATES);
+				roles.removeAll(member.getRoles());
+
+				if (roles.size() == 0) {
+					guild.getController().removeRolesFromMember(member, Bot.ROLE_JDA_UPDATES, Bot.ROLE_JDA_3_UPDATES, Bot.ROLE_JDA_PLAYER_UPDATES).queue(v -> {
+						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.ROLE_JDA_UPDATES.getName());
+						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.ROLE_JDA_3_UPDATES.getName());
+						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.ROLE_JDA_PLAYER_UPDATES.getName());
+					}, t -> Bot.LOG.log(t));
+				} else {
+					guild.getController().addRolesToMember(member, roles).queue(v -> roles.forEach(role -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + user.getName() + "#" + user
+							.getDiscriminator() + " (" + user.getId() + ") to " + role.getName())), t -> Bot.LOG.log(t));
+				}
+
 			} else {
-				role = Bot.ROLE_JDA_UPDATES;
-			}
+				final Role role;
 
-			if (member.getRoles().contains(role)) {
-				guild.getController().removeRolesFromMember(member, role).queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user
-						.getId() + ") from " + role.getName()), t -> Bot.LOG.log(t));
-			} else {
-				guild.getController().addRolesToMember(member, role).queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId()
-						+ ") to " + role.getName()), t -> Bot.LOG.log(t));
-			}
+				if (text.contains("player")) {
+					role = Bot.ROLE_JDA_PLAYER_UPDATES;
+				} else if (text.contains("3")) {
+					role = Bot.ROLE_JDA_3_UPDATES;
+				} else {
+					role = Bot.ROLE_JDA_UPDATES;
+				}
 
+				if (member.getRoles().contains(role)) {
+					guild.getController().removeRolesFromMember(member, role).queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user
+							.getId() + ") from " + role.getName()), t -> Bot.LOG.log(t));
+				} else {
+					guild.getController().addRolesToMember(member, role).queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId()
+							+ ") to " + role.getName()), t -> Bot.LOG.log(t));
+				}
+			}
 		} else if (text.startsWith("!ping")) {
 			event.getChannel().sendMessage("Ping: ...").queue(m -> m.editMessage("Ping: " + event.getMessage().getCreationTime().until(m.getCreationTime(), ChronoUnit.MILLIS) + "ms").queue());
 		} else if (text.startsWith("!uptime")) {
