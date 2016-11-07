@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
 	// JDA
-	compile(group: 'net.dv8tion', name: 'jda', version: '3.0.ALPHA_61') {
+	compile(group: 'net.dv8tion', name: 'jda', version: '3.0.ALPHA_64') {
 		// I don't want all the audio libs currectly. They are just a waste of space.
 		// This breaks URLPlayer and FilePlayer but JDA-Player will still work.
 		exclude group: 'junit', module: 'junit'
