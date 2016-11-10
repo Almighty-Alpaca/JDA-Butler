@@ -37,20 +37,47 @@ public class Bot {
 	public static Config					config;
 	public static EventListener				listener;
 
-	public static TextChannel				CHANNEL_ANNOUNCEMENTS;
-	public static TextChannel				CHANNEL_LOGS;
-	public static Guild						GUILD_JDA;
-	public static Role						ROLE_JDA_PLAYER_UPDATES;
-	public static Role						ROLE_JDA_3_UPDATES;
-	public static Role						ROLE_JDA_UPDATES;
-	public static Role						ROLE_BOTS;
-	public static Role						ROLE_JDA_FANCLUB;
-	public static Role						ROLE_STAFF;
-
 	public static final SimpleLog			LOG			= SimpleLog.getLog("Bot");
 
 	private static final SimpleDateFormat	DATEFORMAT	= new SimpleDateFormat("HH:mm:ss");
+
 	private static final String				LOGFORMAT	= "[%time%] [%level%] [%name%]: %text%";
+
+	public static TextChannel getChannelAnnouncements() {
+		return Bot.jda.getTextChannelById("125227483518861312");
+	}
+
+	public static TextChannel getChannelLogs() {
+		return Bot.jda.getTextChannelById("241926199666802690");
+	}
+
+	public static Guild getGuildJda() {
+		return Bot.jda.getGuildById("125227483518861312");
+	}
+
+	public static Role getRoleBots() {
+		return Bot.getGuildJda().getRoleById("125616720156033024");
+	}
+
+	public static Role getRoleJda3Updates() {
+		return Bot.getGuildJda().getRoleById("241948856978374657");
+	}
+
+	public static Role getRoleJdaFanclub() {
+		return Bot.getGuildJda().getRoleById("169558668126322689");
+	}
+
+	public static Role getRoleJdaPlayerUpdates() {
+		return Bot.getGuildJda().getRoleById("241948768113524762");
+	}
+
+	public static Role getRoleJdaUpdates() {
+		return Bot.getGuildJda().getRoleById("241948671325765632");
+	}
+
+	public static Role getRoleStaff() {
+		return Bot.getGuildJda().getRoleById("169481978268090369");
+	}
 
 	public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException,
 			InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException {
@@ -82,19 +109,6 @@ public class Bot {
 
 		Bot.jda = (JDAImpl) builder.buildBlocking();
 
-		Bot.CHANNEL_ANNOUNCEMENTS = Bot.jda.getTextChannelById("125227483518861312");
-		Bot.CHANNEL_LOGS = Bot.jda.getTextChannelById("241926199666802690");
-
-		Bot.GUILD_JDA = Bot.jda.getGuildById("125227483518861312");
-
-		Bot.ROLE_JDA_PLAYER_UPDATES = Bot.GUILD_JDA.getRoleById("241948768113524762");
-		Bot.ROLE_JDA_3_UPDATES = Bot.GUILD_JDA.getRoleById("241948856978374657");
-		Bot.ROLE_JDA_UPDATES = Bot.GUILD_JDA.getRoleById("241948671325765632");
-
-		Bot.ROLE_BOTS = Bot.GUILD_JDA.getRoleById("125616720156033024");
-		Bot.ROLE_JDA_FANCLUB = Bot.GUILD_JDA.getRoleById("169558668126322689");
-		Bot.ROLE_STAFF = Bot.GUILD_JDA.getRoleById("169481978268090369");
-
 		SimpleLog.addListener(new LogListener() {
 
 			@Override
@@ -104,10 +118,10 @@ public class Bot {
 
 			@Override
 			public void onLog(final SimpleLog log, final Level level, final Object message) {
-				if (level.isError()) {
-					final String format = Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String
-							.valueOf(message));
-					Bot.CHANNEL_LOGS.sendMessage(format).queue();
+				if (level.getPriority() >= Level.INFO.getPriority()) {
+					final String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%",
+							String.valueOf(message)) + "`";
+					Bot.getChannelLogs().sendMessage(format).queue();
 				}
 			}
 		});

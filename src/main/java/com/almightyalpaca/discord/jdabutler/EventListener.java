@@ -59,7 +59,7 @@ public class EventListener extends ListenerAdapter {
 				// builder.appendString("JDA build ").appendString(version, Formatting.BOLD).appendString(" has been released!\n");
 				// builder.appendString("<http://home.dv8tion.net:8080/job/JDA/" + version.substring(version.lastIndexOf("_") + 1) + ">").appendString("\n");
 				// builder.appendString("<https://bintray.com/dv8fromtheworld/maven/JDA/" + version + ">").appendString("\n");
-				// Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(builder.build());
+				// Bot.getChannelAnnouncements().sendMessage(builder.build());
 				// }
 				// } catch (final Exception e) {
 				// e.printStackTrace();
@@ -69,10 +69,12 @@ public class EventListener extends ListenerAdapter {
 				String response = null;
 				boolean update = false;
 				try {
+					Bot.LOG.debug("Checking for JDA updates...");
 					response = Unirest.get("http://home.dv8tion.net:8080/job/JDA/lastBuild/api/json").asString().getBody();
 					final JSONObject object = new JSONObject(response);
 					final int build = Integer.valueOf(object.getString("id"));
 					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda.version.build", -1)) {
+						Bot.LOG.debug("Update found!");
 						update = true;
 
 						final MessageBuilder builder = new MessageBuilder();
@@ -84,7 +86,8 @@ public class EventListener extends ListenerAdapter {
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						builder.appendString("**JDA** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.ROLE_JDA_UPDATES).appendString("\n\n");
+						builder.appendString("**JDA** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.getRoleJdaUpdates()).appendString(
+								"\n\n");
 
 						if (changeSets.length() > 0) {
 							builder.appendString("Commits:", Formatting.BOLD).appendString("\n");
@@ -124,11 +127,11 @@ public class EventListener extends ListenerAdapter {
 
 						final Message message = builder.build();
 
-						Bot.ROLE_JDA_UPDATES.getManager().setMentionable(true).block();
+						Bot.getRoleJdaUpdates().getManager().setMentionable(true).block();
 
-						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).block();
+						Bot.getChannelAnnouncements().sendMessage(message).block();
 
-						Bot.ROLE_JDA_UPDATES.getManager().setMentionable(false).queue();
+						Bot.getRoleJdaUpdates().getManager().setMentionable(false).queue();
 
 						Bot.config.put("jda.version.build", build);
 						Bot.config.put("jda.version.name", version);
@@ -171,10 +174,12 @@ public class EventListener extends ListenerAdapter {
 
 				// JDA-Player
 				try {
+					Bot.LOG.debug("Checking for JDA-Player updates...");
 					response = Unirest.get("http://home.dv8tion.net:8080/job/JDA-Player/lastBuild/api/json").asString().getBody();
 					final JSONObject object = new JSONObject(response);
 					final int build = Integer.valueOf(object.getString("id"));
 					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda-player.version.build", -1)) {
+						Bot.LOG.debug("Update found!");
 						update = true;
 						final MessageBuilder builder = new MessageBuilder();
 
@@ -185,7 +190,7 @@ public class EventListener extends ListenerAdapter {
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						builder.appendString("**JDA-Player** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.ROLE_JDA_PLAYER_UPDATES)
+						builder.appendString("**JDA-Player** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.getRoleJdaPlayerUpdates())
 								.appendString("\n\n");
 
 						if (changeSets.length() > 0) {
@@ -225,11 +230,11 @@ public class EventListener extends ListenerAdapter {
 
 						final Message message = builder.build();
 
-						Bot.ROLE_JDA_PLAYER_UPDATES.getManager().setMentionable(true).block();
+						Bot.getRoleJdaPlayerUpdates().getManager().setMentionable(true).block();
 
-						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).block();
+						Bot.getChannelAnnouncements().sendMessage(message).block();
 
-						Bot.ROLE_JDA_PLAYER_UPDATES.getManager().setMentionable(false).queue();
+						Bot.getRoleJdaPlayerUpdates().getManager().setMentionable(false).queue();
 
 						Bot.config.put("jda-player.version.build", build);
 						Bot.config.put("jda-player.version.name", version);
@@ -243,10 +248,12 @@ public class EventListener extends ListenerAdapter {
 
 				// JDA3
 				try {
+					Bot.LOG.debug("Checking for JDA 3 updates...");
 					response = Unirest.get("http://home.dv8tion.net:8080/job/JDA%203.x/lastBuild/api/json").asString().getBody();
 					final JSONObject object = new JSONObject(response);
 					final int build = Integer.valueOf(object.getString("id"));
 					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda3.version.build", -1)) {
+						Bot.LOG.debug("Update found!");
 						update = true;
 						final MessageBuilder builder = new MessageBuilder();
 
@@ -258,7 +265,7 @@ public class EventListener extends ListenerAdapter {
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						builder.appendString("**JDA 3 Dev** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.ROLE_JDA_3_UPDATES).appendString(
+						builder.appendString("**JDA 3 Dev** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.getRoleJda3Updates()).appendString(
 								"\n\n");
 
 						if (changeSets.length() > 0) {
@@ -290,11 +297,11 @@ public class EventListener extends ListenerAdapter {
 
 						final Message message = builder.build();
 
-						Bot.ROLE_JDA_3_UPDATES.getManager().setMentionable(true).block();
+						Bot.getRoleJda3Updates().getManager().setMentionable(true).block();
 
-						Bot.CHANNEL_ANNOUNCEMENTS.sendMessage(message).block();
+						Bot.getChannelAnnouncements().sendMessage(message).block();
 
-						Bot.ROLE_JDA_3_UPDATES.getManager().setMentionable(false).queue();
+						Bot.getRoleJda3Updates().getManager().setMentionable(false).queue();
 
 						Bot.config.put("jda3.version.build", build);
 						Bot.config.put("jda3.version.name", version);
@@ -322,9 +329,9 @@ public class EventListener extends ListenerAdapter {
 			final User user = member.getUser();
 			Role role;
 			if (user.isBot()) {
-				role = Bot.ROLE_BOTS;
+				role = Bot.getRoleBots();
 			} else {
-				role = Bot.ROLE_JDA_FANCLUB;
+				role = Bot.getRoleJdaFanclub();
 			}
 
 			guild.getController().addRolesToMember(member, role).queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId()
@@ -346,8 +353,8 @@ public class EventListener extends ListenerAdapter {
 			builder.appendString("Latest **JDA-Player** version is ").appendString(Bot.config.getString("jda-player.version.name"), Formatting.BOLD).appendString("\n");
 			builder.appendString("Latest **JDA 3** development version is ").appendString(Bot.config.getString("jda3.version.name"), Formatting.BOLD);
 		} else if (text.startsWith("!shutdown")) {
-			Member member = Bot.GUILD_JDA.getMember(user);
-			if (member != null && member.getRoles().contains(Bot.ROLE_STAFF)) {
+			final Member member = Bot.getGuildJda().getMember(user);
+			if (member != null && member.getRoles().contains(Bot.getRoleStaff())) {
 				Bot.shutdown();
 			}
 		} else if (text.startsWith("!docs ")) {
@@ -448,17 +455,17 @@ public class EventListener extends ListenerAdapter {
 			final Member member = event.getMember();
 
 			if (text.contains("all")) {
-				List<Role> roles = new ArrayList<>(3);
-				roles.add(Bot.ROLE_JDA_UPDATES);
-				roles.add(Bot.ROLE_JDA_3_UPDATES);
-				roles.add(Bot.ROLE_JDA_PLAYER_UPDATES);
+				final List<Role> roles = new ArrayList<>(3);
+				roles.add(Bot.getRoleJdaUpdates());
+				roles.add(Bot.getRoleJda3Updates());
+				roles.add(Bot.getRoleJdaPlayerUpdates());
 				roles.removeAll(member.getRoles());
 
 				if (roles.size() == 0) {
-					guild.getController().removeRolesFromMember(member, Bot.ROLE_JDA_UPDATES, Bot.ROLE_JDA_3_UPDATES, Bot.ROLE_JDA_PLAYER_UPDATES).queue(v -> {
-						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.ROLE_JDA_UPDATES.getName());
-						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.ROLE_JDA_3_UPDATES.getName());
-						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.ROLE_JDA_PLAYER_UPDATES.getName());
+					guild.getController().removeRolesFromMember(member, Bot.getRoleJdaUpdates(), Bot.getRoleJda3Updates(), Bot.getRoleJdaPlayerUpdates()).queue(v -> {
+						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.getRoleJdaUpdates().getName());
+						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.getRoleJda3Updates().getName());
+						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.getRoleJdaPlayerUpdates().getName());
 					}, t -> Bot.LOG.log(t));
 				} else {
 					guild.getController().addRolesToMember(member, roles).queue(v -> roles.forEach(role -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + user.getName() + "#" + user
@@ -469,11 +476,11 @@ public class EventListener extends ListenerAdapter {
 				final Role role;
 
 				if (text.contains("player")) {
-					role = Bot.ROLE_JDA_PLAYER_UPDATES;
+					role = Bot.getRoleJdaPlayerUpdates();
 				} else if (text.contains("3")) {
-					role = Bot.ROLE_JDA_3_UPDATES;
+					role = Bot.getRoleJda3Updates();
 				} else {
-					role = Bot.ROLE_JDA_UPDATES;
+					role = Bot.getRoleJdaUpdates();
 				}
 
 				if (member.getRoles().contains(role)) {
