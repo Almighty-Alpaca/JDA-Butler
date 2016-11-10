@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
 	id 'application'
-	id 'com.github.johnrengelman.shadow' version '1.2.3'
+	id 'com.github.johnrengelman.shadow' version '1.2.4'
     id 'idea'
     id 'eclipse'
 	id 'com.github.ben-manes.versions' version '0.13.0'
@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
 	// JDA
-	compile(group: 'net.dv8tion', name: 'jda', version: '3.0.ALPHA_64') {
+	compile(group: 'net.dv8tion', name: 'jda', version: '3.0.ALPHA_69') {
 		// I don't want all the audio libs currectly. They are just a waste of space.
 		// This breaks URLPlayer and FilePlayer but JDA-Player will still work.
 		exclude group: 'junit', module: 'junit'
@@ -53,7 +53,7 @@ dependencies {
 	compile group: 'commons-io', name: 'commons-io', version: '2.5'
 
 	// Javaparser
-	compile group: 'com.github.javaparser', name: 'javaparser-core', version: '2.5.1'
+	// compile group: 'com.github.javaparser', name: 'javaparser-core', version: '3.0.0-alpha.8'
 
 	// Reflections
 	compile group: 'org.reflections', name: 'reflections', version: '0.9.10'
