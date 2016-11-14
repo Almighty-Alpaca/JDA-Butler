@@ -86,10 +86,10 @@ public class DocParser {
 	private static final String								JDA_PLAYER_JENKINS_PREFIX	= "http://home.dv8tion.net:8080/job/JDA-Player/lastSuccessfulBuild/";
 
 	private static final String								ARTIFACT_SUFFIX				= "api/json?tree=artifacts[*]";
-	private static final Path								LOCAL_SRC_PATH				= Paths.get("merged-src.jar");
-	private static final Path								LOCAL_JDA_SRC_PATH			= Paths.get("jda-src.jar");
 
+	private static final Path								LOCAL_JDA_SRC_PATH			= Paths.get("jda-src.jar");
 	private static final Path								LOCAL_JDA_PLAYER_SRC_PATH	= Paths.get("jda-player-src.jar");
+	private static final Path								LOCAL_SRC_PATH				= LOCAL_JDA_SRC_PATH; //Paths.get("merged-src.jar");
 
 	private static final String								JDA_CODE_BASE				= "net/dv8tion/jda";
 	private static final Pattern							DOCS_PATTERN				= Pattern.compile("/\\*{2}\\s*\n(.*?)\n\\s*\\*/\\s*\n\\s*(?:@[^\n]+\n\\s*)*(.*?)\n", Pattern.DOTALL);
@@ -135,71 +135,71 @@ public class DocParser {
 			error = true;
 			DocParser.LOG.log(e);
 		}
-		DocParser.LOG.info("Downloading JDA-Player sources...");
-		try {
-			final HttpResponse<String> response = Unirest.get(DocParser.JDA_PLAYER_JENKINS_PREFIX + DocParser.ARTIFACT_SUFFIX).asString();
-			if (response.getStatus() < 300 && response.getStatus() > 199) {
-				final JSONArray artifacts = new JSONObject(response.getBody()).getJSONArray("artifacts");
-				for (int i = 0; i < artifacts.length(); i++) {
-					final JSONObject artifact = artifacts.getJSONObject(i);
-					if (artifact.getString("fileName").endsWith("sources.jar") && artifact.getString("fileName").contains("jda")) {
-						final URL artifactUrl = new URL(DocParser.JDA_PLAYER_JENKINS_PREFIX + "artifact/" + artifact.getString("relativePath"));
-						final URLConnection connection = artifactUrl.openConnection();
-						connection.setConnectTimeout(5000);
-						connection.setReadTimeout(5000);
-						final InputStream is = connection.getInputStream();
-						Files.copy(is, DocParser.LOCAL_JDA_PLAYER_SRC_PATH, StandardCopyOption.REPLACE_EXISTING);
-						is.close();
-						DocParser.LOG.info("Done downloading JDA-Player sources");
-					}
-				}
-			}
-		} catch (UnirestException | IOException e) {
-			error = true;
-			DocParser.LOG.log(e);
-		}
-
-		if (error) {
-			DocParser.LOG.info("Skipping merging sources...");
-		} else {
-			DocParser.LOG.info("Merging sources...");
-			try (ZipFile jda = new ZipFile(DocParser.LOCAL_JDA_SRC_PATH.toString());
-					ZipFile player = new ZipFile(DocParser.LOCAL_JDA_PLAYER_SRC_PATH.toString());
-					ZipOutputStream out = new ZipOutputStream(new FileOutputStream(DocParser.LOCAL_SRC_PATH.toString()));) {
-
-				final Set<String> entries = new HashSet<>();
-
-				jda.stream().forEach(entry -> {
-					if (!entries.contains(entry.getName())) {
-						try {
-							entries.add(entry.getName());
-							out.putNextEntry(entry);
-							IOUtils.copy(jda.getInputStream(entry), out);
-							out.closeEntry();
-						} catch (final IOException e) {
-							e.printStackTrace();
-						}
-					}
-				});
-
-				player.stream().forEach(entry -> {
-					if (!entries.contains(entry.getName())) {
-						try {
-							entries.add(entry.getName());
-							out.putNextEntry(entry);
-							IOUtils.copy(player.getInputStream(entry), out);
-							out.closeEntry();
-						} catch (final IOException e) {
-							e.printStackTrace();
-						}
-					}
-				});
-
-				DocParser.LOG.info("Done merging sources...");
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
-		}
+//		DocParser.LOG.info("Downloading JDA-Player sources...");
+//		try {
+//			final HttpResponse<String> response = Unirest.get(DocParser.JDA_PLAYER_JENKINS_PREFIX + DocParser.ARTIFACT_SUFFIX).asString();
+//			if (response.getStatus() < 300 && response.getStatus() > 199) {
+//				final JSONArray artifacts = new JSONObject(response.getBody()).getJSONArray("artifacts");
+//				for (int i = 0; i < artifacts.length(); i++) {
+//					final JSONObject artifact = artifacts.getJSONObject(i);
+//					if (artifact.getString("fileName").endsWith("sources.jar") && artifact.getString("fileName").contains("jda")) {
+//						final URL artifactUrl = new URL(DocParser.JDA_PLAYER_JENKINS_PREFIX + "artifact/" + artifact.getString("relativePath"));
+//						final URLConnection connection = artifactUrl.openConnection();
+//						connection.setConnectTimeout(5000);
+//						connection.setReadTimeout(5000);
+//						final InputStream is = connection.getInputStream();
+//						Files.copy(is, DocParser.LOCAL_JDA_PLAYER_SRC_PATH, StandardCopyOption.REPLACE_EXISTING);
+//						is.close();
+//						DocParser.LOG.info("Done downloading JDA-Player sources");
+//					}
+//				}
+//			}
+//		} catch (UnirestException | IOException e) {
+//			error = true;
+//			DocParser.LOG.log(e);
+//		}
+//
+//		if (error) {
+//			DocParser.LOG.info("Skipping merging sources...");
+//		} else {
+//			DocParser.LOG.info("Merging sources...");
+//			try (ZipFile jda = new ZipFile(DocParser.LOCAL_JDA_SRC_PATH.toString());
+//					ZipFile player = new ZipFile(DocParser.LOCAL_JDA_PLAYER_SRC_PATH.toString());
+//					ZipOutputStream out = new ZipOutputStream(new FileOutputStream(DocParser.LOCAL_SRC_PATH.toString()));) {
+//
+//				final Set<String> entries = new HashSet<>();
+//
+//				jda.stream().forEach(entry -> {
+//					if (!entries.contains(entry.getName())) {
+//						try {
+//							entries.add(entry.getName());
+//							out.putNextEntry(entry);
+//							IOUtils.copy(jda.getInputStream(entry), out);
+//							out.closeEntry();
+//						} catch (final IOException e) {
+//							e.printStackTrace();
+//						}
+//					}
+//				});
+//
+//				player.stream().forEach(entry -> {
+//					if (!entries.contains(entry.getName())) {
+//						try {
+//							entries.add(entry.getName());
+//							out.putNextEntry(entry);
+//							IOUtils.copy(player.getInputStream(entry), out);
+//							out.closeEntry();
+//						} catch (final IOException e) {
+//							e.printStackTrace();
+//						}
+//					}
+//				});
+//
+//				DocParser.LOG.info("Done merging sources...");
+//			} catch (final IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
 
 	}
 
@@ -324,12 +324,16 @@ public class DocParser {
 	}
 
 	public static void reFetch() {
-		DocParser.LOG.info("Re-fetching Docs");
-		DocParser.download();
-		synchronized (DocParser.docs) {
-			DocParser.docs.clear();
-			DocParser.parse();
+		try {
+			DocParser.LOG.info("Re-fetching Docs");
+			DocParser.download();
+			synchronized (DocParser.docs) {
+				DocParser.docs.clear();
+				DocParser.parse();
+			}
+			DocParser.LOG.info("Done");
+		} catch (Exception e) {
+			LOG.log(e);
 		}
-		DocParser.LOG.info("Done");
 	}
 }

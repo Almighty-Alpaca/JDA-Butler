@@ -22,6 +22,7 @@ import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -57,10 +58,6 @@ public class Bot {
 
 	public static Role getRoleBots() {
 		return Bot.getGuildJda().getRoleById("125616720156033024");
-	}
-
-	public static Role getRoleJda3Updates() {
-		return Bot.getGuildJda().getRoleById("241948856978374657");
 	}
 
 	public static Role getRoleJdaFanclub() {
@@ -119,8 +116,11 @@ public class Bot {
 			@Override
 			public void onLog(final SimpleLog log, final Level level, final Object message) {
 				if (level.getPriority() >= Level.INFO.getPriority()) {
-					final String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%",
-							String.valueOf(message)) + "`";
+					String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String
+							.valueOf(message)) + "`";
+					if (format.length() >= 2000) {
+						format = format.substring(0, 1999);
+					}
 					Bot.getChannelLogs().sendMessage(format).queue();
 				}
 			}
@@ -128,8 +128,7 @@ public class Bot {
 
 		EventListener.start();
 
-		// Bot.jda.getAccountManager().setGame("JDA");
-		// Bot.jda.getAccountManager().update();
+		Bot.jda.getPresence().setGame(Game.of("JDA"));
 
 		// This didn't worked
 		// final Field clientField = JDAImpl.class.getDeclaredField("client");
