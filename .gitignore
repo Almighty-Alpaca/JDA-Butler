@@ -200,3 +200,4 @@ gradle-app.setting
 ### Project ###
 err.log
 out.log
+config.json
