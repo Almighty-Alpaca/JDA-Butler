@@ -19,6 +19,7 @@ public class GradleUtil {
 		}
 
 		text += "}\r\n\r\n// Tell gradle to use UTF-8 as file encoding\r\ncompileJava.options.encoding = 'UTF-8'\r\n\r\n// This task is to set the gradle wrapper version\r\ntask wrapper(type: Wrapper) {\r\n    gradleVersion = '3.1'\r\n}";
+		text += "}\r\n\r\n// Tell gradle to use UTF-8 as file encoding\r\ncompileJava.options.encoding = 'UTF-8'\r\n\r\n// This task is to set the gradle wrapper version\r\ntask wrapper(type: Wrapper) {\r\n    gradleVersion = '3.2'\r\n}";
 		return text;
 
 	}
