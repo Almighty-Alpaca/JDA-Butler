@@ -83,7 +83,7 @@ public class EventListener extends ListenerAdapter {
 						final String displayPath = artifacts.getJSONObject(0).getString("displayPath");
 						String version = displayPath.substring(displayPath.indexOf("-") + 1);
 						version = version.substring(0, version.length() - 4);
-						int index = version.lastIndexOf("-");
+						final int index = version.lastIndexOf("-");
 						if (index > 0) {
 							version = version.substring(0, index);
 						}
@@ -409,36 +409,25 @@ public class EventListener extends ListenerAdapter {
 		} else if (text.startsWith("!gradle")) {
 			text = text.substring(7);
 
-			if (text.contains("pretty")) {
-				if (text.contains("player")) {
-					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'jda-player', version: '" + Bot.config.getString("jda-player.version.name") + "'", "gradle").appendString("\n");
-				} else if (text.contains("2") || text.contains("legacy")) {
-					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'JDA', version: '" + Bot.config.getString("jda2.version.name") + "'", "gradle").appendString("\n");
-				} else {
-					builder.appendCodeBlock("compile group: 'net.dv8tion', name: 'jda', version: '" + Bot.config.getString("jda.version.name") + "'", "gradle").appendString("\n");
-				}
+			final boolean pretty = text.contains("pretty");
+
+			if (text.contains("player")) {
+				GradleUtil.getDependencyString("net.dv8tion", "jda-player", Bot.config.getString("jda-player.version.name"), pretty);
+			} else if (text.contains("2") || text.contains("legacy")) {
+				GradleUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name"), pretty);
 			} else {
-				if (text.contains("player")) {
-					builder.appendCodeBlock("compile 'net.dv8tion:jda-player:" + Bot.config.getString("jda-player.version.name") + "'", "gradle").appendString("\n");
-				} else if (text.contains("2") || text.contains("legacy")) {
-					builder.appendCodeBlock("compile 'net.dv8tion:JDA:" + Bot.config.getString("jda2.version.name") + "'", "gradle").appendString("\n");
-				} else {
-					builder.appendCodeBlock("compile 'net.dv8tion:jda:" + Bot.config.getString("jda.version.name") + "'", "gradle").appendString("\n");
-				}
+				GradleUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda.version.name"), pretty);
 			}
 
 		} else if (text.startsWith("!maven")) {
 			text = text.substring(6);
 
 			if (text.contains("player")) {
-				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda-player</artifactId>\n    <version>" + Bot.config.getString("jda-player.version.name")
-						+ "</version>\n</dependency>\n", "html").appendString("\n");
+				builder.appendCodeBlock(MavenUtil.getDependencyString("net.dv8tion", "jda-player", Bot.config.getString("jda-player.version.name"), null), "html").appendString("\n");
 			} else if (text.contains("3")) {
-				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>JDA</artifactId>\n    <version>" + Bot.config.getString("jda2.version.name")
-						+ "</version>\n</dependency>\n", "html").appendString("\n");
+				builder.appendCodeBlock(MavenUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name"), null), "html").appendString("\n");
 			} else {
-				builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda</artifactId>\n    <version>" + Bot.config.getString("jda.version.name")
-						+ "</version>\n</dependency>\n", "html").appendString("\n");
+				builder.appendCodeBlock(MavenUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda.version.name"), null), "html").appendString("\n");
 			}
 
 		} else if (text.startsWith("!jar")) {
@@ -471,15 +460,15 @@ public class EventListener extends ListenerAdapter {
 			text = text.substring(13);
 
 			final boolean pretty = text.contains("pretty");
-			List<Triple<String, String, String>> dependencies = new ArrayList<>(2);
+			final List<Triple<String, String, String>> dependencies = new ArrayList<>(2);
 
 			if (text.contains("player")) {
-				dependencies.add(new ImmutableTriple<String, String, String>("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name")));
-				dependencies.add(new ImmutableTriple<String, String, String>("net.dv8tion", "jda-player", Bot.config.getString("jda-player.version.name")));
+				dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name")));
+				dependencies.add(new ImmutableTriple<>("net.dv8tion", "jda-player", Bot.config.getString("jda-player.version.name")));
 			} else if (text.contains("2") || text.contains("legacy")) {
-				dependencies.add(new ImmutableTriple<String, String, String>("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name")));
+				dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name")));
 			} else {
-				dependencies.add(new ImmutableTriple<String, String, String>("net.dv8tion", "JDA", Bot.config.getString("jda.version.name")));
+				dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda.version.name")));
 			}
 			builder.appendCodeBlock(GradleUtil.getBuildFile(dependencies, pretty), "gradle");
 		} else if (text.startsWith("!notify")) {
