@@ -52,6 +52,10 @@ public class Bot {
 		return Bot.jda.getTextChannelById("241926199666802690");
 	}
 
+	public static TextChannel getChannelTesting() {
+		return Bot.jda.getTextChannelById("125227625932128256");
+	}
+
 	public static Guild getGuildJda() {
 		return Bot.jda.getGuildById("125227483518861312");
 	}

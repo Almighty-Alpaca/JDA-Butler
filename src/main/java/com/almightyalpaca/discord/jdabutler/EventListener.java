@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import com.kantenkugel.discordbot.moduleutils.DocParser;
 import com.mashape.unirest.http.Unirest;
 
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.MessageBuilder.Formatting;
 import net.dv8tion.jda.core.entities.*;
@@ -75,8 +76,17 @@ public class EventListener extends ListenerAdapter {
 					final int build = Integer.valueOf(object.getString("id"));
 					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda.version.build", -1)) {
 						Bot.LOG.debug("Update found!");
+						update = true;
 
-						MessageBuilder builder = new MessageBuilder();
+						final String timestamp = FormattingUtil.formatTimestap(object.getLong("timestamp"));
+
+						final EmbedBuilder eb = new EmbedBuilder();
+
+						final MessageBuilder mb = new MessageBuilder();
+
+						final JSONArray culprits = object.getJSONArray("culprits");
+
+						FormattingUtil.setFooter(eb, culprits, timestamp);
 
 						final JSONArray artifacts = object.getJSONArray("artifacts");
 
@@ -90,43 +100,23 @@ public class EventListener extends ListenerAdapter {
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						builder.appendString("**JDA 3 Dev** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.getRoleJdaUpdates()).appendString(
-								"\n\n");
+						mb.appendMention(Bot.getRoleJdaUpdates());
+
+						eb.setAuthor("JDA 3 build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build,
+								"https://cdn.discordapp.com/icons/125227483518861312/c9ea3e5510039dd487171c300a363813.jpg");
 
 						if (changeSets.length() > 0) {
-							builder.appendString("Commits:", Formatting.BOLD).appendString("\n");
-							for (int i = 0; i < changeSets.length(); i++) {
-								final JSONObject item = changeSets.getJSONObject(i);
-								final String id = item.getString("id").substring(0, 6);
-								final String comment = item.getString("comment");
-								final String[] lines = comment.split("\n");
-								for (int j = 0; j < lines.length; j++) {
-									if (builder.getLength() > 1800) {
-										Bot.getRoleJdaUpdates().getManager().setMentionable(true).block();
-										Bot.getChannelAnnouncements().sendMessage(builder.build()).block();
-										Bot.getRoleJdaUpdates().getManager().setMentionable(false).queue();
-										builder = new MessageBuilder();
-									}
-									builder.appendString(j == 0 ? id : "......", Formatting.BLOCK).appendString(" ").appendString(lines[j]).appendString("\n");
-								}
-							}
+
+							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
+
+							eb.addField("Commits:", FormattingUtil.getChangeLog(changeSets), true);
 						}
 
-						//						builder.appendString("\n");
-						//						builder.appendString("Downloads:", Formatting.BOLD).appendString("\n");
-						//
-						//						builder.appendString("http://home.dv8tion.net:8080/job/JDA-Player/").appendString(String.valueOf(build)).appendString("/artifact/JDA/build/libs/ \n");
-						//
-						//						for (int i = 0; i < artifacts.length(); i++) {
-						//							final JSONObject artifact = artifacts.getJSONObject(i);
-						//							final String path = artifact.getString("relativePath");
-						//							builder.appendString("<").appendString("http://home.dv8tion.net:8080/job/JDA%203.x/").appendString(String.valueOf(build)).appendString("/artifact/").appendString(path)
-						//									.appendString(">\n");
-						//						}
-						//
-						//						builder.appendString("\n");
+						final MessageEmbed embed = eb.build();
 
-						final Message message = builder.build();
+						mb.setEmbed(embed);
+
+						final Message message = mb.build();
 
 						Bot.getRoleJdaUpdates().getManager().setMentionable(true).block();
 
@@ -160,60 +150,45 @@ public class EventListener extends ListenerAdapter {
 					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda-player.version.build", -1)) {
 						Bot.LOG.debug("Update found!");
 						update = true;
-						MessageBuilder builder = new MessageBuilder();
+						final String timestamp = FormattingUtil.formatTimestap(object.getLong("timestamp"));
+
+						final EmbedBuilder eb = new EmbedBuilder();
+
+						final MessageBuilder mb = new MessageBuilder();
+
+						final JSONArray culprits = object.getJSONArray("culprits");
+
+						FormattingUtil.setFooter(eb, culprits, timestamp);
 
 						final JSONArray artifacts = object.getJSONArray("artifacts");
 
 						final String displayPath = artifacts.getJSONObject(0).getString("displayPath");
-						final String version = displayPath.substring(0, displayPath.lastIndexOf("-")).substring(11);
+						String version = displayPath.substring(displayPath.indexOf("-") + 1);
+						version = version.substring(0, version.length() - 4);
+						final int index = version.lastIndexOf("-");
+						if (index > 0) {
+							version = version.substring(0, index);
+						}
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						builder.appendString("**JDA-Player** build ").appendString(version, Formatting.BOLD).appendString(" has been released!   ").appendMention(Bot.getRoleJdaPlayerUpdates())
-								.appendString("\n\n");
+						mb.appendMention(Bot.getRoleJdaUpdates());
+
+						eb.setAuthor("JDA-Player build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build,
+								"https://cdn.discordapp.com/icons/125227483518861312/c9ea3e5510039dd487171c300a363813.jpg");
 
 						if (changeSets.length() > 0) {
-							builder.appendString("Commits:", Formatting.BOLD).appendString("\n");
-							for (int i = 0; i < changeSets.length(); i++) {
-								final JSONObject item = changeSets.getJSONObject(i);
-								final String id = item.getString("id").substring(0, 6);
-								final String comment = item.getString("comment");
-								final String[] lines = comment.split("\n");
-								for (int j = 0; j < lines.length; j++) {
-									if (builder.getLength() > 1800) {
-										Bot.getRoleJdaPlayerUpdates().getManager().setMentionable(true).block();
-										Bot.getChannelAnnouncements().sendMessage(builder.build()).block();
-										Bot.getRoleJdaPlayerUpdates().getManager().setMentionable(false).queue();
-										builder = new MessageBuilder();
-									}
-									builder.appendString(j == 0 ? id : "......", Formatting.BLOCK).appendString(" ").appendString(lines[j]).appendString("\n");
-								}
-							}
-						}
-						//						builder.appendString("\n");
-						//						builder.appendString("Downloads:", Formatting.BOLD).appendString("\n");
-						//
-						//						builder.appendString("http://home.dv8tion.net:8080/job/JDA-Player/").appendString(String.valueOf(build)).appendString("/artifact/JDA/build/libs/ \n");
-						//
-						//						for (int i = 0; i < artifacts.length(); i++) {
-						//							final JSONObject artifact = artifacts.getJSONObject(i);
-						//							final String path = artifact.getString("relativePath");
-						//							builder.appendString("<").appendString("http://home.dv8tion.net:8080/job/JDA/").appendString(String.valueOf(build)).appendString("/artifact/").appendString(path).appendString(
-						//									">\n");
-						//						}
-						//
-						//						builder.appendString("\n");
-						//
-						//						builder.appendString("Gradle:", Formatting.BOLD).appendString("\n");
-						//
-						//						builder.appendCodeBlock("compile 'net.dv8tion:jda-player:" + version + "'", "gradle").appendString("\n");
-						//
-						//						builder.appendString("Maven:", Formatting.BOLD).appendString("\n");
-						//
-						//						builder.appendCodeBlock("<dependency>\n    <groupId>net.dv8tion</groupId>\n    <artifactId>jda-player</artifactId>\n    <version>" + version + "</version>\n</dependency>\n",
-						//								"html").appendString("\n");
 
-						final Message message = builder.build();
+							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
+
+							eb.addField("Commits:", FormattingUtil.getChangeLog(changeSets), true);
+						}
+
+						final MessageEmbed embed = eb.build();
+
+						mb.setEmbed(embed);
+
+						final Message message = mb.build();
 
 						Bot.getRoleJdaPlayerUpdates().getManager().setMentionable(true).block();
 
