@@ -105,6 +105,8 @@ public class EventListener extends ListenerAdapter {
 						eb.setAuthor("JDA 3 build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build,
 								"https://cdn.discordapp.com/icons/125227483518861312/c9ea3e5510039dd487171c300a363813.jpg");
 
+						EmbedUtil.setColor(eb);
+
 						if (changeSets.length() > 0) {
 
 							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
@@ -176,6 +178,8 @@ public class EventListener extends ListenerAdapter {
 
 						eb.setAuthor("JDA-Player build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build,
 								"https://cdn.discordapp.com/icons/125227483518861312/c9ea3e5510039dd487171c300a363813.jpg");
+
+						EmbedUtil.setColor(eb);
 
 						if (changeSets.length() > 0) {
 
@@ -369,6 +373,8 @@ public class EventListener extends ListenerAdapter {
 		final User user = event.getAuthor();
 		final MessageBuilder builder = new MessageBuilder();
 
+		boolean embedPresent = false;
+
 		if (text.startsWith("!version")) {
 			builder.appendString("Latest **JDA** version is ").appendString(Bot.config.getString("jda.version.name"), Formatting.BOLD).appendString("\n");
 			builder.appendString("Latest **JDA-Player** version is ").appendString(Bot.config.getString("jda-player.version.name"), Formatting.BOLD).appendString("\n");
@@ -510,7 +516,7 @@ public class EventListener extends ListenerAdapter {
 			builder.appendString(uptime);
 		}
 
-		if (builder.getLength() > 0) {
+		if (builder.getLength() > 0 || embedPresent) {
 			event.getChannel().sendMessage(builder.build()).queue();
 		}
 
