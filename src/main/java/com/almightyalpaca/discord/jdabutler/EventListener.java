@@ -109,7 +109,7 @@ public class EventListener extends ListenerAdapter {
 
 							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
 
-							eb.addField("Commits:", FormattingUtil.getChangeLog(changeSets), true);
+							eb.addField("Commits:", FormattingUtil.getChangelog(changeSets), true);
 						}
 
 						final MessageEmbed embed = eb.build();
@@ -181,7 +181,7 @@ public class EventListener extends ListenerAdapter {
 
 							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
 
-							eb.addField("Commits:", FormattingUtil.getChangeLog(changeSets), true);
+							eb.addField("Commits:", FormattingUtil.getChangelog(changeSets), true);
 						}
 
 						final MessageEmbed embed = eb.build();

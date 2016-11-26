@@ -19,22 +19,19 @@ public class FormattingUtil {
 		return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, Locale.ENGLISH).format(Date.from(Instant.ofEpochMilli(timestap)));
 	}
 
-	public static String getChangeLog(final JSONArray changeSets) {
-
+	public static String getChangelog(final JSONArray changeSets) {
 		final StringBuilder builder = new StringBuilder();
-
-		final StringBuilder commits = new StringBuilder();
 
 		for (int i = 0; i < changeSets.length(); i++) {
 			final JSONObject item = changeSets.getJSONObject(i);
 
-			final String id = item.getString("id").substring(0, 6);
+			final String id = item.getString("id");
 
 			final String comment = item.getString("comment");
 			final String[] lines = comment.split("\n");
 			for (int j = 0; j < lines.length; j++) {
 
-				commits.append("[`").append(j == 0 ? id.substring(0, 6) : "`......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/" + id + ")").append(" ").append(lines[j]).append("\n");
+				builder.append("[`").append(j == 0 ? id.substring(0, 6) : "`......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/" + id + ")").append(" ").append(lines[j]).append("\n");
 			}
 		}
 
