@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -15,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.kantenkugel.discordbot.moduleutils.DocParser;
+import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -514,6 +516,95 @@ public class EventListener extends ListenerAdapter {
 			uptime = com.almightyalpaca.discord.jdabutler.util.StringUtils.replaceLast(uptime, ",", " and");
 
 			builder.appendString(uptime);
+		} else if (text.startsWith("!changelog")) {
+			text = text.substring(10);
+
+			final String[] args = text.split("\\s+");
+
+			final int start;
+			final int end;
+
+			try {
+				if (args.length == 0) {
+					start = end = Integer.parseInt(Bot.config.getString("jda.version.build"));
+				} else if (args.length == 1) {
+					start = end = Integer.parseInt(args[0]);
+				} else {
+					start = Integer.parseInt(args[0]);
+					end = Integer.parseInt(args[1]);
+				}
+
+				final List<Future<HttpResponse<String>>> responses = new ArrayList<>(end - start + 1);
+
+				System.out.println(end - start + 1);
+
+				for (int i = start; i <= end; i++) {
+					responses.add(Unirest.get("http://home.dv8tion.net:8080/job/JDA/" + i + "/api/json").asStringAsync());
+				}
+
+				final EmbedBuilder eb = new EmbedBuilder();
+
+				String first = null;
+				String last = null;
+
+				for (int i = responses.size() - 1; i >= 0; i--) {
+					String response = null;
+					try {
+						response = responses.get(i).get().getBody();
+						final JSONObject object = new JSONObject(response);
+
+						final JSONArray artifacts = object.getJSONArray("artifacts");
+
+						final String displayPath = artifacts.getJSONObject(0).getString("displayPath");
+						String version = displayPath.substring(displayPath.indexOf("-") + 1);
+						version = version.substring(0, version.length() - 4);
+						final int index = version.lastIndexOf("-");
+						if (index > 0) {
+							version = version.substring(0, index);
+						}
+
+						if (i == 0) {
+							first = version;
+						} else if (i == responses.size() - 1) {
+							last = version;
+						}
+
+						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
+
+						if (changeSets.length() > 0) {
+
+							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
+
+							eb.addField(version, FormattingUtil.getChangelog(changeSets), false);
+
+						}
+
+					} catch (final Exception e) {
+						Throwable cause = e;
+						do {
+							if (Objects.toString(cause.getMessage()).contains("time") && Objects.toString(cause.getMessage()).contains("out")) {
+								Bot.LOG.fatal("!changelog connection timed out!");
+								return;
+							}
+						} while ((cause = e.getCause()) != null);
+						Bot.LOG.fatal("The following response errored: " + response);
+						Bot.LOG.log(e);
+					}
+				}
+
+				eb.setAuthor("Changelog between builds " + first + " and " + last, "http://home.dv8tion.net:8080/job/JDA/changes",
+						"https://cdn.discordapp.com/icons/125227483518861312/c9ea3e5510039dd487171c300a363813.jpg");
+
+				EmbedUtil.setColor(eb);
+
+				final MessageEmbed embed = eb.build();
+
+				builder.setEmbed(embed);
+				embedPresent = true;
+			} catch (final NumberFormatException e) {
+				builder.appendString("Invalid build number!");
+			}
+
 		}
 
 		if (builder.getLength() > 0 || embedPresent) {
