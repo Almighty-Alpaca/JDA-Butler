@@ -491,6 +491,9 @@ public class EventListener extends ListenerAdapter {
 							+ ") to " + role.getName()), t -> Bot.LOG.log(t));
 				}
 			}
+			
+			msg.addReaction("\uD83D\uDC4D").queue();
+			
 		} else if (text.startsWith("!ping")) {
 			event.getChannel().sendMessage("Ping: ...").queue(m -> m.editMessage("Ping: " + event.getMessage().getCreationTime().until(m.getCreationTime(), ChronoUnit.MILLIS) + "ms").queue());
 		} else if (text.startsWith("!uptime")) {
