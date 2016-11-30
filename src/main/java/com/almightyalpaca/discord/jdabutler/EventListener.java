@@ -86,8 +86,7 @@ public class EventListener extends ListenerAdapter {
 
 						mb.appendMention(Bot.getRoleJdaUpdates());
 
-						eb.setAuthor("JDA 3 build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build,
-								"https://cdn.discordapp.com/icons/125227483518861312/c9ea3e5510039dd487171c300a363813.jpg");
+						eb.setAuthor("JDA 3 build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build, EmbedUtil.JDA_ICON);
 
 						EmbedUtil.setColor(eb);
 
@@ -160,8 +159,7 @@ public class EventListener extends ListenerAdapter {
 
 						mb.appendMention(Bot.getRoleJdaUpdates());
 
-						eb.setAuthor("JDA-Player build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build,
-								"https://cdn.discordapp.com/icons/125227483518861312/c9ea3e5510039dd487171c300a363813.jpg");
+						eb.setAuthor("JDA-Player build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build, EmbedUtil.JDA_ICON);
 
 						EmbedUtil.setColor(eb);
 
@@ -357,9 +355,9 @@ public class EventListener extends ListenerAdapter {
 							+ ") to " + role.getName()), t -> Bot.LOG.log(t));
 				}
 			}
-			
+
 			msg.addReaction("\uD83D\uDC4D").queue();
-			
+
 		} else if (text.startsWith("!ping")) {
 			event.getChannel().sendMessage("Ping: ...").queue(m -> m.editMessage("Ping: " + event.getMessage().getCreationTime().until(m.getCreationTime(), ChronoUnit.MILLIS) + "ms").queue());
 		} else if (text.startsWith("!uptime")) {
@@ -461,8 +459,7 @@ public class EventListener extends ListenerAdapter {
 					}
 				}
 
-				eb.setAuthor("Changelog between builds " + first + " and " + last, "http://home.dv8tion.net:8080/job/JDA/changes",
-						"https://cdn.discordapp.com/icons/125227483518861312/c9ea3e5510039dd487171c300a363813.jpg");
+				eb.setAuthor("Changelog between builds " + first + " and " + last, "http://home.dv8tion.net:8080/job/JDA/changes", EmbedUtil.JDA_ICON);
 
 				EmbedUtil.setColor(eb);
 
