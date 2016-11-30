@@ -19,6 +19,8 @@ import com.kantenkugel.discordbot.moduleutils.DocParser;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
+import com.almightyalpaca.discord.jdabutler.util.StringUtils;
+
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.*;
@@ -244,6 +246,8 @@ public class EventListener extends ListenerAdapter {
 
 			final EmbedBuilder eb = new EmbedBuilder();
 
+			EmbedUtil.setColor(eb);
+			
 			eb.setAuthor("Latest JDA versions", "https://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/", EmbedUtil.JDA_ICON);
 			eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
 
@@ -390,8 +394,8 @@ public class EventListener extends ListenerAdapter {
 			uptime += minutes == 0 ? "" : minutes + " Minute" + (minutes > 1 ? "s" : "") + ", ";
 			uptime += seconds == 0 ? "" : seconds + " Second" + (seconds > 1 ? "s" : "") + ", ";
 
-			uptime = com.almightyalpaca.discord.jdabutler.util.StringUtils.replaceLast(uptime, ", ", "");
-			uptime = com.almightyalpaca.discord.jdabutler.util.StringUtils.replaceLast(uptime, ",", " and");
+			uptime = StringUtils.replaceLast(uptime, ", ", "");
+			uptime = StringUtils.replaceLast(uptime, ",", " and");
 
 			builder.appendString(uptime);
 		} else if (text.startsWith("!changelog")) {

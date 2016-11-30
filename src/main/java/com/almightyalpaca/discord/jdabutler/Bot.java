@@ -13,7 +13,6 @@ import org.apache.http.HttpHost;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.moduleutils.DocParser;
-import com.mashape.unirest.http.Unirest;
 
 import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
@@ -82,8 +81,6 @@ public class Bot {
 
 	public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException,
 			InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException {
-
-		Unirest.setTimeouts(5000, 5000);
 
 		EventListener.executor.submit(() -> DocParser.init());
 
