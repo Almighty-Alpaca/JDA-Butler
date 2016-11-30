@@ -21,7 +21,6 @@ import com.mashape.unirest.http.Unirest;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.MessageBuilder.Formatting;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
@@ -241,10 +240,22 @@ public class EventListener extends ListenerAdapter {
 
 		boolean embedPresent = false;
 
-		if (text.startsWith("!version")) {
-			builder.appendString("Latest **JDA** version is ").appendString(Bot.config.getString("jda.version.name"), Formatting.BOLD).appendString("\n");
-			builder.appendString("Latest **JDA-Player** version is ").appendString(Bot.config.getString("jda-player.version.name"), Formatting.BOLD).appendString("\n");
-			builder.appendString("Latest **JDA 2 Legacy** version is ").appendString(Bot.config.getString("jda2.version.name"), Formatting.BOLD);
+		if (text.startsWith("!version") || text.startsWith("!latest")) {
+
+			final EmbedBuilder eb = new EmbedBuilder();
+
+			eb.setAuthor("Latest JDA versions", "https://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/", EmbedUtil.JDA_ICON);
+			eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
+
+			eb.addField("JDA", Bot.config.getString("jda.version.name"), true);
+			eb.addField("JDA-Player", Bot.config.getString("jda-player.version.name"), true);
+			eb.addField("JDA 2 Legacy", Bot.config.getString("jda2.version.name"), true);
+
+			final MessageEmbed embed = eb.build();
+
+			builder.setEmbed(embed);
+			embedPresent = true;
+
 		} else if (text.startsWith("!shutdown")) {
 			final Member member = Bot.getGuildJda().getMember(user);
 			if (member != null && member.getRoles().contains(Bot.getRoleStaff())) {
