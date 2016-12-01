@@ -247,7 +247,7 @@ public class EventListener extends ListenerAdapter {
 			final EmbedBuilder eb = new EmbedBuilder();
 
 			EmbedUtil.setColor(eb);
-			
+
 			eb.setAuthor("Latest JDA versions", "https://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/", EmbedUtil.JDA_ICON);
 			eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
 
@@ -282,15 +282,32 @@ public class EventListener extends ListenerAdapter {
 			}
 
 		} else if (text.startsWith("!maven")) {
-			text = text.substring(6);
+
+			String artifact;
+			String version;
 
 			if (text.contains("player")) {
-				builder.appendCodeBlock(MavenUtil.getDependencyString("net.dv8tion", "jda-player", Bot.config.getString("jda-player.version.name"), null), "html").appendString("\n");
-			} else if (text.contains("3")) {
-				builder.appendCodeBlock(MavenUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name"), null), "html").appendString("\n");
+				artifact = "jda-player";
+				version = Bot.config.getString("jda-player.version.name");
+			} else if (text.contains("2")) {
+				artifact = "jda";
+				version = Bot.config.getString("jda2.version.name");
 			} else {
-				builder.appendCodeBlock(MavenUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda.version.name"), null), "html").appendString("\n");
+				artifact = "jda";
+				version = Bot.config.getString("jda.version.name");
 			}
+			final EmbedBuilder eb = new EmbedBuilder();
+
+			eb.setAuthor("JDA version " + version, "https://bintray.com/dv8fromtheworld/maven/JDA", EmbedUtil.JDA_ICON);
+
+			eb.setThumbnail("https://maven.apache.org/images/maven-logo-black-on-white.png");
+
+			eb.addField("", "If you don't know maven type `!pom.xml` for a complete maven build file \n\n```xml\n" + MavenUtil.getDependencyString("net.dv8tion", artifact, version, null) + "\n\n"
+					+ MavenUtil.getRepositoryString("jcenter", "jcenter-bintray", "http://jcenter.bintray.com", null) + "```", false);
+
+			final MessageEmbed embed = eb.build();
+
+			builder.setEmbed(embed);
 
 		} else if (text.startsWith("!jar")) {
 			text = text.substring(4);
