@@ -3,6 +3,7 @@ package com.almightyalpaca.discord.jdabutler;
 import java.lang.management.ManagementFactory;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Future;
@@ -273,13 +274,30 @@ public class EventListener extends ListenerAdapter {
 
 			final boolean pretty = text.contains("pretty");
 
+			final EmbedBuilder eb = new EmbedBuilder();
+
+			String artifact;
+			String version;
+
 			if (text.contains("player")) {
-				GradleUtil.getDependencyString("net.dv8tion", "jda-player", Bot.config.getString("jda-player.version.name"), pretty);
-			} else if (text.contains("2") || text.contains("legacy")) {
-				GradleUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name"), pretty);
+				artifact = "jda-player";
+				version = Bot.config.getString("jda-player.version.name");
+			} else if (text.contains("2")) {
+				artifact = "jda";
+				version = Bot.config.getString("jda2.version.name");
 			} else {
-				GradleUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda.version.name"), pretty);
+				artifact = "jda";
+				version = Bot.config.getString("jda.version.name");
 			}
+
+			eb.setAuthor("JDA version " + version, "https://bintray.com/dv8fromtheworld/maven/JDA", EmbedUtil.JDA_ICON);
+
+			eb.addField("", "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n" + GradleUtil.getDependencyBlock(Collections.singleton(
+					new ImmutableTriple<String, String, String>("net.dv8tion", artifact, version)), pretty) + "\n\nrepositories {\n    jcenter()\n}```", false);
+
+			final MessageEmbed embed = eb.build();
+			
+			builder.setEmbed(embed);
 
 		} else if (text.startsWith("!maven")) {
 
