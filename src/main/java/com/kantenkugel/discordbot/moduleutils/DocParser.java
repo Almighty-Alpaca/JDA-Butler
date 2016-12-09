@@ -6,7 +6,10 @@
 
 package com.kantenkugel.discordbot.moduleutils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -18,10 +21,7 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -81,25 +81,22 @@ public class DocParser {
 		}
 	}
 
-	private static final SimpleLog							LOG							= SimpleLog.getLog("DocParser");
-	private static final String								JDA_JENKINS_PREFIX			= "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/";
-	private static final String								JDA_PLAYER_JENKINS_PREFIX	= "http://home.dv8tion.net:8080/job/JDA-Player/lastSuccessfulBuild/";
+	private static final SimpleLog							LOG					= SimpleLog.getLog("DocParser");
+	private static final String								JDA_JENKINS_PREFIX	= "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/";
 
-	private static final String								ARTIFACT_SUFFIX				= "api/json?tree=artifacts[*]";
+	private static final String								ARTIFACT_SUFFIX		= "api/json?tree=artifacts[*]";
 
-	private static final Path								LOCAL_JDA_SRC_PATH			= Paths.get("jda-src.jar");
-	private static final Path								LOCAL_JDA_PLAYER_SRC_PATH	= Paths.get("jda-player-src.jar");
-	private static final Path								LOCAL_SRC_PATH				= LOCAL_JDA_SRC_PATH; //Paths.get("merged-src.jar");
+	private static final Path								LOCAL_SRC_PATH		= Paths.get("jda-src.jar");; //Paths.get("merged-src.jar");
 
-	private static final String								JDA_CODE_BASE				= "net/dv8tion/jda";
-	private static final Pattern							DOCS_PATTERN				= Pattern.compile("/\\*{2}\\s*\n(.*?)\n\\s*\\*/\\s*\n\\s*(?:@[^\n]+\n\\s*)*(.*?)\n", Pattern.DOTALL);
-	private static final Pattern							METHOD_PATTERN				= Pattern.compile(".*?\\s([a-zA-Z][a-zA-Z0-9]*)\\(([a-zA-Z0-9\\s\\.,<>]*)\\)");
+	private static final String								JDA_CODE_BASE		= "net/dv8tion/jda";
+	private static final Pattern							DOCS_PATTERN		= Pattern.compile("/\\*{2}\\s*\n(.*?)\n\\s*\\*/\\s*\n\\s*(?:@[^\n]+\n\\s*)*(.*?)\n", Pattern.DOTALL);
+	private static final Pattern							METHOD_PATTERN		= Pattern.compile(".*?\\s([a-zA-Z][a-zA-Z0-9]*)\\(([a-zA-Z0-9\\s\\.,<>]*)\\)");
 
-	private static final Pattern							METHOD_ARG_PATTERN			= Pattern.compile("([a-zA-Z][a-zA-Z0-9<>]*(?:\\.{3})?)\\s+[a-zA-Z][a-zA-Z0-9]");
+	private static final Pattern							METHOD_ARG_PATTERN	= Pattern.compile("([a-zA-Z][a-zA-Z0-9<>]*(?:\\.{3})?)\\s+[a-zA-Z][a-zA-Z0-9]");
 
-	private static final String								LINK_PATTERN				= "\\{@link\\s.*?\\.?([^\\s\\.]+(?:\\([^\\)]*?\\))?)\\}";
+	private static final String								LINK_PATTERN		= "\\{@link\\s.*?\\.?([^\\s\\.]+(?:\\([^\\)]*?\\))?)\\}";
 
-	private static final Map<String, List<Documentation>>	docs						= new HashMap<>();
+	private static final Map<String, List<Documentation>>	docs				= new HashMap<>();
 
 	private static List<String> cleanupDocs(String docs) {
 		docs = docs.replace("\n", " ");
@@ -112,7 +109,6 @@ public class DocParser {
 
 	private static void download() {
 		DocParser.LOG.info("Downloading JDA sources...");
-		boolean error = false;
 		try {
 			final HttpResponse<String> response = Unirest.get(DocParser.JDA_JENKINS_PREFIX + DocParser.ARTIFACT_SUFFIX).asString();
 			if (response.getStatus() < 300 && response.getStatus() > 199) {
@@ -125,82 +121,15 @@ public class DocParser {
 						connection.setConnectTimeout(5000);
 						connection.setReadTimeout(5000);
 						final InputStream is = connection.getInputStream();
-						Files.copy(is, DocParser.LOCAL_JDA_SRC_PATH, StandardCopyOption.REPLACE_EXISTING);
+						Files.copy(is, DocParser.LOCAL_SRC_PATH, StandardCopyOption.REPLACE_EXISTING);
 						is.close();
 						DocParser.LOG.info("Done downloading JDA sources");
 					}
 				}
 			}
 		} catch (UnirestException | IOException e) {
-			error = true;
 			DocParser.LOG.log(e);
 		}
-//		DocParser.LOG.info("Downloading JDA-Player sources...");
-//		try {
-//			final HttpResponse<String> response = Unirest.get(DocParser.JDA_PLAYER_JENKINS_PREFIX + DocParser.ARTIFACT_SUFFIX).asString();
-//			if (response.getStatus() < 300 && response.getStatus() > 199) {
-//				final JSONArray artifacts = new JSONObject(response.getBody()).getJSONArray("artifacts");
-//				for (int i = 0; i < artifacts.length(); i++) {
-//					final JSONObject artifact = artifacts.getJSONObject(i);
-//					if (artifact.getString("fileName").endsWith("sources.jar") && artifact.getString("fileName").contains("jda")) {
-//						final URL artifactUrl = new URL(DocParser.JDA_PLAYER_JENKINS_PREFIX + "artifact/" + artifact.getString("relativePath"));
-//						final URLConnection connection = artifactUrl.openConnection();
-//						connection.setConnectTimeout(5000);
-//						connection.setReadTimeout(5000);
-//						final InputStream is = connection.getInputStream();
-//						Files.copy(is, DocParser.LOCAL_JDA_PLAYER_SRC_PATH, StandardCopyOption.REPLACE_EXISTING);
-//						is.close();
-//						DocParser.LOG.info("Done downloading JDA-Player sources");
-//					}
-//				}
-//			}
-//		} catch (UnirestException | IOException e) {
-//			error = true;
-//			DocParser.LOG.log(e);
-//		}
-//
-//		if (error) {
-//			DocParser.LOG.info("Skipping merging sources...");
-//		} else {
-//			DocParser.LOG.info("Merging sources...");
-//			try (ZipFile jda = new ZipFile(DocParser.LOCAL_JDA_SRC_PATH.toString());
-//					ZipFile player = new ZipFile(DocParser.LOCAL_JDA_PLAYER_SRC_PATH.toString());
-//					ZipOutputStream out = new ZipOutputStream(new FileOutputStream(DocParser.LOCAL_SRC_PATH.toString()));) {
-//
-//				final Set<String> entries = new HashSet<>();
-//
-//				jda.stream().forEach(entry -> {
-//					if (!entries.contains(entry.getName())) {
-//						try {
-//							entries.add(entry.getName());
-//							out.putNextEntry(entry);
-//							IOUtils.copy(jda.getInputStream(entry), out);
-//							out.closeEntry();
-//						} catch (final IOException e) {
-//							e.printStackTrace();
-//						}
-//					}
-//				});
-//
-//				player.stream().forEach(entry -> {
-//					if (!entries.contains(entry.getName())) {
-//						try {
-//							entries.add(entry.getName());
-//							out.putNextEntry(entry);
-//							IOUtils.copy(player.getInputStream(entry), out);
-//							out.closeEntry();
-//						} catch (final IOException e) {
-//							e.printStackTrace();
-//						}
-//					}
-//				});
-//
-//				DocParser.LOG.info("Done merging sources...");
-//			} catch (final IOException e) {
-//				e.printStackTrace();
-//			}
-//		}
-
 	}
 
 	public static String get(final String name) {
@@ -251,8 +180,7 @@ public class DocParser {
 
 	private static void parse() {
 		DocParser.LOG.info("Parsing source-file");
-		try {
-			final JarFile file = new JarFile(DocParser.LOCAL_SRC_PATH.toFile());
+		try (final JarFile file = new JarFile(DocParser.LOCAL_SRC_PATH.toFile())) {
 			file.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(DocParser.JDA_CODE_BASE) && entry.getName().endsWith(".java")).forEach(entry -> {
 				try {
 					DocParser.parse(entry.getName(), file.getInputStream(entry));
@@ -332,8 +260,8 @@ public class DocParser {
 				DocParser.parse();
 			}
 			DocParser.LOG.info("Done");
-		} catch (Exception e) {
-			LOG.log(e);
+		} catch (final Exception e) {
+			DocParser.LOG.log(e);
 		}
 	}
 }
