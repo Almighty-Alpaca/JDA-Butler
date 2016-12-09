@@ -45,6 +45,6 @@ shadowJar {
   mergeServiceFiles()
 }
 
-task wrapper(type: Wrapper) { // This task is to specify the gradle version
-	gradleVersion = '3.2'
+wrapper { // This task is to specify the gradle version
+	gradleVersion = '3.2.1'
 }
