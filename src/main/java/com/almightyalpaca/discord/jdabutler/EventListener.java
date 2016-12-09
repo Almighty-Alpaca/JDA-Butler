@@ -86,7 +86,7 @@ public class EventListener extends ListenerAdapter {
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						mb.appendMention(Bot.getRoleJdaUpdates());
+						mb.append(Bot.getRoleJdaUpdates());
 
 						eb.setAuthor("JDA 3 build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build, EmbedUtil.JDA_ICON);
 
@@ -159,7 +159,7 @@ public class EventListener extends ListenerAdapter {
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
-						mb.appendMention(Bot.getRoleJdaUpdates());
+						mb.append(Bot.getRoleJdaUpdates());
 
 						eb.setAuthor("JDA-Player build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build, EmbedUtil.JDA_ICON);
 
@@ -268,7 +268,7 @@ public class EventListener extends ListenerAdapter {
 			}
 		} else if (text.startsWith("!docs ")) {
 			text = text.substring(6);
-			builder.appendString(DocParser.get(text));
+			builder.append(DocParser.get(text));
 		} else if (text.startsWith("!gradle")) {
 			text = text.substring(7);
 
@@ -293,10 +293,10 @@ public class EventListener extends ListenerAdapter {
 			eb.setAuthor("JDA version " + version, "https://bintray.com/dv8fromtheworld/maven/JDA", EmbedUtil.JDA_ICON);
 
 			eb.addField("", "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n" + GradleUtil.getDependencyBlock(Collections.singleton(
-					new ImmutableTriple<String, String, String>("net.dv8tion", artifact, version)), pretty) + "\n\nrepositories {\n    jcenter()\n}```", false);
+					new ImmutableTriple<>("net.dv8tion", artifact, version)), pretty) + "\n\nrepositories {\n    jcenter()\n}```", false);
 
 			final MessageEmbed embed = eb.build();
-			
+
 			builder.setEmbed(embed);
 
 		} else if (text.startsWith("!maven")) {
@@ -333,24 +333,23 @@ public class EventListener extends ListenerAdapter {
 			if (text.contains("player")) {
 				final String version = Bot.config.getString("jda-player.version.name");
 				final String build = Bot.config.getString("jda-player.version.build");
-				builder.appendString("http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-javadoc.jar").appendString("\n").appendString(
-						"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-sources.jar").appendString("\n").appendString(
-								"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + ".jar").appendString("\n").appendString(
+				builder.append("http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-javadoc.jar").append("\n").append(
+						"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-sources.jar").append("\n").append(
+								"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + ".jar").append("\n").append(
 										"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-withDependencies.jar");
 			} else if (text.contains("2") || text.contains("legacy")) {
 				final String version = Bot.config.getString("jda2.version.name");
 				final String build = Bot.config.getString("jda2.version.build");
-				builder.appendString("http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").appendString("\n").appendString(
-						"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-sources.jar").appendString("\n").appendString(
-								"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + ".jar").appendString("\n").appendString(
+				builder.append("http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append(
+						"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append(
+								"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + ".jar").append("\n").append(
 										"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
 			} else {
 				final String version = Bot.config.getString("jda.version.name");
 				final String build = Bot.config.getString("jda.version.build");
-				builder.appendString("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").appendString("\n").appendString(
-						"http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-sources.jar").appendString("\n").appendString(
-								"http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + ".jar").appendString("\n").appendString(
-										"http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
+				builder.append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/"
+						+ build + "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version
+								+ ".jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
 			}
 
 		} else if (text.startsWith("!build.gradle")) {
@@ -432,7 +431,7 @@ public class EventListener extends ListenerAdapter {
 			uptime = StringUtils.replaceLast(uptime, ", ", "");
 			uptime = StringUtils.replaceLast(uptime, ",", " and");
 
-			builder.appendString(uptime);
+			builder.append(uptime);
 		} else if (text.startsWith("!changelog")) {
 			text = text.substring(10);
 
@@ -518,12 +517,12 @@ public class EventListener extends ListenerAdapter {
 				builder.setEmbed(embed);
 				embedPresent = true;
 			} catch (final NumberFormatException e) {
-				builder.appendString("Invalid build number!");
+				builder.append("Invalid build number!");
 			}
 
 		}
 
-		if (builder.getLength() > 0 || embedPresent) {
+		if (builder.length() > 0 || embedPresent) {
 			event.getChannel().sendMessage(builder.build()).queue();
 		}
 
