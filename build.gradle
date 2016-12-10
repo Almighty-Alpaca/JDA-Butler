@@ -41,10 +41,6 @@ dependencies {
 
 }
 
-shadowJar {
-  mergeServiceFiles()
-}
-
 wrapper { // This task is to specify the gradle version
 	gradleVersion = '3.2.1'
 }

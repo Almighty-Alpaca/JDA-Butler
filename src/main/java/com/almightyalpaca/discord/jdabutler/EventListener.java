@@ -292,8 +292,8 @@ public class EventListener extends ListenerAdapter {
 
 			eb.setAuthor("JDA version " + version, "https://bintray.com/dv8fromtheworld/maven/JDA", EmbedUtil.JDA_ICON);
 
-			eb.addField("", "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n" + GradleUtil.getDependencyBlock(Collections.singleton(
-					new ImmutableTriple<>("net.dv8tion", artifact, version)), pretty) + "\n\nrepositories {\n    jcenter()\n}```", false);
+			eb.addField("", "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n" + GradleUtil.getDependencyBlock(Collections.singleton(new ImmutableTriple<>(
+					"net.dv8tion", artifact, version)), pretty) + "\n\nrepositories {\n    jcenter()\n}```", false);
 
 			final MessageEmbed embed = eb.build();
 
