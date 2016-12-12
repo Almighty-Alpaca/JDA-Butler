@@ -282,10 +282,10 @@ public class EventListener extends ListenerAdapter {
 				artifact = "jda-player";
 				version = Bot.config.getString("jda-player.version.name");
 			} else if (text.contains("2")) {
-				artifact = "jda";
+				artifact = "JDA";
 				version = Bot.config.getString("jda2.version.name");
 			} else {
-				artifact = "jda";
+				artifact = "JDA";
 				version = Bot.config.getString("jda.version.name");
 			}
 
@@ -307,10 +307,10 @@ public class EventListener extends ListenerAdapter {
 				artifact = "jda-player";
 				version = Bot.config.getString("jda-player.version.name");
 			} else if (text.contains("2")) {
-				artifact = "jda";
+				artifact = "JDA";
 				version = Bot.config.getString("jda2.version.name");
 			} else {
-				artifact = "jda";
+				artifact = "JDA";
 				version = Bot.config.getString("jda.version.name");
 			}
 			final EmbedBuilder eb = new EmbedBuilder();
