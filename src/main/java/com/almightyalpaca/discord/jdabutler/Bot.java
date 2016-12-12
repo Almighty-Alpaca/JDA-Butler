@@ -21,10 +21,7 @@ import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.Game;
-import net.dv8tion.jda.core.entities.Guild;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.utils.SimpleLog;
@@ -77,6 +74,11 @@ public class Bot {
 
 	public static Role getRoleStaff() {
 		return Bot.getGuildJda().getRoleById("169481978268090369");
+	}
+
+	public static boolean isAdmin(final User user) {
+		final Member member = Bot.getGuildJda().getMember(user);
+		return member != null && member.getRoles().contains(Bot.getRoleStaff());
 	}
 
 	public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException,

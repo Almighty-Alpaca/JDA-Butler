@@ -262,8 +262,7 @@ public class EventListener extends ListenerAdapter {
 			embedPresent = true;
 
 		} else if (text.startsWith("!shutdown")) {
-			final Member member = Bot.getGuildJda().getMember(user);
-			if (member != null && member.getRoles().contains(Bot.getRoleStaff())) {
+			if (Bot.isAdmin(user)) {
 				Bot.shutdown();
 			}
 		} else if (text.startsWith("!docs ")) {
