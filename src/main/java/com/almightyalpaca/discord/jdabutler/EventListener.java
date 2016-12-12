@@ -239,13 +239,11 @@ public class EventListener extends ListenerAdapter {
 		final Message msg = event.getMessage();
 		String text = msg.getRawContent();
 		final User user = event.getAuthor();
-		final MessageBuilder builder = new MessageBuilder();
 
-		boolean embedPresent = false;
+		final MessageBuilder mb = new MessageBuilder();
+		final EmbedBuilder eb = new EmbedBuilder();
 
 		if (text.startsWith("!version") || text.startsWith("!latest")) {
-
-			final EmbedBuilder eb = new EmbedBuilder();
 
 			EmbedUtil.setColor(eb);
 
@@ -256,24 +254,17 @@ public class EventListener extends ListenerAdapter {
 			eb.addField("JDA-Player", Bot.config.getString("jda-player.version.name"), true);
 			eb.addField("JDA 2 Legacy", Bot.config.getString("jda2.version.name"), true);
 
-			final MessageEmbed embed = eb.build();
-
-			builder.setEmbed(embed);
-			embedPresent = true;
-
 		} else if (text.startsWith("!shutdown")) {
 			if (Bot.isAdmin(user)) {
 				Bot.shutdown();
 			}
 		} else if (text.startsWith("!docs ")) {
 			text = text.substring(6);
-			builder.append(DocParser.get(text));
+			mb.append(DocParser.get(text));
 		} else if (text.startsWith("!gradle")) {
 			text = text.substring(7);
 
 			final boolean pretty = text.contains("pretty");
-
-			final EmbedBuilder eb = new EmbedBuilder();
 
 			String artifact;
 			String version;
@@ -294,10 +285,6 @@ public class EventListener extends ListenerAdapter {
 			eb.addField("", "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n" + GradleUtil.getDependencyBlock(Collections.singleton(new ImmutableTriple<>(
 					"net.dv8tion", artifact, version)), pretty) + "\n\nrepositories {\n    jcenter()\n}```", false);
 
-			final MessageEmbed embed = eb.build();
-
-			builder.setEmbed(embed);
-
 		} else if (text.startsWith("!maven")) {
 
 			String artifact;
@@ -313,7 +300,6 @@ public class EventListener extends ListenerAdapter {
 				artifact = "JDA";
 				version = Bot.config.getString("jda.version.name");
 			}
-			final EmbedBuilder eb = new EmbedBuilder();
 
 			eb.setAuthor("JDA version " + version, "https://bintray.com/dv8fromtheworld/maven/JDA", EmbedUtil.JDA_ICON);
 
@@ -322,33 +308,29 @@ public class EventListener extends ListenerAdapter {
 			eb.addField("", "If you don't know maven type `!pom.xml` for a complete maven build file \n\n```xml\n" + MavenUtil.getDependencyString("net.dv8tion", artifact, version, null) + "\n\n"
 					+ MavenUtil.getRepositoryString("jcenter", "jcenter-bintray", "http://jcenter.bintray.com", null) + "```", false);
 
-			final MessageEmbed embed = eb.build();
-
-			builder.setEmbed(embed);
-
 		} else if (text.startsWith("!jar")) {
 			text = text.substring(4);
 
 			if (text.contains("player")) {
 				final String version = Bot.config.getString("jda-player.version.name");
 				final String build = Bot.config.getString("jda-player.version.build");
-				builder.append("http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-javadoc.jar").append("\n").append(
+				mb.append("http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-javadoc.jar").append("\n").append(
 						"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-sources.jar").append("\n").append(
 								"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + ".jar").append("\n").append(
 										"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-withDependencies.jar");
 			} else if (text.contains("2") || text.contains("legacy")) {
 				final String version = Bot.config.getString("jda2.version.name");
 				final String build = Bot.config.getString("jda2.version.build");
-				builder.append("http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append(
+				mb.append("http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append(
 						"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append(
 								"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + ".jar").append("\n").append(
 										"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
 			} else {
 				final String version = Bot.config.getString("jda.version.name");
 				final String build = Bot.config.getString("jda.version.build");
-				builder.append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/"
-						+ build + "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version
-								+ ".jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
+				mb.append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build
+						+ "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + ".jar")
+						.append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
 			}
 
 		} else if (text.startsWith("!build.gradle")) {
@@ -365,7 +347,7 @@ public class EventListener extends ListenerAdapter {
 			} else {
 				dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda.version.name")));
 			}
-			builder.appendCodeBlock(GradleUtil.getBuildFile(dependencies, pretty), "gradle");
+			mb.appendCodeBlock(GradleUtil.getBuildFile(dependencies, pretty), "gradle");
 		} else if (text.startsWith("!notify")) {
 			text = text.substring(7);
 			final Member member = event.getMember();
@@ -430,7 +412,7 @@ public class EventListener extends ListenerAdapter {
 			uptime = StringUtils.replaceLast(uptime, ", ", "");
 			uptime = StringUtils.replaceLast(uptime, ",", " and");
 
-			builder.append(uptime);
+			mb.append(uptime);
 		} else if (text.startsWith("!changelog")) {
 			text = text.substring(10);
 
@@ -456,8 +438,6 @@ public class EventListener extends ListenerAdapter {
 				for (int i = start; i <= end; i++) {
 					responses.add(Unirest.get("http://home.dv8tion.net:8080/job/JDA/" + i + "/api/json").asStringAsync());
 				}
-
-				final EmbedBuilder eb = new EmbedBuilder();
 
 				String first = null;
 				String last = null;
@@ -511,18 +491,18 @@ public class EventListener extends ListenerAdapter {
 
 				EmbedUtil.setColor(eb);
 
-				final MessageEmbed embed = eb.build();
-
-				builder.setEmbed(embed);
-				embedPresent = true;
 			} catch (final NumberFormatException e) {
-				builder.append("Invalid build number!");
+				mb.append("Invalid build number!");
 			}
 
 		}
 
-		if (builder.length() > 0 || embedPresent) {
-			event.getChannel().sendMessage(builder.build()).queue();
+		if (!eb.isEmpty()) {
+			mb.setEmbed(eb.build());
+		}
+
+		if (!mb.isEmpty()) {
+			event.getChannel().sendMessage(mb.build()).queue();
 		}
 
 	}
