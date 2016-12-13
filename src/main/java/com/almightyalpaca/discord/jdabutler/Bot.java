@@ -1,24 +1,13 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.HttpHost;
-
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
-import com.kantenkugel.discordbot.moduleutils.DocParser;
-
+import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
-
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import com.kantenkugel.discordbot.moduleutils.DocParser;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
@@ -27,12 +16,21 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import net.dv8tion.jda.core.utils.SimpleLog.Level;
 import net.dv8tion.jda.core.utils.SimpleLog.LogListener;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.http.HttpHost;
+
+import javax.security.auth.login.LoginException;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Bot {
 
 	public static JDAImpl					jda;
 	public static Config					config;
 	public static EventListener				listener;
+	public static Dispatcher                dispatcher; // i had to the rest did it..
 
 	public static final SimpleLog			LOG			= SimpleLog.getLog("Bot");
 
@@ -84,7 +82,7 @@ public class Bot {
 	public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException,
 			InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException {
 
-		EventListener.executor.submit(() -> DocParser.init());
+		EventListener.executor.submit(DocParser::init);
 
 		SimpleLog.addFileLogs(new File("out.log"), new File("err.log"));
 
@@ -106,6 +104,7 @@ public class Bot {
 		Bot.config.save();
 		Bot.listener = new EventListener();
 		builder.addListener(Bot.listener);
+		builder.addListener((dispatcher = new Dispatcher()));
 
 		Bot.jda = (JDAImpl) builder.buildBlocking();
 

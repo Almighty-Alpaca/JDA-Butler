@@ -1,5 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -64,4 +66,13 @@ public class StringUtils {
 		return StringUtils.replaceLast(string, ", ", "");
 	}
 
+	public static String exceptionToString(Exception e){
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        pw.flush();
+        String s = sw.toString();
+        pw.close();
+        return s;
+    }
 }

@@ -1,28 +1,10 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import java.lang.management.ManagementFactory;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import com.almightyalpaca.discord.jdabutler.eval.Engine;
+import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 import com.kantenkugel.discordbot.moduleutils.DocParser;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-
-import com.almightyalpaca.discord.jdabutler.eval.Engine;
-import com.almightyalpaca.discord.jdabutler.util.StringUtils;
-
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.MessageBuilder.Formatting;
@@ -33,6 +15,21 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.SimpleLog;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.lang.management.ManagementFactory;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class EventListener extends ListenerAdapter {
 
@@ -177,7 +174,7 @@ public class EventListener extends ListenerAdapter {
 		final MessageBuilder mb = new MessageBuilder();
 		final EmbedBuilder eb = new EmbedBuilder();
 
-		if (text.startsWith("!version") || text.startsWith("!latest")) {
+		/*if (text.startsWith("!version") || text.startsWith("!latest")) {
 
 			EmbedUtil.setColor(eb);
 
@@ -187,7 +184,7 @@ public class EventListener extends ListenerAdapter {
 			eb.addField("JDA", "[" + Bot.config.getString("jda.version.name") + "](http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/)", true);
 			eb.addField("Lavaplayer", "[" + Lavaplayer.getLatestVersion() + "](https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord)", true);
 
-		} else if (text.startsWith("!shutdown") && Bot.isAdmin(user)) {
+		} else*/ if (text.startsWith("!shutdown") && Bot.isAdmin(user)) {
 			Bot.shutdown();
 		} else if (text.startsWith("!eval ") && Bot.isAdmin(user)) {
 			final String args = text.substring(6);

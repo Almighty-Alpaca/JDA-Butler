@@ -201,3 +201,4 @@ gradle-app.setting
 err.log
 out.log
 config.json
+/.idea/
