@@ -2,7 +2,9 @@ package com.almightyalpaca.discord.jdabutler;
 
 import java.text.DateFormat;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import org.json.JSONArray;
@@ -19,10 +21,12 @@ public class FormattingUtil {
 		return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, Locale.ENGLISH).format(Date.from(Instant.ofEpochMilli(timestap)));
 	}
 
-	public static String getChangelog(final JSONArray changeSets) {
-		final StringBuilder builder = new StringBuilder();
+	public static List<String> getChangelog(final JSONArray changeSets) {
+		final List<String> fields = new ArrayList<>();
 
-		for (int i = 0; i < changeSets.length(); i++) {
+		StringBuilder builder = new StringBuilder();
+
+		outerLoop: for (int i = 0; i < changeSets.length(); i++) {
 			final JSONObject item = changeSets.getJSONObject(i);
 
 			final String id = item.getString("id");
@@ -31,11 +35,19 @@ public class FormattingUtil {
 			final String[] lines = comment.split("\n");
 			for (int j = 0; j < lines.length; j++) {
 
-				builder.append("[`").append(j == 0 ? id.substring(0, 6) : "`......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/" + id + ")").append(" ").append(lines[j]).append("\n");
+				final StringBuilder line = new StringBuilder();
+				line.append("[`").append(j == 0 ? id.substring(0, 6) : "`......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/" + id + ")").append(" ").append(lines[j]).append("\n");
+
+				if (builder.length() + line.length() > 1021) {
+					fields.add(builder.toString());
+					builder = new StringBuilder();
+				}
+
+				builder.append(line);
 			}
 		}
 
-		return builder.toString();
+		return fields;
 
 	}
 

@@ -133,22 +133,9 @@ public class Bot {
 
 		Bot.jda.getPresence().setGame(Game.of("JDA"));
 
-		// This didn't worked
-		// final Field clientField = JDAImpl.class.getDeclaredField("client");
-		// clientField.setAccessible(true);
-		// final WebSocketClient client = (WebSocketClient) clientField.get(Bot.jda);
-		//
-		// final Field socketField = WebSocketClient.class.getDeclaredField("socket");
-		// socketField.setAccessible(true);
-		// final WebSocket socket = (WebSocket) socketField.get(client);
-		//
-		// socket.getSocket().setSoTimeout(1000 * 10);
-
 	}
 
 	public static void shutdown() {
 		Bot.jda.shutdown();
-		EventListener.executor.shutdown();
-		System.exit(0);
 	}
 }

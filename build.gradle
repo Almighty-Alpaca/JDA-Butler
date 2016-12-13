@@ -26,7 +26,13 @@ dependencies {
 
 	// Commons-IO
 	compile group: 'commons-io', name: 'commons-io', version: '2.5'
+	
+	// Groovy JSR-223 / Script engine 
+	compile group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '2.4.7'
 
+	// Guava
+	compile group: 'com.google.guava', name: 'guava', version: '20.0'
+	
 	// Javaparser
 	// compile group: 'com.github.javaparser', name: 'javaparser-core', version: '3.0.0-alpha.8'
 

@@ -2,14 +2,12 @@ package com.almightyalpaca.discord.jdabutler;
 
 import java.lang.management.ManagementFactory;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -22,11 +20,15 @@ import com.kantenkugel.discordbot.moduleutils.DocParser;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 
+import com.almightyalpaca.discord.jdabutler.eval.Engine;
 import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.MessageBuilder.Formatting;
+import net.dv8tion.jda.core.MessageBuilder.SplitPolicy;
 import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -96,7 +98,14 @@ public class EventListener extends ListenerAdapter {
 
 							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
 
-							eb.addField("Commits:", FormattingUtil.getChangelog(changeSets), true);
+							final List<String> changelog = FormattingUtil.getChangelog(changeSets);
+
+							for (int i = 0; i < changelog.size(); i++) {
+								final String field = changelog.get(i);
+								eb.addField(i == 0 ? "Commits:" : "", field, false);
+
+							}
+
 						}
 
 						final MessageEmbed embed = eb.build();
@@ -178,9 +187,60 @@ public class EventListener extends ListenerAdapter {
 			eb.addField("JDA", "[" + Bot.config.getString("jda.version.name") + "](http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/)", true);
 			eb.addField("Lavaplayer", "[" + Lavaplayer.getLatestVersion() + "](https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord)", true);
 
-		} else if (text.startsWith("!shutdown")) {
-			if (Bot.isAdmin(user)) {
-				Bot.shutdown();
+		} else if (text.startsWith("!shutdown") && Bot.isAdmin(user)) {
+			Bot.shutdown();
+		} else if (text.startsWith("!eval ") && Bot.isAdmin(user)) {
+			final String args = text.substring(6);
+
+			if (args.equalsIgnoreCase("list")) {
+				final MessageBuilder builder = new MessageBuilder();
+				builder.append("List of supported scripting lanugages:", Formatting.BOLD).append("\n");
+				for (final Engine engine : Engine.values()) {
+					builder.append(engine.getName() + "\n");
+				}
+				event.getChannel().sendMessage(builder.build()).queue();
+			} else {
+				final MessageBuilder builder = new MessageBuilder();
+
+				// Execute code
+				final Map<String, Object> shortcuts = new HashMap<>();
+
+				shortcuts.put("api", event.getJDA());
+				shortcuts.put("jda", event.getJDA());
+				shortcuts.put("event", event);
+
+				shortcuts.put("channel", event.getChannel());
+				shortcuts.put("server", event.getChannel().getGuild());
+				shortcuts.put("guild", event.getChannel().getGuild());
+
+				shortcuts.put("message", event.getMessage());
+				shortcuts.put("msg", event.getMessage());
+				shortcuts.put("me", event.getAuthor());
+				shortcuts.put("bot", event.getJDA().getSelfUser());
+
+				shortcuts.put("config", Bot.config);
+
+				final int timeout = 10;
+
+				final Triple<Object, String, String> result = Engine.GROOVY.eval(shortcuts, Collections.emptyList(), Engine.DEFAULT_IMPORTS, timeout, args);
+
+				if (result.getLeft() != null) {
+					builder.appendCodeBlock(result.getLeft().toString(), "");
+				}
+				if (!result.getMiddle().isEmpty()) {
+					builder.append("\n").appendCodeBlock(result.getMiddle(), "");
+				}
+				if (!result.getRight().isEmpty()) {
+					builder.append("\n").appendCodeBlock(result.getRight(), "");
+				}
+
+				if (builder.length() == 0) {
+					builder.append("✅");
+				}
+
+				for (final Message m : builder.buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE)) {
+					event.getChannel().sendMessage(m).queue();;
+				}
 			}
 		} else if (text.startsWith("!docs ")) {
 			text = text.substring(6);
@@ -251,7 +311,7 @@ public class EventListener extends ListenerAdapter {
 			eb.addField("", field, false);
 		} else if (text.startsWith("!jar")) {
 			final String version = Bot.config.getString("jda.version.name");
-			final String build = Bot.config.getString("jda.version.build");
+			final int build = Bot.config.getInt("jda.version.build");
 			mb.append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build
 					+ "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + ".jar")
 					.append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
@@ -342,24 +402,22 @@ public class EventListener extends ListenerAdapter {
 		} else if (text.startsWith("!changelog")) {
 			text = text.substring(10);
 
-			final String[] args = text.split("\\s+");
-
-			final int start;
-			final int end;
-
 			try {
-				if (args.length == 0) {
-					start = end = Integer.parseInt(Bot.config.getString("jda.version.build"));
-				} else if (args.length == 1) {
-					start = end = Integer.parseInt(args[0]);
+				final List<Integer> args = Arrays.stream(text.split(" ")).filter(s -> s != null && !s.trim().isEmpty()).map(s -> Integer.parseInt(s)).sorted().collect(Collectors.toList());
+
+				final int start;
+				final int end;
+
+				if (args.size() == 0) {
+					start = end = Bot.config.getInt("jda.version.build");
+				} else if (args.size() == 1) {
+					start = end = args.get(0);
 				} else {
-					start = Integer.parseInt(args[0]);
-					end = Integer.parseInt(args[1]);
+					start = args.get(0);
+					end = args.get(1);
 				}
 
 				final List<Future<HttpResponse<String>>> responses = new ArrayList<>(end - start + 1);
-
-				System.out.println(end - start + 1);
 
 				for (int i = start; i <= end; i++) {
 					responses.add(Unirest.get("http://home.dv8tion.net:8080/job/JDA/" + i + "/api/json").asStringAsync());
@@ -396,7 +454,13 @@ public class EventListener extends ListenerAdapter {
 
 							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
 
-							eb.addField(version, FormattingUtil.getChangelog(changeSets), false);
+							final List<String> changelog = FormattingUtil.getChangelog(changeSets);
+
+							for (int j = 0; j < changelog.size(); j++) {
+								final String field = changelog.get(j);
+								eb.addField(j == 0 ? version : "", field, false);
+
+							}
 
 						}
 
@@ -413,7 +477,11 @@ public class EventListener extends ListenerAdapter {
 					}
 				}
 
-				eb.setAuthor("Changelog between builds " + first + " and " + last, "http://home.dv8tion.net:8080/job/JDA/changes", EmbedUtil.JDA_ICON);
+				if (last != null) {
+					eb.setAuthor("Changelog between builds " + first + " and " + last, "http://home.dv8tion.net:8080/job/JDA/changes", EmbedUtil.JDA_ICON);
+				} else {
+					eb.setAuthor("Changelog for build " + first, "http://home.dv8tion.net:8080/job/JDA/changes", EmbedUtil.JDA_ICON);
+				}
 
 				EmbedUtil.setColor(eb);
 
@@ -431,5 +499,11 @@ public class EventListener extends ListenerAdapter {
 			event.getChannel().sendMessage(mb.build()).queue();
 		}
 
+	}
+
+	@Override
+	public void onShutdown(final ShutdownEvent event) {
+		EventListener.executor.shutdown();
+		Engine.shutdown();
 	}
 }
