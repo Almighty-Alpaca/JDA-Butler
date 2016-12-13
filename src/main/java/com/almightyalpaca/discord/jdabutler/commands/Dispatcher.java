@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +55,7 @@ public class Dispatcher extends ListenerAdapter {
                     String[] args = split(content, c.getName(), prefix);
                     pool.submit(() -> {
                         try {
+                            Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with split: " + Arrays.toString(args));
                             c.dispatch(args, sender, channel, event.getMessage(), removePrefix(c.getName(), prefix, event));
                         } catch (Exception e) {
                             channel.sendMessage(
@@ -69,6 +71,7 @@ public class Dispatcher extends ListenerAdapter {
                             String[] args = split(content, alias, prefix);
                             pool.submit(() -> {
                                 try {
+                                    Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with split: " + Arrays.toString(args));
                                     c.dispatch(args, sender, channel, event.getMessage(), removePrefix(alias, prefix, event));
                                 } catch (Exception e) {
                                     channel.sendMessage(
