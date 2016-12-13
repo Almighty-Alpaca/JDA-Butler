@@ -86,7 +86,7 @@ public class DocParser {
 
 	private static final String								ARTIFACT_SUFFIX		= "api/json?tree=artifacts[*]";
 
-	private static final Path								LOCAL_SRC_PATH		= Paths.get("jda-src.jar");; //Paths.get("merged-src.jar");
+	private static final Path								LOCAL_SRC_PATH		= Paths.get("jda-src.jar");
 
 	private static final String								JDA_CODE_BASE		= "net/dv8tion/jda";
 	private static final Pattern							DOCS_PATTERN		= Pattern.compile("/\\*{2}\\s*\n(.*?)\n\\s*\\*/\\s*\n\\s*(?:@[^\n]+\n\\s*)*(.*?)\n", Pattern.DOTALL);

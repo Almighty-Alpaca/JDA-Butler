@@ -49,7 +49,7 @@ public class Bot {
 	}
 
 	public static TextChannel getChannelTesting() {
-		return Bot.jda.getTextChannelById("125227625932128256");
+		return Bot.jda.getTextChannelById("115567590495092740");
 	}
 
 	public static Guild getGuildJda() {
@@ -64,12 +64,12 @@ public class Bot {
 		return Bot.getGuildJda().getRoleById("169558668126322689");
 	}
 
-	public static Role getRoleJdaPlayerUpdates() {
-		return Bot.getGuildJda().getRoleById("241948768113524762");
-	}
-
 	public static Role getRoleJdaUpdates() {
 		return Bot.getGuildJda().getRoleById("241948671325765632");
+	}
+
+	public static Role getRoleLavaplayerUpdates() {
+		return Bot.getGuildJda().getRoleById("241948768113524762");
 	}
 
 	public static Role getRoleStaff() {

@@ -3,7 +3,7 @@ package com.almightyalpaca.discord.jdabutler;
 import java.lang.management.ManagementFactory;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Future;
@@ -11,7 +11,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -52,7 +54,6 @@ public class EventListener extends ListenerAdapter {
 			EventListener.executor.scheduleAtFixedRate(() -> {
 
 				String response = null;
-				boolean update = false;
 
 				// JDA
 				try {
@@ -62,7 +63,6 @@ public class EventListener extends ListenerAdapter {
 					final int build = Integer.valueOf(object.getString("id"));
 					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda.version.build", -1)) {
 						Bot.LOG.debug("Update found!");
-						update = true;
 
 						final String timestamp = FormattingUtil.formatTimestap(object.getLong("timestamp"));
 
@@ -115,6 +115,8 @@ public class EventListener extends ListenerAdapter {
 						Bot.config.put("jda.version.name", version);
 
 						Bot.config.save();
+						DocParser.reFetch();
+
 					}
 				} catch (final Exception e) {
 					Throwable cause = e;
@@ -128,83 +130,6 @@ public class EventListener extends ListenerAdapter {
 					Bot.LOG.log(e);
 				}
 
-				// JDA-Player
-				try {
-					Bot.LOG.debug("Checking for JDA-Player updates...");
-					response = Unirest.get("http://home.dv8tion.net:8080/job/JDA-Player/lastBuild/api/json").asString().getBody();
-					final JSONObject object = new JSONObject(response);
-					final int build = Integer.valueOf(object.getString("id"));
-					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda-player.version.build", -1)) {
-						Bot.LOG.debug("Update found!");
-						update = true;
-						final String timestamp = FormattingUtil.formatTimestap(object.getLong("timestamp"));
-
-						final EmbedBuilder eb = new EmbedBuilder();
-
-						final MessageBuilder mb = new MessageBuilder();
-
-						final JSONArray culprits = object.getJSONArray("culprits");
-
-						FormattingUtil.setFooter(eb, culprits, timestamp);
-
-						final JSONArray artifacts = object.getJSONArray("artifacts");
-
-						final String displayPath = artifacts.getJSONObject(0).getString("displayPath");
-						String version = displayPath.substring(displayPath.indexOf("-") + 1);
-						version = version.substring(0, version.length() - 4);
-						final int index = version.lastIndexOf("-");
-						if (index > 0) {
-							version = version.substring(0, index);
-						}
-
-						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
-
-						mb.append(Bot.getRoleJdaUpdates());
-
-						eb.setAuthor("JDA-Player build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build, EmbedUtil.JDA_ICON);
-
-						EmbedUtil.setColor(eb);
-
-						if (changeSets.length() > 0) {
-
-							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
-
-							eb.addField("Commits:", FormattingUtil.getChangelog(changeSets), true);
-						}
-
-						final MessageEmbed embed = eb.build();
-
-						mb.setEmbed(embed);
-
-						final Message message = mb.build();
-
-						Bot.getRoleJdaPlayerUpdates().getManager().setMentionable(true).block();
-
-						Bot.getChannelAnnouncements().sendMessage(message).block();
-
-						Bot.getRoleJdaPlayerUpdates().getManager().setMentionable(false).queue();
-
-						Bot.config.put("jda-player.version.build", build);
-						Bot.config.put("jda-player.version.name", version);
-
-						Bot.config.save();
-					}
-				} catch (final Exception e) {
-					Throwable cause = e;
-					do {
-						if (Objects.toString(cause.getMessage()).contains("time") && Objects.toString(cause.getMessage()).contains("out")) {
-							Bot.LOG.fatal("JDA-Player update checker connection timed out!");
-							return;
-						}
-					} while ((cause = e.getCause()) != null);
-					Bot.LOG.fatal("The following response errored: " + response);
-					Bot.LOG.log(e);
-				}
-
-				if (update) {
-					Bot.config.save();
-					DocParser.reFetch();
-				}
 			}, 0, 30, TimeUnit.SECONDS);
 		}
 	}
@@ -247,12 +172,11 @@ public class EventListener extends ListenerAdapter {
 
 			EmbedUtil.setColor(eb);
 
-			eb.setAuthor("Latest JDA versions", "https://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/", EmbedUtil.JDA_ICON);
+			eb.setAuthor("Latest versions", null, EmbedUtil.JDA_ICON);
 			eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
 
-			eb.addField("JDA", Bot.config.getString("jda.version.name"), true);
-			eb.addField("JDA-Player", Bot.config.getString("jda-player.version.name"), true);
-			eb.addField("JDA 2 Legacy", Bot.config.getString("jda2.version.name"), true);
+			eb.addField("JDA", "[" + Bot.config.getString("jda.version.name") + "](http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/)", true);
+			eb.addField("Lavaplayer", "[" + Lavaplayer.getLatestVersion() + "](https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord)", true);
 
 		} else if (text.startsWith("!shutdown")) {
 			if (Bot.isAdmin(user)) {
@@ -264,90 +188,92 @@ public class EventListener extends ListenerAdapter {
 		} else if (text.startsWith("!gradle")) {
 			text = text.substring(7);
 
+			final boolean lavaplayer = text.contains("player");
 			final boolean pretty = text.contains("pretty");
 
-			String artifact;
-			String version;
-
-			if (text.contains("player")) {
-				artifact = "jda-player";
-				version = Bot.config.getString("jda-player.version.name");
-			} else if (text.contains("2")) {
-				artifact = "JDA";
-				version = Bot.config.getString("jda2.version.name");
-			} else {
-				artifact = "JDA";
-				version = Bot.config.getString("jda.version.name");
+			String author = "Gradle dependencies for JDA";
+			if (lavaplayer) {
+				author += " and Lavaplayer";
 			}
 
-			eb.setAuthor("JDA version " + version, "https://bintray.com/dv8fromtheworld/maven/JDA", EmbedUtil.JDA_ICON);
+			eb.setAuthor(author, null, EmbedUtil.JDA_ICON);
 
-			eb.addField("", "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n" + GradleUtil.getDependencyBlock(Collections.singleton(new ImmutableTriple<>(
-					"net.dv8tion", artifact, version)), pretty) + "\n\nrepositories {\n    jcenter()\n}```", false);
+			String field = "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n";
+
+			final Collection<Pair<String, String>> repositories = new ArrayList<>(2);
+			final Collection<Triple<String, String, String>> dependencies = new ArrayList<>(2);
+
+			dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda.version.name")));
+			repositories.add(new ImmutablePair<String, String>("jcenter()", null));
+
+			if (lavaplayer) {
+				dependencies.add(new ImmutableTriple<>(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion()));
+				repositories.add(new ImmutablePair<>(Lavaplayer.REPO_NAME, Lavaplayer.REPO_URL));
+			}
+
+			field += GradleUtil.getDependencyBlock(dependencies, pretty) + "\n";
+			field += "\n";
+
+			field += GradleUtil.getRepositoryBlock(repositories) + "\n";
+
+			field += "```";
+
+			eb.addField("", field, false);
 
 		} else if (text.startsWith("!maven")) {
 
-			String artifact;
-			String version;
+			final boolean lavaplayer = text.contains("player");
 
-			if (text.contains("player")) {
-				artifact = "jda-player";
-				version = Bot.config.getString("jda-player.version.name");
-			} else if (text.contains("2")) {
-				artifact = "JDA";
-				version = Bot.config.getString("jda2.version.name");
-			} else {
-				artifact = "JDA";
-				version = Bot.config.getString("jda.version.name");
+			String author = "Maven dependencies for JDA";
+			if (lavaplayer) {
+				author += " and Lavaplayer";
 			}
 
-			eb.setAuthor("JDA version " + version, "https://bintray.com/dv8fromtheworld/maven/JDA", EmbedUtil.JDA_ICON);
+			eb.setAuthor(author, null, EmbedUtil.JDA_ICON);
 
-			eb.setThumbnail("https://maven.apache.org/images/maven-logo-black-on-white.png");
+			String field = "If you don't know maven type `!pom.xml` for a complete maven build file \n\n```xml\n";
 
-			eb.addField("", "If you don't know maven type `!pom.xml` for a complete maven build file \n\n```xml\n" + MavenUtil.getDependencyString("net.dv8tion", artifact, version, null) + "\n\n"
-					+ MavenUtil.getRepositoryString("jcenter", "jcenter-bintray", "http://jcenter.bintray.com", null) + "```", false);
+			field += MavenUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda.version.name"), null) + "\n";
+			if (lavaplayer) {
+				field += MavenUtil.getDependencyString(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion(), null) + "\n";
+			}
 
+			field += "\n";
+
+			field += MavenUtil.getRepositoryString("jcenter", "jcenter-bintray", "http://jcenter.bintray.com", null) + "\n";
+
+			if (lavaplayer) {
+				field += MavenUtil.getRepositoryString("sedmelluq", "sedmelluq", "http://maven.sedmelluq.com/", null) + "\n";
+			}
+
+			field += "```";
+
+			eb.addField("", field, false);
 		} else if (text.startsWith("!jar")) {
-			text = text.substring(4);
-
-			if (text.contains("player")) {
-				final String version = Bot.config.getString("jda-player.version.name");
-				final String build = Bot.config.getString("jda-player.version.build");
-				mb.append("http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-javadoc.jar").append("\n").append(
-						"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-sources.jar").append("\n").append(
-								"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + ".jar").append("\n").append(
-										"http://home.dv8tion.net:8080/job/JDA-Player/" + build + "/artifact/JDA/build/libs/jda-player-" + version + "-withDependencies.jar");
-			} else if (text.contains("2") || text.contains("legacy")) {
-				final String version = Bot.config.getString("jda2.version.name");
-				final String build = Bot.config.getString("jda2.version.build");
-				mb.append("http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append(
-						"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append(
-								"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-" + version + ".jar").append("\n").append(
-										"http://home.dv8tion.net:8080/job/JDA%20Legacy/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
-			} else {
-				final String version = Bot.config.getString("jda.version.name");
-				final String build = Bot.config.getString("jda.version.build");
-				mb.append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build
-						+ "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + ".jar")
-						.append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
-			}
+			final String version = Bot.config.getString("jda.version.name");
+			final String build = Bot.config.getString("jda.version.build");
+			mb.append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build
+					+ "/artifact/build/libs/JDA-" + version + "-sources.jar").append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + ".jar")
+					.append("\n").append("http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar");
 
 		} else if (text.startsWith("!build.gradle")) {
 			text = text.substring(13);
 
-			final boolean pretty = text.contains("pretty");
-			final List<Triple<String, String, String>> dependencies = new ArrayList<>(2);
+			final boolean lavaplayer = true;
+			final boolean pretty = true;
 
-			if (text.contains("player")) {
-				dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name")));
-				dependencies.add(new ImmutableTriple<>("net.dv8tion", "jda-player", Bot.config.getString("jda-player.version.name")));
-			} else if (text.contains("2") || text.contains("legacy")) {
-				dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda2.version.name")));
-			} else {
-				dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda.version.name")));
+			final Collection<Pair<String, String>> repositories = new ArrayList<>(2);
+			final Collection<Triple<String, String, String>> dependencies = new ArrayList<>(2);
+
+			dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda.version.name")));
+			repositories.add(new ImmutablePair<String, String>("jcenter()", null));
+
+			if (lavaplayer) {
+				dependencies.add(new ImmutableTriple<>(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion()));
+				repositories.add(new ImmutablePair<>(Lavaplayer.REPO_NAME, Lavaplayer.REPO_URL));
 			}
-			mb.appendCodeBlock(GradleUtil.getBuildFile(dependencies, pretty), "gradle");
+
+			mb.appendCodeBlock(GradleUtil.getBuildFile(dependencies, repositories, pretty), "gradle");
 		} else if (text.startsWith("!notify")) {
 			text = text.substring(7);
 			final Member member = event.getMember();
@@ -355,13 +281,13 @@ public class EventListener extends ListenerAdapter {
 			if (text.contains("all") || text.contains("both")) {
 				final List<Role> roles = new ArrayList<>(3);
 				roles.add(Bot.getRoleJdaUpdates());
-				roles.add(Bot.getRoleJdaPlayerUpdates());
+				roles.add(Bot.getRoleLavaplayerUpdates());
 				roles.removeAll(member.getRoles());
 
 				if (roles.size() == 0) {
-					guild.getController().removeRolesFromMember(member, Bot.getRoleJdaUpdates(), Bot.getRoleJdaPlayerUpdates()).queue(v -> {
+					guild.getController().removeRolesFromMember(member, Bot.getRoleJdaUpdates(), Bot.getRoleLavaplayerUpdates()).queue(v -> {
 						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.getRoleJdaUpdates().getName());
-						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.getRoleJdaPlayerUpdates().getName());
+						Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId() + ") from " + Bot.getRoleLavaplayerUpdates().getName());
 					}, t -> Bot.LOG.log(t));
 				} else {
 					guild.getController().addRolesToMember(member, roles).queue(v -> roles.forEach(role -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + user.getName() + "#" + user
@@ -372,7 +298,7 @@ public class EventListener extends ListenerAdapter {
 				final Role role;
 
 				if (text.contains("player")) {
-					role = Bot.getRoleJdaPlayerUpdates();
+					role = Bot.getRoleLavaplayerUpdates();
 				} else {
 					role = Bot.getRoleJdaUpdates();
 				}
