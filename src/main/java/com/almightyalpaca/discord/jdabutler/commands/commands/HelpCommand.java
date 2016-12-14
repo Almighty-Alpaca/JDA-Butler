@@ -9,8 +9,6 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 public class HelpCommand implements Command {
@@ -22,11 +20,8 @@ public class HelpCommand implements Command {
                 .filter(c -> c.getHelp() != null)
                 .map(c -> String.format("%s%s - %s", Bot.config.getString("prefix", ""), c.getName().toLowerCase(), c.getHelp()))
                 .collect(Collectors.joining("\n"));
-        builder.setAuthor("Help Command", null, Bot.jda.getSelfUser().getEffectiveAvatarUrl());
+        builder.setAuthor(channel.getGuild().getMember(sender).getEffectiveName(), null, sender.getEffectiveAvatarUrl());
         builder.setDescription(help);
-        builder.setFooter(String.format("Requested on %s by %s",
-                OffsetDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME), sender.getName()),
-                Bot.jda.getSelfUser().getEffectiveAvatarUrl());
         channel.sendMessage(new MessageBuilder().setEmbed(builder.build()).build()).queue();
     }
 

@@ -9,7 +9,8 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -39,17 +40,16 @@ public class Dispatcher extends ListenerAdapter {
         if (command.getName().contains(" ")) {
             throw new IllegalArgumentException("Name must not have spaces!");
         }
-        if (commands.stream().map(Command::getName).filter(c -> command.getName().equalsIgnoreCase(c)).count() > 0) {
+        if (commands.stream().map(Command::getName).anyMatch(c -> command.getName().equalsIgnoreCase(c))) {
             return false;
         }
         commands.add(command);
         return true;
     }
 
-    public Collection<Command> getCommands() {
-        return commands;
+    public Set<Command> getCommands() {
+        return Collections.unmodifiableSet(new HashSet<>(commands));
     }
-
 
     @Override
     public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
