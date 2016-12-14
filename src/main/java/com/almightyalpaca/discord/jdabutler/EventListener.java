@@ -1,8 +1,19 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import com.almightyalpaca.discord.jdabutler.eval.Engine;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.kantenkugel.discordbot.moduleutils.DocParser;
 import com.mashape.unirest.http.Unirest;
+
+import com.almightyalpaca.discord.jdabutler.eval.Engine;
+
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.*;
@@ -10,14 +21,6 @@ import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.SimpleLog;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class EventListener extends ListenerAdapter {
 
@@ -85,10 +88,21 @@ public class EventListener extends ListenerAdapter {
 
 							final List<String> changelog = FormattingUtil.getChangelog(changeSets);
 
-							for (int i = 0; i < changelog.size(); i++) {
-								final String field = changelog.get(i);
-								eb.addField(i == 0 ? "Commits:" : "", field, false);
+							int fields;
 
+							if (changelog.size() > 25) {
+								fields = 24;
+							} else {
+								fields = Math.min(changelog.size(), 25);
+							}
+
+							for (int j = 0; j < fields; j++) {
+								final String field = changelog.get(j);
+								eb.addField(j == 0 ? "Commits:" : "", field, false);
+							}
+
+							if (changelog.size() > 25) {
+								eb.addField("", "max embed lenght reached", false);
 							}
 
 						}

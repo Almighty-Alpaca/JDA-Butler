@@ -26,7 +26,7 @@ public class FormattingUtil {
 
 		StringBuilder builder = new StringBuilder();
 
-		outerLoop: for (int i = 0; i < changeSets.length(); i++) {
+		for (int i = 0; i < changeSets.length(); i++) {
 			final JSONObject item = changeSets.getJSONObject(i);
 
 			final String id = item.getString("id");
@@ -45,6 +45,10 @@ public class FormattingUtil {
 
 				builder.append(line);
 			}
+		}
+
+		if (builder.length() > 0) {
+			fields.add(builder.toString());
 		}
 
 		return fields;
