@@ -1,21 +1,18 @@
 package com.almightyalpaca.discord.jdabutler.eval;
 
+import com.almightyalpaca.discord.jdabutler.util.StringUtils;
+import com.google.common.util.concurrent.MoreExecutors;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
+import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
-import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
-
-import com.google.common.util.concurrent.MoreExecutors;
-
-import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 
 public enum Engine {
 
@@ -55,9 +52,9 @@ public enum Engine {
 
 	public static class Import {
 
-		public static enum Type {
+		public enum Type {
 			CLASS,
-			PACKAGE;
+			PACKAGE
 		}
 
 		private final Type		type;
@@ -78,8 +75,8 @@ public enum Engine {
 
 	}
 
-	public static final Collection<String>			DEFAULT_IMPORTS	= Arrays.asList(new String[] { "net.dv8tion.jda.core.entities.impl", "net.dv8tion.jda.core.managers",
-			"net.dv8tion.jda.core.entities", "net.dv8tion.jda.core", "java.lang", "java.io", "java.math", "java.util", "java.util.concurrent", "java.time", });
+	public static final Collection<String>			DEFAULT_IMPORTS	= Arrays.asList("net.dv8tion.jda.core.entities.impl", "net.dv8tion.jda.core.managers",
+			"net.dv8tion.jda.core.entities", "net.dv8tion.jda.core", "java.lang", "java.io", "java.math", "java.util", "java.util.concurrent", "java.time");
 
 	private final static ScheduledExecutorService	service			= Executors.newScheduledThreadPool(1, r -> new Thread(r, "Eval-Thread"));
 
@@ -87,7 +84,7 @@ public enum Engine {
 
 	private final String							name;
 
-	private Engine(final String name, final String... codes) {
+	Engine(final String name, final String... codes) {
 		this.name = name;
 		this.codes = new ArrayList<>();
 		for (final String code : codes) {
@@ -125,9 +122,7 @@ public enum Engine {
 		final PrintWriter errorWriter = new PrintWriter(errorString);
 		engine.getContext().setErrorWriter(errorWriter);
 
-		final ScheduledFuture<Object> future = Engine.service.schedule(() -> {
-			return engine.eval(script);
-		}, 0, TimeUnit.MILLISECONDS);
+		final ScheduledFuture<Object> future = Engine.service.schedule(() -> engine.eval(script), 0, TimeUnit.MILLISECONDS);
 
 		Object result = null;
 
