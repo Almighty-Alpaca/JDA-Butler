@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 public class Eval implements Command {
     @Override
     public void dispatch(String[] args2, User sender, TextChannel channel, Message message, String content) {
+        if(!Bot.isAdmin(sender))
+            return;
         final String args = Arrays.stream(args2).collect(Collectors.joining(" "));
 
         if (args.equalsIgnoreCase("list")) {

@@ -2,23 +2,23 @@ package com.almightyalpaca.discord.jdabutler.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.commands.*;
-import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Dispatcher extends ListenerAdapter {
 
-    private Map<String, Command> commands = new ConcurrentHashMap<>();
-    private ExecutorService pool = Executors.newCachedThreadPool(); // next pr: remove all of these indents
+    private Set<Command> commands = ConcurrentHashMap.newKeySet();
+    private ExecutorService pool = Executors.newCachedThreadPool();
 
     {
         registerCommand(new HelpCommand());
@@ -39,15 +39,15 @@ public class Dispatcher extends ListenerAdapter {
         if (command.getName().contains(" ")) {
             throw new IllegalArgumentException("Name must not have spaces!");
         }
-        if (commands.containsKey(command.getName().toLowerCase())) {
+        if (commands.stream().map(Command::getName).filter(c -> command.getName().equalsIgnoreCase(c)).count() > 0) {
             return false;
         }
-        commands.put(command.getName().toLowerCase(), command);
+        commands.add(command);
         return true;
     }
 
     public Collection<Command> getCommands() {
-        return commands.values();
+        return commands;
     }
 
 
@@ -60,7 +60,7 @@ public class Dispatcher extends ListenerAdapter {
             return;
         User sender = event.getAuthor();
         if (content.toLowerCase().startsWith(prefix.toLowerCase())) {
-            for (Command c : commands.values()) {
+            for (Command c : getCommands()) {
                 if (content.toLowerCase().startsWith(prefix.toLowerCase() + c.getName().toLowerCase() + ' ')
                         || content.equalsIgnoreCase(prefix + c.getName().toLowerCase())) {
                     String[] args = split(content, c.getName(), prefix);
@@ -71,7 +71,7 @@ public class Dispatcher extends ListenerAdapter {
                         } catch (Exception e) {
                             channel.sendMessage(
                                     String.format("**There was an error processing your command!**\n```\n%s```",
-                                            StringUtils.exceptionToString(e))).queue();
+                                            ExceptionUtils.getStackTrace(e))).queue();
                         }
                     });
                     break;
@@ -87,7 +87,7 @@ public class Dispatcher extends ListenerAdapter {
                                 } catch (Exception e) {
                                     channel.sendMessage(
                                             String.format("**There was an error processing your command!**\n```\n%s```",
-                                                    StringUtils.exceptionToString(e))).queue();
+                                                    ExceptionUtils.getStackTrace(e))).queue();
                                 }
                             });
                             return;
