@@ -1,8 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import com.almightyalpaca.discord.jdabutler.commands.commands.HelpCommand;
-import com.almightyalpaca.discord.jdabutler.commands.commands.VersionsCommand;
+import com.almightyalpaca.discord.jdabutler.commands.commands.*;
 import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -24,6 +23,16 @@ public class Dispatcher extends ListenerAdapter {
     {
         registerCommand(new HelpCommand());
         registerCommand(new VersionsCommand());
+        registerCommand(new Eval());
+        registerCommand(new DocsCommand());
+        registerCommand(new Gradle());
+        registerCommand(new Maven());
+        registerCommand(new Jar());
+        registerCommand(new BuildGradle());
+        registerCommand(new Notify());
+        registerCommand(new Ping());
+        registerCommand(new Uptime());
+        registerCommand(new Changelog());
     }
 
     public boolean registerCommand(Command command) {
@@ -47,6 +56,8 @@ public class Dispatcher extends ListenerAdapter {
         String prefix = Bot.config.getString("prefix");
         String content = event.getMessage().getRawContent();
         TextChannel channel = event.getChannel();
+        if(channel.getGuild().getId().equals("81384788765712384") && !channel.getId().equals("129750718931271681"))
+            return;
         User sender = event.getAuthor();
         if (content.toLowerCase().startsWith(prefix.toLowerCase())) {
             for (Command c : commands.values()) {
@@ -79,7 +90,7 @@ public class Dispatcher extends ListenerAdapter {
                                                     StringUtils.exceptionToString(e))).queue();
                                 }
                             });
-                            break;
+                            return;
                         }
                     }
             }

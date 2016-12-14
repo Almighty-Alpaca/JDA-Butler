@@ -1,6 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -16,8 +17,10 @@ public class HelpCommand implements Command {
     @Override
     public void dispatch(String[] args, User sender, TextChannel channel, Message message, String content) {
         EmbedBuilder builder = new EmbedBuilder();
+        EmbedUtil.setColor(builder);
         String help = Bot.dispatcher.getCommands().stream()
-                .map(c -> String.format("%s - %s", c.getName().toLowerCase(), c.getHelp()))
+                .filter(c -> c.getHelp() != null)
+                .map(c -> String.format("%s%s - %s", Bot.config.getString("prefix", ""), c.getName().toLowerCase(), c.getHelp()))
                 .collect(Collectors.joining("\n"));
         builder.setAuthor("Help Command", null, Bot.jda.getSelfUser().getEffectiveAvatarUrl());
         builder.setDescription(help);
