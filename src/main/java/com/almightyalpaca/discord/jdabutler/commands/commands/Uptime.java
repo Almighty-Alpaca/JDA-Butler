@@ -5,12 +5,13 @@ import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.lang.management.ManagementFactory;
 
 public class Uptime implements Command {
     @Override
-    public void dispatch(String[] args, User sender, TextChannel channel, Message message, String content) {
+    public void dispatch(String[] args, User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) {
         final long duration = ManagementFactory.getRuntimeMXBean().getUptime();
 
         final long years = duration / 31104000000L;

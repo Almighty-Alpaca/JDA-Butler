@@ -8,12 +8,13 @@ import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.stream.Collectors;
 
 public class HelpCommand implements Command {
     @Override
-    public void dispatch(String[] args, User sender, TextChannel channel, Message message, String content) {
+    public void dispatch(String[] args, User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) {
         EmbedBuilder builder = new EmbedBuilder();
         EmbedUtil.setColor(builder);
         String help = Bot.dispatcher.getCommands().stream()

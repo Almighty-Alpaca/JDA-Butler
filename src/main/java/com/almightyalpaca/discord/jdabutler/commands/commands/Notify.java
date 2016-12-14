@@ -3,6 +3,7 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.List;
 
 public class Notify implements Command {
     @Override
-    public void dispatch(String[] args, User sender, TextChannel channel, Message message, String content) {
+    public void dispatch(String[] args, User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) {
         final Member member = channel.getGuild().getMember(sender);
         Guild guild = channel.getGuild();
 

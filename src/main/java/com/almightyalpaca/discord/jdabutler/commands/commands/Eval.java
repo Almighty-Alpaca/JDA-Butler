@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.Arrays;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class Eval implements Command {
     @Override
-    public void dispatch(String[] args2, User sender, TextChannel channel, Message message, String content) {
+    public void dispatch(String[] args2, User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) {
         if(!Bot.isAdmin(sender))
             return;
         final String args = Arrays.stream(args2).collect(Collectors.joining(" "));

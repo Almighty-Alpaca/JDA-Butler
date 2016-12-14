@@ -67,7 +67,7 @@ public class Dispatcher extends ListenerAdapter {
                     pool.submit(() -> {
                         try {
                             Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with split: " + Arrays.toString(args));
-                            c.dispatch(args, sender, channel, event.getMessage(), removePrefix(c.getName(), prefix, event));
+                            c.dispatch(args, sender, channel, event.getMessage(), removePrefix(c.getName(), prefix, event), event);
                         } catch (Exception e) {
                             channel.sendMessage(
                                     String.format("**There was an error processing your command!**\n```\n%s```",
@@ -83,7 +83,7 @@ public class Dispatcher extends ListenerAdapter {
                             pool.submit(() -> {
                                 try {
                                     Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with split: " + Arrays.toString(args));
-                                    c.dispatch(args, sender, channel, event.getMessage(), removePrefix(alias, prefix, event));
+                                    c.dispatch(args, sender, channel, event.getMessage(), removePrefix(alias, prefix, event), event);
                                 } catch (Exception e) {
                                     channel.sendMessage(
                                             String.format("**There was an error processing your command!**\n```\n%s```",

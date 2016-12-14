@@ -11,6 +11,7 @@ import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class Changelog implements Command {
     @Override
-    public void dispatch(String[] arg, User sender, TextChannel channel, Message message, String content) {
+    public void dispatch(String[] arg, User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) {
         EmbedBuilder eb = new EmbedBuilder();
         MessageBuilder mb = new MessageBuilder();
         try {
