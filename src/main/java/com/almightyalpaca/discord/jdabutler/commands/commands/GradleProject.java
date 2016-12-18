@@ -20,7 +20,7 @@ public class GradleProject implements Command {
 
 		try {
 			channel.sendFile(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP, null).queue();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			channel.sendMessage("An error occured!").queue();
 		}
 	}
