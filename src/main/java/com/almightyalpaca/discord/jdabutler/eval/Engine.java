@@ -53,31 +53,6 @@ public enum Engine {
 
 	};
 
-	public static class Import {
-
-		public enum Type {
-			CLASS,
-			PACKAGE
-		}
-
-		private final Type		type;
-		private final String	name;
-
-		public Import(final Import.Type type, final String name) {
-			this.type = type;
-			this.name = name;
-		}
-
-		public final String getName() {
-			return this.name;
-		}
-
-		public final Type getType() {
-			return this.type;
-		}
-
-	}
-
 	public static final Collection<String>			DEFAULT_IMPORTS	= Arrays.asList("net.dv8tion.jda.core.entities.impl", "net.dv8tion.jda.core.managers", "net.dv8tion.jda.core.entities",
 			"net.dv8tion.jda.core", "java.lang", "java.io", "java.math", "java.util", "java.util.concurrent", "java.time");
 
@@ -147,5 +122,31 @@ public enum Engine {
 
 	public String getName() {
 		return this.name;
+	}
+
+	public static class Import {
+
+		private final Type		type;
+
+		private final String	name;
+
+		public Import(final Import.Type type, final String name) {
+			this.type = type;
+			this.name = name;
+		}
+
+		public final String getName() {
+			return this.name;
+		}
+
+		public final Type getType() {
+			return this.type;
+		}
+
+		public enum Type {
+			CLASS,
+			PACKAGE
+		}
+
 	}
 }

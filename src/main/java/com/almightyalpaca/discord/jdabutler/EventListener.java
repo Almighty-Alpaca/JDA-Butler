@@ -123,7 +123,10 @@ public class EventListener extends ListenerAdapter {
 						Bot.config.put("jda.version.name", version);
 
 						Bot.config.save();
+
 						DocParser.reFetch();
+
+						GradleProjectDropboxUploader.uploadProject();
 
 					}
 				} catch (final Exception e) {

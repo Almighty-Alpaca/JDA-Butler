@@ -33,65 +33,17 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
 public class DocParser {
-	private static class Documentation {
-		private final String				functionName;
-		private final List<String>			argTypes;
-		private final String				functionHead;
-		private final String				desc;
-		private final String				returns;
-		private final Map<String, String>	args;
-		private final Map<String, String>	throwing;
-
-		private Documentation(final String functionName, final List<String> argTypes, final String functionHead, final String desc, final String returns, final Map<String, String> args,
-				final Map<String, String> throwing) {
-			this.functionName = functionName;
-			this.argTypes = argTypes;
-			this.functionHead = functionHead;
-			this.desc = desc;
-			this.returns = returns;
-			this.args = args;
-			this.throwing = throwing;
-		}
-
-		private boolean matches(String input) {
-			if (input.charAt(input.length() - 1) != ')') {
-				input += "()";
-			}
-			final Matcher matcher = DocParser.METHOD_PATTERN.matcher(' ' + input);
-			if (!matcher.find()) {
-				return false;
-			}
-			if (!matcher.group(1).equalsIgnoreCase(this.functionName)) {
-				return false;
-			}
-			final String args = matcher.group(2);
-			if (args.isEmpty()) {
-				return true;
-			}
-			final String[] split = args.split(",");
-			if (split.length != this.argTypes.size()) {
-				return false;
-			}
-			for (int i = 0; i < split.length; i++) {
-				if (!split[i].trim().equalsIgnoreCase(this.argTypes.get(i))) {
-					return false;
-				}
-			}
-			return true;
-		}
-	}
-
 	private static final SimpleLog							LOG					= SimpleLog.getLog("DocParser");
-	private static final String								JDA_JENKINS_PREFIX	= "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/";
 
+	private static final String								JDA_JENKINS_PREFIX	= "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/";
 	private static final String								ARTIFACT_SUFFIX		= "api/json?tree=artifacts[*]";
 
 	private static final Path								LOCAL_SRC_PATH		= Paths.get("jda-src.jar");
 
 	private static final String								JDA_CODE_BASE		= "net/dv8tion/jda";
+
 	private static final Pattern							DOCS_PATTERN		= Pattern.compile("/\\*{2}\\s*\n(.*?)\n\\s*\\*/\\s*\n\\s*(?:@[^\n]+\n\\s*)*(.*?)\n", Pattern.DOTALL);
 	private static final Pattern							METHOD_PATTERN		= Pattern.compile(".*?\\s([a-zA-Z][a-zA-Z0-9]*)\\(([a-zA-Z0-9\\s\\.,<>]*)\\)");
-
 	private static final Pattern							METHOD_ARG_PATTERN	= Pattern.compile("([a-zA-Z][a-zA-Z0-9<>]*(?:\\.{3})?)\\s+[a-zA-Z][a-zA-Z0-9]");
 
 	private static final String								LINK_PATTERN		= "\\{@link\\s.*?\\.?([^\\s\\.]+(?:\\([^\\)]*?\\))?)\\}";
@@ -262,6 +214,54 @@ public class DocParser {
 			DocParser.LOG.info("Done");
 		} catch (final Exception e) {
 			DocParser.LOG.log(e);
+		}
+	}
+
+	private static class Documentation {
+		private final String				functionName;
+		private final List<String>			argTypes;
+		private final String				functionHead;
+		private final String				desc;
+		private final String				returns;
+		private final Map<String, String>	args;
+		private final Map<String, String>	throwing;
+
+		private Documentation(final String functionName, final List<String> argTypes, final String functionHead, final String desc, final String returns, final Map<String, String> args,
+				final Map<String, String> throwing) {
+			this.functionName = functionName;
+			this.argTypes = argTypes;
+			this.functionHead = functionHead;
+			this.desc = desc;
+			this.returns = returns;
+			this.args = args;
+			this.throwing = throwing;
+		}
+
+		private boolean matches(String input) {
+			if (input.charAt(input.length() - 1) != ')') {
+				input += "()";
+			}
+			final Matcher matcher = DocParser.METHOD_PATTERN.matcher(' ' + input);
+			if (!matcher.find()) {
+				return false;
+			}
+			if (!matcher.group(1).equalsIgnoreCase(this.functionName)) {
+				return false;
+			}
+			final String args = matcher.group(2);
+			if (args.isEmpty()) {
+				return true;
+			}
+			final String[] split = args.split(",");
+			if (split.length != this.argTypes.size()) {
+				return false;
+			}
+			for (int i = 0; i < split.length; i++) {
+				if (!split[i].trim().equalsIgnoreCase(this.argTypes.get(i))) {
+					return false;
+				}
+			}
+			return true;
 		}
 	}
 }

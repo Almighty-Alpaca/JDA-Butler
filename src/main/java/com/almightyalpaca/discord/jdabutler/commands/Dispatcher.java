@@ -6,8 +6,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import com.google.common.util.concurrent.MoreExecutors;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.commands.*;
@@ -15,6 +18,7 @@ import com.almightyalpaca.discord.jdabutler.commands.commands.Shutdown;
 
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
@@ -37,6 +41,7 @@ public class Dispatcher extends ListenerAdapter {
 		this.registerCommand(new Uptime());
 		this.registerCommand(new Changelog());
 		this.registerCommand(new Shutdown());
+		this.registerCommand(new GradleProject());
 	}
 
 	public Set<Command> getCommands() {
@@ -57,7 +62,7 @@ public class Dispatcher extends ListenerAdapter {
 		final User sender = event.getAuthor();
 		if (message.toLowerCase().startsWith(prefix.toLowerCase())) {
 			for (final Command c : this.getCommands()) {
-				if (message.toLowerCase().startsWith(prefix.toLowerCase() + c.getName().toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + c.getName().toLowerCase())) {
+				if (message.toLowerCase().startsWith(prefix.toLowerCase() + c.getName().toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + c.getName())) {
 					this.pool.submit(() -> {
 						final String content = this.removePrefix(c.getName(), prefix, event);
 						try {
@@ -70,7 +75,7 @@ public class Dispatcher extends ListenerAdapter {
 					break;
 				} else {
 					for (final String alias : c.getAliases()) {
-						if (message.toLowerCase().startsWith(prefix.toLowerCase() + alias.toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + alias.toLowerCase())) {
+						if (message.toLowerCase().startsWith(prefix.toLowerCase() + alias.toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + alias)) {
 							this.pool.submit(() -> {
 								try {
 									final String content = this.removePrefix(c.getName(), prefix, event);
@@ -86,6 +91,11 @@ public class Dispatcher extends ListenerAdapter {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void onShutdown(final ShutdownEvent event) {
+		MoreExecutors.shutdownAndAwaitTermination(this.pool, 10, TimeUnit.SECONDS);
 	}
 
 	public boolean registerCommand(final Command command) {

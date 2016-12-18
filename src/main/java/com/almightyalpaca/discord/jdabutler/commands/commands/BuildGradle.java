@@ -38,7 +38,7 @@ public class BuildGradle implements Command {
 			repositories.add(new ImmutablePair<>(Lavaplayer.REPO_NAME, Lavaplayer.REPO_URL));
 		}
 
-		mb.appendCodeBlock(GradleUtil.getBuildFile(dependencies, repositories, pretty), "gradle");
+		mb.appendCodeBlock(GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "com.example.jda.Bot", "1.0", "1.8", dependencies, repositories, pretty), "gradle");
 		channel.sendMessage(mb.build()).queue();
 	}
 

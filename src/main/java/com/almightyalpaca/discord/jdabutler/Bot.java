@@ -34,7 +34,7 @@ public class Bot {
 	public static JDAImpl					jda;
 	public static Config					config;
 	public static EventListener				listener;
-	public static Dispatcher				dispatcher;											 // i had to the rest did it..
+	public static Dispatcher				dispatcher;
 
 	public static final SimpleLog			LOG			= SimpleLog.getLog("Bot");
 
