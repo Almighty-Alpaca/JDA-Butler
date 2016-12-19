@@ -41,6 +41,7 @@ public class Bot {
 	private static final SimpleDateFormat	DATEFORMAT	= new SimpleDateFormat("HH:mm:ss");
 
 	private static final String				LOGFORMAT	= "[%time%] [%level%] [%name%]: %text%";
+	public static final String				INVITE_LINK	= "https://discord.gg/0hMr4ce0tIk3pSjp";
 
 	public static TextChannel getChannelAnnouncements() {
 		return Bot.jda.getTextChannelById("125227483518861312");
