@@ -54,6 +54,8 @@ public class Changelog implements Command {
 			String first = null;
 			String last = null;
 
+			int fields = 0;
+
 			for (int i = responses.size() - 1; i >= 0; i--) {
 				String response = null;
 				try {
@@ -84,21 +86,29 @@ public class Changelog implements Command {
 
 						final List<String> changelog = FormattingUtil.getChangelog(changeSets);
 
-						int fields;
+						int currentFields = changelog.size();
 
-						if (changelog.size() > 25) {
+						if (fields + changelog.size() > 24) {
+							currentFields = Math.min(24 - fields, changelog.size());
 							fields = 24;
 						} else {
-							fields = Math.min(changelog.size(), 25);
+							currentFields = changelog.size();
+							fields += currentFields;
 						}
 
-						for (int j = 0; j < fields; j++) {
+						System.out.println("currentFields   " + currentFields);
+
+						for (int j = 0; j < currentFields; j++) {
 							final String field = changelog.get(j);
 							eb.addField(j == 0 ? version : "", field, false);
 						}
 
-						if (changelog.size() > 25) {
-							eb.addField("", "max embed lenght reached", false);
+						System.out.println("fields   " + fields);
+
+						if (fields == 24) {
+
+							eb.addField("max lenght reached", "", false);
+							break;
 						}
 
 					}
