@@ -16,6 +16,11 @@ public class Notify implements Command {
 		final Member member = channel.getGuild().getMember(sender);
 		final Guild guild = channel.getGuild();
 
+		if (!guild.equals(Bot.getGuildJda())) {
+			channel.sendMessage("You have to be in the JDA GuildCommand to use this feature <" + Bot.INVITE_LINK + ">").queue();
+			return;
+		}
+
 		if (content.contains("all") || content.contains("both")) {
 			final List<Role> roles = new ArrayList<>(3);
 			roles.add(Bot.getRoleJdaUpdates());
