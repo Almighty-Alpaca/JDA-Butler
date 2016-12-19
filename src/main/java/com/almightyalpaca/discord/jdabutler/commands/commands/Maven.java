@@ -28,7 +28,7 @@ public class Maven implements Command {
 
 		eb.setAuthor(author, null, EmbedUtil.JDA_ICON);
 
-		String field = "If you don't know maven type `!pom.xml` for a complete maven build file \n\n```xml\n";
+		String field = "If you don't know maven ~~type `!pom.xml` for a complete maven build file~~ fuck maven and learn gradle instead !\n\n```xml\n";
 
 		field += MavenUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda.version.name"), null) + "\n";
 		if (lavaplayer) {

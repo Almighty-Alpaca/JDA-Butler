@@ -20,16 +20,10 @@ import org.apache.commons.lang3.tuple.Triple;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;
-import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.sharing.RequestedVisibility;
 import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 import com.dropbox.core.v2.sharing.SharedLinkSettings;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
 
-import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
-import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
-import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 
 import net.lingala.zip4j.core.ZipFile;
@@ -60,6 +54,7 @@ public class GradleProjectDropboxUploader {
 	public static final String			DROPBOX_FILE_NAME		= "JDA/jda gradle setup example.zip";
 
 	public static void createZip() {
+		Bot.LOG.info("Creating gradle example zip...");
 		try {
 			if (GradleProjectDropboxUploader.GRADLE_PROJECT_DIR.exists()) {
 				FileUtils.cleanDirectory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
@@ -104,10 +99,11 @@ public class GradleProjectDropboxUploader {
 
 			zip.addFolder(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, parameters);
 
+			Bot.LOG.info("Zip creation finished!");
+
 		} catch (final IOException | InterruptedException | ZipException e) {
 			Bot.LOG.log(e);
 		}
-
 	}
 
 	private static void init() {
@@ -120,13 +116,10 @@ public class GradleProjectDropboxUploader {
 		}
 	}
 
-	public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException {
-		Bot.config = ConfigFactory.getConfig(new File("config.json"));
-
-		GradleProjectDropboxUploader.uploadProject();
-	}
-
 	public static void uploadProject() {
+
+		Bot.LOG.info("Uploading gradle example zip...");
+
 		GradleProjectDropboxUploader.init();
 
 		GradleProjectDropboxUploader.createZip();
@@ -136,7 +129,7 @@ public class GradleProjectDropboxUploader {
 			GradleProjectDropboxUploader.client.files().delete(GradleProjectDropboxUploader.DROPBOX_FILE_NAME);
 
 			in = new FileInputStream(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP);
-			final FileMetadata metadata = GradleProjectDropboxUploader.client.files().uploadBuilder(GradleProjectDropboxUploader.DROPBOX_FILE_NAME).uploadAndFinish(in);
+			GradleProjectDropboxUploader.client.files().uploadBuilder(GradleProjectDropboxUploader.DROPBOX_FILE_NAME).uploadAndFinish(in);
 
 			final SharedLinkMetadata link = GradleProjectDropboxUploader.client.sharing().createSharedLinkWithSettings(GradleProjectDropboxUploader.DROPBOX_FILE_NAME, new SharedLinkSettings(
 					RequestedVisibility.PUBLIC, null, null));
@@ -145,7 +138,7 @@ public class GradleProjectDropboxUploader {
 
 			Bot.config.put("jda.version.gradle-example-link", StringUtils.replaceLast(link.getUrl(), "0", "1"));
 
-			Bot.LOG.info("Uploaded gradle project to " + metadata.getPathDisplay());
+			Bot.LOG.info("Zip uploading finished!");
 
 		} catch (DbxException | IOException e) {
 			Bot.LOG.log(e);

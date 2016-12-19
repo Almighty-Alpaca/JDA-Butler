@@ -74,7 +74,7 @@ public class GradleUtil {
 		return text;
 	}
 
-	private static String getRepositoryString(final String name, final String url, String indentation) {
+	public static String getRepositoryString(final String name, final String url, String indentation) {
 		if (indentation == null) {
 			indentation = "";
 		}
