@@ -25,7 +25,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class Changelog implements Command {
+public class ChangelogCommand implements Command {
 	@Override
 	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
 		final EmbedBuilder eb = new EmbedBuilder();

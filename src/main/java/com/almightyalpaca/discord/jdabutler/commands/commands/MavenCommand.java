@@ -13,7 +13,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class Maven implements Command {
+public class MavenCommand implements Command {
 	@Override
 	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
 		final MessageBuilder mb = new MessageBuilder();

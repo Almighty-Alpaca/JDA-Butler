@@ -14,7 +14,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.commands.*;
-import com.almightyalpaca.discord.jdabutler.commands.commands.Shutdown;
 
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -28,20 +27,21 @@ public class Dispatcher extends ListenerAdapter {
 	private final ExecutorService	pool		= Executors.newCachedThreadPool();
 
 	{
-		this.registerCommand(new HelpCommand());
-		this.registerCommand(new VersionsCommand());
-		this.registerCommand(new Eval());
+		this.registerCommand(new BuildGradleCommand());
+		this.registerCommand(new ChangelogCommand());
 		this.registerCommand(new DocsCommand());
-		this.registerCommand(new Gradle());
-		this.registerCommand(new Maven());
-		this.registerCommand(new Jar());
-		this.registerCommand(new BuildGradle());
-		this.registerCommand(new Notify());
-		this.registerCommand(new Ping());
-		this.registerCommand(new Uptime());
-		this.registerCommand(new Changelog());
-		this.registerCommand(new Shutdown());
-		this.registerCommand(new GradleProject());
+		this.registerCommand(new EvalCommand());
+		this.registerCommand(new GradleCommand());
+		this.registerCommand(new GradleProjectCommand());
+		this.registerCommand(new GuildCommand());
+		this.registerCommand(new HelpCommand());
+		this.registerCommand(new JarCommand());
+		this.registerCommand(new MavenCommand());
+		this.registerCommand(new NotifyCommand());
+		this.registerCommand(new PingCommand());
+		this.registerCommand(new ShutdownCommand());
+		this.registerCommand(new UptimeCommand());
+		this.registerCommand(new VersionsCommand());
 	}
 
 	public Set<Command> getCommands() {

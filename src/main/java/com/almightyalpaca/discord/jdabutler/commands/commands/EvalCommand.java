@@ -16,7 +16,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class Eval implements Command {
+public class EvalCommand implements Command {
 
 	@Override
 	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
@@ -30,7 +30,7 @@ public class Eval implements Command {
 
 		shortcuts.put("api", message.getJDA());
 		shortcuts.put("jda", message.getJDA());
-		//            shortcuts.put("event", message.getJDA()); // RIP EVENT
+		shortcuts.put("event", event);
 
 		shortcuts.put("channel", channel);
 		shortcuts.put("server", channel.getGuild());

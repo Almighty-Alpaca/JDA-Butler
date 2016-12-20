@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
-public class Notify implements Command {
+public class NotifyCommand implements Command {
 	@Override
 	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
 		final Member member = channel.getGuild().getMember(sender);
@@ -56,7 +56,7 @@ public class Notify implements Command {
 			}
 		}
 
-		message.addReaction("\uD83D\uDC4D").queue();
+		message.addReaction("\uD83D\uDC4C\uD83C\uDFFC").queue();
 	}
 
 	@Override

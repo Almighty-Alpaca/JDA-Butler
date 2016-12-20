@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class GradleProject implements Command {
+public class GradleProjectCommand implements Command {
 	@Override
 	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
 		if (!GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.exists()) {
