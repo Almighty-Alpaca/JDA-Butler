@@ -22,6 +22,8 @@ import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
+import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.MessageBuilder.SplitPolicy;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
@@ -122,15 +124,22 @@ public class Bot {
 
 			@Override
 			public void onLog(final SimpleLog log, final Level level, final Object message) {
-				if (level.getPriority() >= Level.INFO.getPriority()) {
-					String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String
-							.valueOf(message)) + "`";
-					if (format.length() >= 2000) {
-						format = format.substring(0, 1999);
+				try {
+					if (level.getPriority() >= Level.INFO.getPriority()) {
+						String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String
+								.valueOf(message)) + "`";
+						if (format.length() >= 2000) {
+							format = format.substring(0, 1999);
+						}
+						final TextChannel channel = Bot.getChannelLogs();
+						if (channel != null) {
+							for (final Message m : new MessageBuilder().append(format).buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE)) {
+								channel.sendMessage(m).queue();
+							}
+						}
 					}
-					if (Bot.getChannelLogs() != null) {
-						Bot.getChannelLogs().sendMessage(format).queue();
-					}
+				} catch (final Exception e) {
+					e.printStackTrace();
 				}
 			}
 		});
