@@ -20,11 +20,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;
-import com.dropbox.core.v2.sharing.RequestedVisibility;
-import com.dropbox.core.v2.sharing.SharedLinkMetadata;
-import com.dropbox.core.v2.sharing.SharedLinkSettings;
-
-import com.almightyalpaca.discord.jdabutler.util.StringUtils;
+import com.dropbox.core.v2.files.WriteMode;
 
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -51,7 +47,7 @@ public class GradleProjectDropboxUploader {
 
 	public static final File			GRADLE_PROJECT_ZIP		= new File("exmaple gradle project for jda.zip");
 
-	public static final String			DROPBOX_FILE_NAME		= "JDA/jda gradle setup example.zip";
+	public static final String			DROPBOX_FILE_NAME		= "/JDA/jda gradle setup example.zip";
 
 	public static void createZip() {
 		Bot.LOG.info("Creating gradle example zip...");
@@ -124,32 +120,14 @@ public class GradleProjectDropboxUploader {
 
 		GradleProjectDropboxUploader.createZip();
 
-		InputStream in = null;
-		try {
-			GradleProjectDropboxUploader.client.files().delete(GradleProjectDropboxUploader.DROPBOX_FILE_NAME);
+		try (InputStream in = new FileInputStream(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP)) {
 
-			in = new FileInputStream(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP);
-			GradleProjectDropboxUploader.client.files().uploadBuilder(GradleProjectDropboxUploader.DROPBOX_FILE_NAME).uploadAndFinish(in);
-
-			final SharedLinkMetadata link = GradleProjectDropboxUploader.client.sharing().createSharedLinkWithSettings(GradleProjectDropboxUploader.DROPBOX_FILE_NAME, new SharedLinkSettings(
-					RequestedVisibility.PUBLIC, null, null));
-
-			System.out.println(StringUtils.replaceLast(link.getUrl(), "0", "1"));
-
-			Bot.config.put("jda.version.gradle-example-link", StringUtils.replaceLast(link.getUrl(), "0", "1"));
+			GradleProjectDropboxUploader.client.files().uploadBuilder(GradleProjectDropboxUploader.DROPBOX_FILE_NAME).withMute(true).withMode(WriteMode.OVERWRITE).uploadAndFinish(in);
 
 			Bot.LOG.info("Zip uploading finished!");
 
 		} catch (DbxException | IOException e) {
 			Bot.LOG.log(e);
-		} finally {
-			try {
-				if (in != null) {
-					in.close();
-				}
-			} catch (final IOException e) {
-				Bot.LOG.log(e);
-			}
 		}
 
 	}
