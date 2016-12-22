@@ -78,7 +78,7 @@ public class EventListener extends ListenerAdapter {
 
 						mb.append(Bot.getRoleJdaUpdates());
 
-						eb.setAuthor("JDA 3 build " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build, EmbedUtil.JDA_ICON);
+						eb.setAuthor("JDA 3 version " + version + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build, EmbedUtil.JDA_ICON);
 
 						EmbedUtil.setColor(eb);
 

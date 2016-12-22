@@ -1,15 +1,5 @@
 package com.almightyalpaca.discord.jdabutler.commands;
 
-import com.almightyalpaca.discord.jdabutler.Bot;
-import com.almightyalpaca.discord.jdabutler.commands.commands.*;
-import com.google.common.util.concurrent.MoreExecutors;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.events.ShutdownEvent;
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,6 +7,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.util.concurrent.MoreExecutors;
+
+import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.commands.commands.*;
+
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.ShutdownEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 public class Dispatcher extends ListenerAdapter {
 
@@ -56,38 +57,34 @@ public class Dispatcher extends ListenerAdapter {
 			return;
 		}
 
-		final User sender = event.getAuthor();
 		if (message.toLowerCase().startsWith(prefix.toLowerCase())) {
 			for (final Command c : this.getCommands()) {
 				if (message.toLowerCase().startsWith(prefix.toLowerCase() + c.getName().toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + c.getName())) {
-					this.pool.submit(() -> {
-						final String content = this.removePrefix(c.getName(), prefix, event);
-						try {
-							Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
-							c.dispatch(sender, channel, event.getMessage(), content, event);
-						} catch (final Exception e) {
-							channel.sendMessage(String.format("**There was an error processing your command!**\n```\n%s```", ExceptionUtils.getStackTrace(e))).queue();
-						}
-					});
-					break;
+					executeCommand(c, c.getName(), prefix, event);
+					return;
 				} else {
 					for (final String alias : c.getAliases()) {
 						if (message.toLowerCase().startsWith(prefix.toLowerCase() + alias.toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + alias)) {
-							this.pool.submit(() -> {
-								try {
-									final String content = this.removePrefix(alias, prefix, event);
-									Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
-									c.dispatch(sender, channel, event.getMessage(), content, event);
-								} catch (final Exception e) {
-									channel.sendMessage(String.format("**There was an error processing your command!**\n```\n%s```", ExceptionUtils.getStackTrace(e))).queue();
-								}
-							});
+							executeCommand(c, alias, prefix, event);
 							return;
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private void executeCommand(Command c, String alias, String prefix, GuildMessageReceivedEvent event) {
+		this.pool.submit(() -> {
+			try {
+				final String content = this.removePrefix(alias, prefix, event);
+				Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
+				c.dispatch(event.getAuthor(), event.getChannel(), event.getMessage(), content, event);
+			} catch (final Exception e) {
+				event.getChannel().sendMessage(String.format("**There was an error processing your command!**")).queue();
+				Bot.LOG.log(e);
+			}
+		});
 	}
 
 	@Override
