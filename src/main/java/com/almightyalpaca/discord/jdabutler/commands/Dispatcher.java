@@ -1,5 +1,15 @@
 package com.almightyalpaca.discord.jdabutler.commands;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.commands.commands.*;
+import com.google.common.util.concurrent.MoreExecutors;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.events.ShutdownEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,19 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import com.google.common.util.concurrent.MoreExecutors;
-
-import com.almightyalpaca.discord.jdabutler.Bot;
-import com.almightyalpaca.discord.jdabutler.commands.commands.*;
-
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.events.ShutdownEvent;
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 public class Dispatcher extends ListenerAdapter {
 
@@ -78,7 +75,7 @@ public class Dispatcher extends ListenerAdapter {
 						if (message.toLowerCase().startsWith(prefix.toLowerCase() + alias.toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + alias)) {
 							this.pool.submit(() -> {
 								try {
-									final String content = this.removePrefix(c.getName(), prefix, event);
+									final String content = this.removePrefix(alias, prefix, event);
 									Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
 									c.dispatch(sender, channel, event.getMessage(), content, event);
 								} catch (final Exception e) {
