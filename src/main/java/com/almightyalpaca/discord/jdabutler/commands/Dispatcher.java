@@ -14,7 +14,6 @@ import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.commands.*;
 
 import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -42,6 +41,19 @@ public class Dispatcher extends ListenerAdapter {
 		this.registerCommand(new VersionsCommand());
 	}
 
+	private void executeCommand(final Command c, final String alias, final String prefix, final GuildMessageReceivedEvent event) {
+		this.pool.submit(() -> {
+			try {
+				final String content = this.removePrefix(alias, prefix, event);
+				Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
+				c.dispatch(event.getAuthor(), event.getChannel(), event.getMessage(), content, event);
+			} catch (final Exception e) {
+				event.getChannel().sendMessage(String.format("**There was an error processing your command!**")).queue();
+				Bot.LOG.log(e);
+			}
+		});
+	}
+
 	public Set<Command> getCommands() {
 		return Collections.unmodifiableSet(new HashSet<>(this.commands));
 	}
@@ -60,31 +72,18 @@ public class Dispatcher extends ListenerAdapter {
 		if (message.toLowerCase().startsWith(prefix.toLowerCase())) {
 			for (final Command c : this.getCommands()) {
 				if (message.toLowerCase().startsWith(prefix.toLowerCase() + c.getName().toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + c.getName())) {
-					executeCommand(c, c.getName(), prefix, event);
+					this.executeCommand(c, c.getName(), prefix, event);
 					return;
 				} else {
 					for (final String alias : c.getAliases()) {
 						if (message.toLowerCase().startsWith(prefix.toLowerCase() + alias.toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + alias)) {
-							executeCommand(c, alias, prefix, event);
+							this.executeCommand(c, alias, prefix, event);
 							return;
 						}
 					}
 				}
 			}
 		}
-	}
-
-	private void executeCommand(Command c, String alias, String prefix, GuildMessageReceivedEvent event) {
-		this.pool.submit(() -> {
-			try {
-				final String content = this.removePrefix(alias, prefix, event);
-				Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
-				c.dispatch(event.getAuthor(), event.getChannel(), event.getMessage(), content, event);
-			} catch (final Exception e) {
-				event.getChannel().sendMessage(String.format("**There was an error processing your command!**")).queue();
-				Bot.LOG.log(e);
-			}
-		});
 	}
 
 	@Override
