@@ -16,6 +16,7 @@ import com.mashape.unirest.http.Unirest;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.FormattingUtil;
+import com.almightyalpaca.discord.jdabutler.JDAUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -27,11 +28,11 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 public class ChangelogCommand implements Command {
 	@Override
-	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
+	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception {
 		final EmbedBuilder eb = new EmbedBuilder();
 		final MessageBuilder mb = new MessageBuilder();
 		try {
-			final List<Integer> args = Arrays.stream(content.split("\\s+")).filter(s -> s != null && !s.trim().isEmpty()).map(Integer::parseInt).sorted().collect(Collectors.toList());
+			final List<Integer> args = Arrays.stream(content.split("\\s+")).filter(s -> s != null && !s.trim().isEmpty()).map(JDAUtil::getBuildNumber).sorted().collect(Collectors.toList());
 
 			final int start;
 			final int end;
@@ -96,14 +97,10 @@ public class ChangelogCommand implements Command {
 							fields += currentFields;
 						}
 
-						System.out.println("currentFields   " + currentFields);
-
 						for (int j = 0; j < currentFields; j++) {
 							final String field = changelog.get(j);
 							eb.addField(j == 0 ? version : "", field, false);
 						}
-
-						System.out.println("fields   " + fields);
 
 						if (fields == 24) {
 
@@ -118,11 +115,10 @@ public class ChangelogCommand implements Command {
 					do {
 						if (Objects.toString(cause.getMessage()).contains("time") && Objects.toString(cause.getMessage()).contains("out")) {
 							Bot.LOG.fatal("!changelog connection timed out!");
-							return;
+							break;
 						}
 					} while ((cause = e.getCause()) != null);
-					Bot.LOG.fatal("The following response errored: " + response);
-					Bot.LOG.log(e);
+					throw e;
 				}
 			}
 
@@ -137,7 +133,12 @@ public class ChangelogCommand implements Command {
 		} catch (final NumberFormatException e) {
 			mb.append("Invalid build number!");
 		}
-		channel.sendMessage(mb.setEmbed(eb.build()).build()).queue();
+
+		if (!eb.isEmpty()) {
+			mb.setEmbed(eb.build());
+		}
+
+		channel.sendMessage(mb.build()).queue();
 	}
 
 	@Override
