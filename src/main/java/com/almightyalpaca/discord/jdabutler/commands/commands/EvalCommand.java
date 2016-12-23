@@ -11,10 +11,12 @@ import com.almightyalpaca.discord.jdabutler.commands.Command;
 import com.almightyalpaca.discord.jdabutler.eval.Engine;
 
 import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.MessageBuilder.SplitPolicy;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.core.requests.RestAction;
 
 public class EvalCommand implements Command {
 
@@ -47,7 +49,9 @@ public class EvalCommand implements Command {
 
 		final Triple<Object, String, String> result = Engine.GROOVY.eval(shortcuts, Collections.emptyList(), Engine.DEFAULT_IMPORTS, timeout, content);
 
-		if (result.getLeft() != null) {
+		if (result.getLeft() instanceof RestAction<?>) {
+			((RestAction<?>) result.getLeft()).queue();
+		} else if (result.getLeft() != null) {
 			builder.appendCodeBlock(result.getLeft().toString(), "");
 		}
 		if (!result.getMiddle().isEmpty()) {
@@ -57,12 +61,12 @@ public class EvalCommand implements Command {
 			builder.append("\n").appendCodeBlock(result.getRight(), "");
 		}
 
-		if (builder.length() == 0) {
-			builder.append("✅");
-		}
-
-		for (final Message m : builder.buildAll(MessageBuilder.SplitPolicy.NEWLINE, MessageBuilder.SplitPolicy.SPACE, MessageBuilder.SplitPolicy.ANYWHERE)) {
-			channel.sendMessage(m).queue();
+		if (builder.isEmpty()) {
+			event.getMessage().addReaction("✅").queue();
+		} else {
+			for (final Message m : builder.buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE)) {
+				event.getChannel().sendMessage(m).queue();
+			}
 		}
 	}
 
