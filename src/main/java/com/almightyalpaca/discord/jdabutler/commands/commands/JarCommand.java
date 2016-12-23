@@ -24,7 +24,7 @@ public class JarCommand implements Command {
 		eb.addField("jar", "[download](http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + ".jar)", true);
 		eb.addField("javadoc", "[download](http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar)", true);
 		eb.addField("sources", "[download](http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-sources.jar)", true);
-		eb.addField("withDependencies", "[download](http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-withDependencies-" + version + ".jar)", true);
+		eb.addField("withDependencies", "[download](http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-withDependencies.jar)", true);
 
 		channel.sendMessage(eb.build()).queue();
 
