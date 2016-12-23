@@ -54,16 +54,6 @@ public class EventListener extends ListenerAdapter {
 					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda.version.build", -1)) {
 						Bot.LOG.debug("Update found!");
 
-						final String timestamp = FormattingUtil.formatTimestap(object.getLong("timestamp"));
-
-						final EmbedBuilder eb = new EmbedBuilder();
-
-						final MessageBuilder mb = new MessageBuilder();
-
-						final JSONArray culprits = object.getJSONArray("culprits");
-
-						FormattingUtil.setFooter(eb, culprits, timestamp);
-
 						final JSONArray artifacts = object.getJSONArray("artifacts");
 
 						final String displayPath = artifacts.getJSONObject(0).getString("displayPath");
@@ -73,6 +63,31 @@ public class EventListener extends ListenerAdapter {
 						if (index > 0) {
 							version = version.substring(0, index);
 						}
+
+						Bot.config.put("jda.version.build", build);
+						Bot.config.put("jda.version.name", version);
+
+						Bot.config.save();
+
+						EventListener.executor.submit(() -> {
+							DocParser.reFetch();
+							GradleProjectDropboxUploader.uploadProject();
+						});
+
+						if (Bot.config.getBoolean("testing", true)) {
+							Bot.LOG.debug("Skipping announcement!");
+							return;
+						}
+
+						final String timestamp = FormattingUtil.formatTimestap(object.getLong("timestamp"));
+
+						final EmbedBuilder eb = new EmbedBuilder();
+
+						final MessageBuilder mb = new MessageBuilder();
+
+						final JSONArray culprits = object.getJSONArray("culprits");
+
+						FormattingUtil.setFooter(eb, culprits, timestamp);
 
 						final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
 
@@ -118,15 +133,6 @@ public class EventListener extends ListenerAdapter {
 						Bot.getChannelAnnouncements().sendMessage(message).block();
 
 						Bot.getRoleJdaUpdates().getManager().setMentionable(false).queue();
-
-						Bot.config.put("jda.version.build", build);
-						Bot.config.put("jda.version.name", version);
-
-						Bot.config.save();
-
-						DocParser.reFetch();
-
-						GradleProjectDropboxUploader.uploadProject();
 
 					}
 				} catch (final Exception e) {
