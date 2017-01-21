@@ -120,6 +120,11 @@ public class GradleProjectDropboxUploader {
 
 		GradleProjectDropboxUploader.createZip();
 
+		if (Bot.config.getBoolean("testing", true)) {
+			Bot.LOG.debug("Skipping upload!");
+			return;
+		}
+
 		try (InputStream in = new FileInputStream(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP)) {
 
 			GradleProjectDropboxUploader.client.files().uploadBuilder(GradleProjectDropboxUploader.DROPBOX_FILE_NAME).withMute(true).withMode(WriteMode.OVERWRITE).uploadAndFinish(in);

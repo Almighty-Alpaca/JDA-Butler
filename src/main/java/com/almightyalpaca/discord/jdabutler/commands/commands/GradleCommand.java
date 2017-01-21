@@ -47,7 +47,6 @@ public class GradleCommand implements Command {
 
 		if (lavaplayer) {
 			dependencies.add(new ImmutableTriple<>(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion()));
-			repositories.add(new ImmutablePair<>(Lavaplayer.REPO_NAME, Lavaplayer.REPO_URL));
 		}
 
 		field += GradleUtil.getDependencyBlock(dependencies, pretty) + "\n";

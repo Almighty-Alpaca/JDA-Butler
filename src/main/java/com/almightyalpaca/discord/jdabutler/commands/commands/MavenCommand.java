@@ -39,10 +39,6 @@ public class MavenCommand implements Command {
 
 		field += MavenUtil.getRepositoryString("jcenter", "jcenter-bintray", "http://jcenter.bintray.com", null) + "\n";
 
-		if (lavaplayer) {
-			field += MavenUtil.getRepositoryString("sedmelluq", "sedmelluq", "http://maven.sedmelluq.com/", null) + "\n";
-		}
-
 		field += "```";
 
 		eb.addField("", field, false);
