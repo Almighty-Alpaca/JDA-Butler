@@ -65,9 +65,8 @@ public class Dispatcher extends ListenerAdapter {
 		final TextChannel channel = event.getChannel();
 
 		// In DAPI only listen to messages in #java_jda
-		if (channel.getGuild().getId().equals("81384788765712384") && !channel.getId().equals("129750718931271681")) {
+		if (channel.getGuild().getId().equals("81384788765712384") && !channel.getId().equals("129750718931271681"))
 			return;
-		}
 
 		if (message.toLowerCase().startsWith(prefix.toLowerCase())) {
 			for (final Command c : this.getCommands()) {
@@ -92,12 +91,10 @@ public class Dispatcher extends ListenerAdapter {
 	}
 
 	public boolean registerCommand(final Command command) {
-		if (command.getName().contains(" ")) {
+		if (command.getName().contains(" "))
 			throw new IllegalArgumentException("Name must not have spaces!");
-		}
-		if (this.commands.stream().map(Command::getName).anyMatch(c -> command.getName().equalsIgnoreCase(c))) {
+		if (this.commands.stream().map(Command::getName).anyMatch(c -> command.getName().equalsIgnoreCase(c)))
 			return false;
-		}
 		this.commands.add(command);
 		return true;
 	}

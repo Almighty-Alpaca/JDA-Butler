@@ -99,7 +99,7 @@ public class EventListener extends ListenerAdapter {
 
 						if (changeSets.length() > 0) {
 
-							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
+							eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
 							final List<String> changelog = FormattingUtil.getChangelog(changeSets);
 

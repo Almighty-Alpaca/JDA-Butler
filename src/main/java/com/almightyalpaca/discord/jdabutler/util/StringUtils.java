@@ -27,13 +27,12 @@ public class StringUtils {
 
 	public static String[] split(String string, final int lenth, final String split) {
 		Objects.requireNonNull(string);
-		if (string.length() == 0) {
+		if (string.length() == 0)
 			return new String[] {};
-		} else if (string.length() == 1) {
+		else if (string.length() == 1)
 			return new String[] { string };
-		} else if (string.length() <= lenth) {
+		else if (string.length() <= lenth)
 			return new String[] { string };
-		}
 		final List<String> strings = new ArrayList<>();
 
 		while (string.length() > lenth) {
@@ -41,9 +40,8 @@ public class StringUtils {
 
 			final int index = current.lastIndexOf(split);
 
-			if (index == -1) {
+			if (index == -1)
 				throw new UnsupportedOperationException("One or more substrings were too long!");
-			}
 
 			final String substring = current.substring(0, index);
 

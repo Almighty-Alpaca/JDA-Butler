@@ -45,11 +45,10 @@ public class GradleUtil {
 	}
 
 	public static String getDependencyString(final String group, final String name, final String version, final boolean pretty) {
-		if (pretty) {
+		if (pretty)
 			return "compile group: '" + group + "', name: '" + name + "', version: '" + version + "'";
-		} else {
+		else
 			return "compile '" + group + ":" + name + ":" + version + "'";
-		}
 	}
 
 	public static String getPluginsBlock(final Collection<Pair<String, String>> plugins) {
@@ -78,12 +77,11 @@ public class GradleUtil {
 		if (indentation == null) {
 			indentation = "";
 		}
-		if (name.equals("jcenter()") && url == null) {
+		if (name.equals("jcenter()") && url == null)
 			return indentation + name;
-		} else if (name.equals("mavenCentral()") && url == null) {
+		else if (name.equals("mavenCentral()") && url == null)
 			return indentation + name;
-		} else {
+		else
 			return indentation + "maven {\n" + indentation + "    name '" + name + "'\n" + indentation + "    url '" + url + "'\n" + indentation + "}";
-		}
 	}
 }

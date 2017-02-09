@@ -86,23 +86,19 @@ public class DocParser {
 
 	public static String get(final String name) {
 		final String[] split = name.toLowerCase().split("[#\\.]", 2);
-		if (split.length != 2) {
+		if (split.length != 2)
 			return "Incorrect Method declaration";
-		}
 		List<Documentation> methods;
 		synchronized (DocParser.docs) {
-			if (!DocParser.docs.containsKey(split[0])) {
+			if (!DocParser.docs.containsKey(split[0]))
 				return "Class not Found!";
-			}
 			methods = DocParser.docs.get(split[0]);
 		}
 		methods = methods.parallelStream().filter(doc -> doc.matches(split[1])).sorted(Comparator.comparingInt(doc -> doc.argTypes.size())).collect(Collectors.toList());
-		if (methods.size() == 0) {
+		if (methods.size() == 0)
 			return "Method not found/documented in Class!";
-		}
-		if (methods.size() > 1 && methods.get(0).argTypes.size() != 0) {
+		if (methods.size() > 1 && methods.get(0).argTypes.size() != 0)
 			return "Multiple methods found: " + methods.parallelStream().map(m -> '(' + StringUtils.join(m.argTypes, ", ") + ')').collect(Collectors.joining(", "));
-		}
 		final Documentation doc = methods.get(0);
 		final StringBuilder b = new StringBuilder();
 		b.append("```\n").append(doc.functionHead).append("\n```\n").append(doc.desc);
@@ -121,9 +117,8 @@ public class DocParser {
 	}
 
 	public static void init() {
-		if (!DocParser.docs.isEmpty()) {
+		if (!DocParser.docs.isEmpty())
 			return;
-		}
 		DocParser.LOG.info("Initializing JDA-Docs");
 		DocParser.download();
 		DocParser.parse();
@@ -242,24 +237,19 @@ public class DocParser {
 				input += "()";
 			}
 			final Matcher matcher = DocParser.METHOD_PATTERN.matcher(' ' + input);
-			if (!matcher.find()) {
+			if (!matcher.find())
 				return false;
-			}
-			if (!matcher.group(1).equalsIgnoreCase(this.functionName)) {
+			if (!matcher.group(1).equalsIgnoreCase(this.functionName))
 				return false;
-			}
 			final String args = matcher.group(2);
-			if (args.isEmpty()) {
+			if (args.isEmpty())
 				return true;
-			}
 			final String[] split = args.split(",");
-			if (split.length != this.argTypes.size()) {
+			if (split.length != this.argTypes.size())
 				return false;
-			}
 			for (int i = 0; i < split.length; i++) {
-				if (!split[i].trim().equalsIgnoreCase(this.argTypes.get(i))) {
+				if (!split[i].trim().equalsIgnoreCase(this.argTypes.get(i)))
 					return false;
-				}
 			}
 			return true;
 		}

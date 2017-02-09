@@ -20,7 +20,7 @@ public class VersionsCommand implements Command {
 
 		eb.setAuthor("Latest versions", null, EmbedUtil.JDA_ICON);
 
-		eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
+		eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
 		eb.addField("JDA", "[" + Bot.config.getString("jda.version.name") + "](http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/)", true);
 		eb.addField("Lavaplayer", "[" + Lavaplayer.getLatestVersion() + "](https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord)", true);

@@ -73,9 +73,8 @@ public enum Engine {
 	public static Engine getEngineByCode(String code) {
 		code = code.toLowerCase();
 		for (final Engine engine : Engine.values()) {
-			if (engine.codes.contains(code)) {
+			if (engine.codes.contains(code))
 				return engine;
-			}
 		}
 		return null;
 	}

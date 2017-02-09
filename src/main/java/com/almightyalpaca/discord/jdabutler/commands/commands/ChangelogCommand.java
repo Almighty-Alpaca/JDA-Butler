@@ -83,7 +83,7 @@ public class ChangelogCommand implements Command {
 
 					if (changeSets.length() > 0) {
 
-						eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
+						eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
 						final List<String> changelog = FormattingUtil.getChangelog(changeSets);
 
@@ -104,7 +104,7 @@ public class ChangelogCommand implements Command {
 
 						if (fields == 24) {
 
-							eb.addField("max lenght reached", "", false);
+							eb.addField("max embed length reached", "", false);
 							break;
 						}
 

@@ -22,9 +22,8 @@ public class EvalCommand implements Command {
 
 	@Override
 	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
-		if (!Bot.isAdmin(sender)) {
+		if (!Bot.isAdmin(sender))
 			return;
-		}
 		final MessageBuilder builder = new MessageBuilder();
 
 		// Execute code

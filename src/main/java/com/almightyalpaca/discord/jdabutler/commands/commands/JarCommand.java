@@ -20,7 +20,7 @@ public class JarCommand implements Command {
 		final EmbedBuilder eb = new EmbedBuilder();
 		EmbedUtil.setColor(eb);
 		eb.setAuthor("Latest JDA jars", null, EmbedUtil.JDA_ICON);
-		eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE);
+		eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 		eb.addField("jar", "[download](http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + ".jar)", true);
 		eb.addField("javadoc", "[download](http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-javadoc.jar)", true);
 		eb.addField("sources", "[download](http://home.dv8tion.net:8080/job/JDA/" + build + "/artifact/build/libs/JDA-" + version + "-sources.jar)", true);

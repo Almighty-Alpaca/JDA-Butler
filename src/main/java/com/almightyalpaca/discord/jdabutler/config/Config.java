@@ -227,9 +227,8 @@ public class Config {
 					value = value.getAsJsonObject().get(element);
 				}
 			}
-			if (value == null) {
+			if (value == null)
 				throw new NullPointerException();
-			}
 			return value;
 		} catch (final IllegalStateException e) {
 			throw new WrongTypeException(e);
