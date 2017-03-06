@@ -31,7 +31,8 @@ public class AnnouncementsCommand implements Command {
 			channel.sendMessage("Helper+ only command!").queue();
 			return;
 		}
-		if (content.toLowerCase().matches(".+ .+")) {
+		int index = content.indexOf(' ');
+		if (index > 0 && index < content.length() - 1) {
 			String[] args = content.split(" ", 2);
 			if (!args[0].toLowerCase().equals(CHANNEL_TYPES.get(channel.getId()))) {
 				channel.sendMessage("Wrong channel!").queue();
