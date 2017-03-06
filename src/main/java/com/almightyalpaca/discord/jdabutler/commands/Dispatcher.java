@@ -1,5 +1,13 @@
 package com.almightyalpaca.discord.jdabutler.commands;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.commands.commands.*;
+import com.google.common.util.concurrent.MoreExecutors;
+import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.events.ShutdownEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -7,16 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import com.google.common.util.concurrent.MoreExecutors;
-
-import com.almightyalpaca.discord.jdabutler.Bot;
-import com.almightyalpaca.discord.jdabutler.commands.commands.*;
-
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.events.ShutdownEvent;
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 public class Dispatcher extends ListenerAdapter {
 
@@ -39,6 +37,7 @@ public class Dispatcher extends ListenerAdapter {
 		this.registerCommand(new ShutdownCommand());
 		this.registerCommand(new UptimeCommand());
 		this.registerCommand(new VersionsCommand());
+		this.registerCommand(new AnnouncementsCommand());
 	}
 
 	private void executeCommand(final Command c, final String alias, final String prefix, final GuildMessageReceivedEvent event) {
@@ -48,7 +47,7 @@ public class Dispatcher extends ListenerAdapter {
 				Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
 				c.dispatch(event.getAuthor(), event.getChannel(), event.getMessage(), content, event);
 			} catch (final Exception e) {
-				event.getChannel().sendMessage(String.format("**There was an error processing your command!**")).queue();
+				event.getChannel().sendMessage("**There was an error processing your command!**").queue();
 				Bot.LOG.log(e);
 			}
 		});
