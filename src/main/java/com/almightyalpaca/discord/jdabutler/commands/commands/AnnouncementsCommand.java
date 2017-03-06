@@ -1,5 +1,6 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.Role;
@@ -12,6 +13,10 @@ import java.util.List;
 public class AnnouncementsCommand implements Command {
 	@Override
 	public void dispatch(User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) throws Exception {
+		if(!Bot.isHelper(sender)){
+			channel.sendMessage("Helper+ only command!").queue();
+			return;
+		}
 		if (content.toLowerCase().matches(".+ .+")) {
 			String[] args = content.split(" ", 2);
 			List<Role> roles = channel.getGuild().getRolesByName(args[0] + " updates", true);

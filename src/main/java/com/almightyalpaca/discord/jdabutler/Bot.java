@@ -1,25 +1,13 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.HttpHost;
-
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
-import com.kantenkugel.discordbot.moduleutils.DocParser;
-
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
-
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import com.kantenkugel.discordbot.moduleutils.DocParser;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -30,6 +18,14 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import net.dv8tion.jda.core.utils.SimpleLog.Level;
 import net.dv8tion.jda.core.utils.SimpleLog.LogListener;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.http.HttpHost;
+
+import javax.security.auth.login.LoginException;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Bot {
 
@@ -79,6 +75,10 @@ public class Bot {
 
 	public static Role getRoleStaff() {
 		return Bot.getGuildJda().getRoleById("169481978268090369");
+	}
+
+	public static Role getRoleHelper() {
+		return getGuildJda().getRoleById("183963327033114624");
 	}
 
 	public static boolean isAdmin(final User user) {
@@ -152,5 +152,10 @@ public class Bot {
 
 	public static void shutdown() {
 		Bot.jda.shutdown();
+	}
+
+	public static boolean isHelper(User sender) {
+		return getGuildJda().isMember(sender) &&
+				(isAdmin(sender) || getGuildJda().getMember(sender).getRoles().contains(getRoleHelper()));
 	}
 }
