@@ -34,7 +34,7 @@ public class AnnouncementsCommand implements Command {
 		if (content.toLowerCase().matches(".+ .+")) {
 			String[] args = content.split(" ", 2);
 			if (!args[0].toLowerCase().equals(CHANNEL_TYPES.get(channel.getId()))) {
-				channel.sendMessage("https://i.arsenarsen.com/gkqgz2rz31.png").queue();
+				channel.sendMessage("Wrong channel!").queue();
 				return;
 			}
 			List<Role> roles = channel.getGuild().getRolesByName(args[0] + " updates", true);
