@@ -49,6 +49,10 @@ public class Bot {
 		return Bot.jda.getTextChannelById("125227483518861312");
 	}
 
+	public static TextChannel getChannelExperimental() {
+		return Bot.jda.getTextChannelById("289742061220134912");
+	}
+
 	public static TextChannel getChannelLavaplayer() {
 		return Bot.jda.getTextChannelById("263484072389640193");
 	}
@@ -67,6 +71,10 @@ public class Bot {
 
 	public static Role getRoleBots() {
 		return Bot.getGuildJda().getRoleById("125616720156033024");
+	}
+
+	public static Role getRoleExperimentalUpdates() {
+		return Bot.getGuildJda().getRoleById("289744006433472513");
 	}
 
 	public static Role getRoleHelper() {

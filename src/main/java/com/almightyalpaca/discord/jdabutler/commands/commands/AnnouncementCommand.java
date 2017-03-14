@@ -39,6 +39,9 @@ public class AnnouncementCommand implements Command {
 		} else if (channel.equals(Bot.getChannelLavaplayer())) {
 			role = Bot.getRoleLavaplayerUpdates();
 			image = null;
+		} else if (channel.equals(Bot.getChannelExperimental())) {
+			role = Bot.getRoleExperimentalUpdates();
+			image = EmbedUtil.JDA_ICON;
 		} else {
 			this.sendFailed(message);
 			return;
@@ -58,15 +61,13 @@ public class AnnouncementCommand implements Command {
 
 		mb.setEmbed(eb.build());
 
-		channel.sendMessage(mb.build()).queue();
-
 		role.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> role.getManager().setMentionable(false).queue()));
 
 	}
 
 	@Override
 	public String getHelp() {
-		return "`announce [jda/lavaplayer] | [title] | [text]`";
+		return "`announce [title] | [text]`";
 	}
 
 	@Override
