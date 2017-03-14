@@ -15,4 +15,9 @@ public interface Command {
 	String getHelp();
 
 	String getName();
+
+	default void sendFailed(final Message message) {
+		message.addReaction("❌").queue();
+	}
+
 }

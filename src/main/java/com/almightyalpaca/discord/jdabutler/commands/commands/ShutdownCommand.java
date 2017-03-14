@@ -12,9 +12,12 @@ public class ShutdownCommand implements Command {
 
 	@Override
 	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
-		if (Bot.isAdmin(sender)) {
-			Bot.shutdown();
+		if (!Bot.isAdmin(sender)) {
+			this.sendFailed(message);
+			return;
 		}
+
+		Bot.shutdown();
 	}
 
 	@Override
