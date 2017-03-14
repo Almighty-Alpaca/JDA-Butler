@@ -39,6 +39,7 @@ public class Dispatcher extends ListenerAdapter {
 		this.registerCommand(new ShutdownCommand());
 		this.registerCommand(new UptimeCommand());
 		this.registerCommand(new VersionsCommand());
+		this.registerCommand(new AnnouncementCommand());
 	}
 
 	private void executeCommand(final Command c, final String alias, final String prefix, final GuildMessageReceivedEvent event) {
@@ -48,7 +49,7 @@ public class Dispatcher extends ListenerAdapter {
 				Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
 				c.dispatch(event.getAuthor(), event.getChannel(), event.getMessage(), content, event);
 			} catch (final Exception e) {
-				event.getChannel().sendMessage(String.format("**There was an error processing your command!**")).queue();
+				event.getChannel().sendMessage("**There was an error processing your command!**").queue();
 				Bot.LOG.log(e);
 			}
 		});

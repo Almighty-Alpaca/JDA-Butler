@@ -49,6 +49,10 @@ public class Bot {
 		return Bot.jda.getTextChannelById("125227483518861312");
 	}
 
+	public static TextChannel getChannelLavaplayer() {
+		return Bot.jda.getTextChannelById("263484072389640193");
+	}
+
 	public static TextChannel getChannelLogs() {
 		return Bot.jda.getTextChannelById("241926199666802690");
 	}
@@ -63,6 +67,10 @@ public class Bot {
 
 	public static Role getRoleBots() {
 		return Bot.getGuildJda().getRoleById("125616720156033024");
+	}
+
+	public static Role getRoleHelper() {
+		return Bot.getGuildJda().getRoleById("183963327033114624");
 	}
 
 	public static Role getRoleJdaFanclub() {
@@ -84,6 +92,10 @@ public class Bot {
 	public static boolean isAdmin(final User user) {
 		final Member member = Bot.getGuildJda().getMember(user);
 		return member != null && member.getRoles().contains(Bot.getRoleStaff());
+	}
+
+	public static boolean isHelper(final User sender) {
+		return Bot.getGuildJda().isMember(sender) && (Bot.isAdmin(sender) || Bot.getGuildJda().getMember(sender).getRoles().contains(Bot.getRoleHelper()));
 	}
 
 	public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException,
