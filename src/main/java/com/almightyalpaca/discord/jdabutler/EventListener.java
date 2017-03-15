@@ -126,13 +126,12 @@ public class EventListener extends ListenerAdapter {
 
 						mb.setEmbed(embed);
 
-						final Message message = mb.build();
+						mb.build();
 
-						Bot.getRoleJdaUpdates().getManager().setMentionable(true).block();
+						final Role role = Bot.getRoleJdaUpdates();
+						final TextChannel channel = Bot.getChannelAnnouncements();
 
-						Bot.getChannelAnnouncements().sendMessage(message).block();
-
-						Bot.getRoleJdaUpdates().getManager().setMentionable(false).queue();
+						role.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> role.getManager().setMentionable(false).queue()));
 
 					}
 				} catch (final Exception e) {

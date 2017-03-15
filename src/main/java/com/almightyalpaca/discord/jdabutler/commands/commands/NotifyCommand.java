@@ -17,7 +17,7 @@ public class NotifyCommand implements Command {
 		final Guild guild = channel.getGuild();
 
 		if (!guild.equals(Bot.getGuildJda())) {
-			channel.sendMessage("You have to be in the JDA GuildCommand to use this feature <" + Bot.INVITE_LINK + ">").queue();
+			this.sendFailed(message);
 			return;
 		}
 
@@ -43,6 +43,8 @@ public class NotifyCommand implements Command {
 
 			if (content.contains("player")) {
 				role = Bot.getRoleLavaplayerUpdates();
+			} else if (content.contains("experimental")) {
+				role = Bot.getRoleExperimentalUpdates();
 			} else {
 				role = Bot.getRoleJdaUpdates();
 			}
