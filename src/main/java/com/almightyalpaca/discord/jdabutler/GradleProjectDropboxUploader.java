@@ -43,7 +43,7 @@ public class GradleProjectDropboxUploader {
 
 	public static final File			EXAMPLE_IMPL			= new File(GradleProjectDropboxUploader.SRC_MAIN_JAVA, "MessageListenerExample.java");
 
-	public static final String			EXMAPLE_IMPL_URL		= "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/development/src/examples/java/MessageListenerExample.java";
+	public static final String			EXMAPLE_IMPL_URL		= "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
 
 	public static final File			GRADLE_PROJECT_ZIP		= new File("exmaple gradle project for jda.zip");
 
