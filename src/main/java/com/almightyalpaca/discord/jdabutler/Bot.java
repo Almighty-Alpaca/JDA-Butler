@@ -1,25 +1,15 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import javax.security.auth.login.LoginException;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.HttpHost;
-
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
-import com.kantenkugel.discordbot.moduleutils.DocParser;
-
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
-
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+import com.kantenkugel.discordbot.moduleutils.DocParser;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -30,20 +20,28 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import net.dv8tion.jda.core.utils.SimpleLog.Level;
 import net.dv8tion.jda.core.utils.SimpleLog.LogListener;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.http.HttpHost;
+
+import javax.security.auth.login.LoginException;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Bot {
 
-	public static JDAImpl					jda;
-	public static Config					config;
-	public static EventListener				listener;
-	public static Dispatcher				dispatcher;
+	public static JDAImpl jda;
+	public static Config config;
+	public static EventListener listener;
+	public static Dispatcher dispatcher;
 
-	public static final SimpleLog			LOG			= SimpleLog.getLog("Bot");
+	public static final SimpleLog LOG = SimpleLog.getLog("Bot");
 
-	private static final SimpleDateFormat	DATEFORMAT	= new SimpleDateFormat("HH:mm:ss");
+	private static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("HH:mm:ss");
 
-	private static final String				LOGFORMAT	= "[%time%] [%level%] [%name%]: %text%";
-	public static final String				INVITE_LINK	= "https://discord.gg/0hMr4ce0tIk3pSjp";
+	private static final String LOGFORMAT = "[%time%] [%level%] [%name%]: %text%";
+	public static final String INVITE_LINK = "https://discord.gg/0hMr4ce0tIk3pSjp";
 
 	public static TextChannel getChannelAnnouncements() {
 		return Bot.jda.getTextChannelById("125227483518861312");
@@ -172,5 +170,20 @@ public class Bot {
 
 	public static void shutdown() {
 		Bot.jda.shutdown();
+	}
+
+	public static String hastebin(String text) {
+		try {
+			return "https://hastebin.com/" + Unirest.post("https://hastebin.com/documents")
+					.header("User-Agent", "Mozilla/5.0 JDA-Butler")
+					.header("Content-Type", "text/plain")
+					.body(text)
+					.asJson()
+					.getBody()
+					.getObject().getString("key");
+		} catch (UnirestException e) {
+			LOG.fatal(e);
+			return null;
+		}
 	}
 }
