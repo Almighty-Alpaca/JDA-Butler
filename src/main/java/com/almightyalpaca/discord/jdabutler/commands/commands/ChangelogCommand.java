@@ -1,30 +1,27 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.FormattingUtil;
 import com.almightyalpaca.discord.jdabutler.JDAUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 public class ChangelogCommand implements Command {
 	@Override
@@ -49,7 +46,9 @@ public class ChangelogCommand implements Command {
 			final List<Future<HttpResponse<String>>> responses = new ArrayList<>(end - start + 1);
 
 			for (int i = start; i <= end; i++) {
-				responses.add(Unirest.get("http://home.dv8tion.net:8080/job/JDA/" + i + "/api/json").asStringAsync());
+				responses.add(
+					Unirest.get(String.format("http://%s:8080/job/JDA/%d/api/json", JDAUtil.JENKINS_BASE.get(), i))
+						   .asStringAsync());
 			}
 
 			String first = null;

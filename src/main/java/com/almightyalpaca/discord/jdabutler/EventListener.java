@@ -1,19 +1,8 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import com.almightyalpaca.discord.jdabutler.eval.Engine;
 import com.kantenkugel.discordbot.moduleutils.DocParser;
 import com.mashape.unirest.http.Unirest;
-
-import com.almightyalpaca.discord.jdabutler.eval.Engine;
-
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.*;
@@ -21,6 +10,14 @@ import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.SimpleLog;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class EventListener extends ListenerAdapter {
 
@@ -48,7 +45,7 @@ public class EventListener extends ListenerAdapter {
 				// JDA
 				try {
 					Bot.LOG.debug("Checking for JDA 3 updates...");
-					response = Unirest.get("http://home.dv8tion.net:8080/job/JDA/lastBuild/api/json").asString().getBody();
+					response = Unirest.get(String.format("http://%s:8080/job/JDA/lastBuild/api/json", JDAUtil.JENKINS_BASE.get())).asString().getBody();
 					final JSONObject object = new JSONObject(response);
 					final int build = Integer.valueOf(object.getString("id"));
 					if (!object.getBoolean("building") && object.getString("result").equalsIgnoreCase("SUCCESS") && build != Bot.config.getInt("jda.version.build", -1)) {
@@ -117,7 +114,7 @@ public class EventListener extends ListenerAdapter {
 							}
 
 							if (changelog.size() > 25) {
-								eb.addField("", "max embed lenght reached", false);
+								eb.addField("", "max embed length reached", false);
 							}
 
 						}

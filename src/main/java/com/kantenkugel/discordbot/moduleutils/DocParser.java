@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
+import com.almightyalpaca.discord.jdabutler.JDAUtil;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -35,7 +35,6 @@ import net.dv8tion.jda.core.utils.SimpleLog;
 public class DocParser {
 	private static final SimpleLog							LOG					= SimpleLog.getLog("DocParser");
 
-	private static final String								JDA_JENKINS_PREFIX	= "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/";
 	private static final String								ARTIFACT_SUFFIX		= "api/json?tree=artifacts[*]";
 
 	private static final Path								LOCAL_SRC_PATH		= Paths.get("jda-src.jar");
@@ -62,13 +61,13 @@ public class DocParser {
 	private static void download() {
 		DocParser.LOG.info("Downloading JDA sources...");
 		try {
-			final HttpResponse<String> response = Unirest.get(DocParser.JDA_JENKINS_PREFIX + DocParser.ARTIFACT_SUFFIX).asString();
+			final HttpResponse<String> response = Unirest.get(DocParser.getPathToLastJenkinsBuild() + DocParser.ARTIFACT_SUFFIX).asString();
 			if (response.getStatus() < 300 && response.getStatus() > 199) {
 				final JSONArray artifacts = new JSONObject(response.getBody()).getJSONArray("artifacts");
 				for (int i = 0; i < artifacts.length(); i++) {
 					final JSONObject artifact = artifacts.getJSONObject(i);
 					if (artifact.getString("fileName").endsWith("sources.jar")) {
-						final URL artifactUrl = new URL(DocParser.JDA_JENKINS_PREFIX + "artifact/" + artifact.getString("relativePath"));
+						final URL artifactUrl = new URL(DocParser.getPathToLastJenkinsBuild() + "artifact/" + artifact.getString("relativePath"));
 						final URLConnection connection = artifactUrl.openConnection();
 						connection.setConnectTimeout(5000);
 						connection.setReadTimeout(5000);
@@ -82,6 +81,10 @@ public class DocParser {
 		} catch (UnirestException | IOException e) {
 			DocParser.LOG.log(e);
 		}
+	}
+
+	private static String getPathToLastJenkinsBuild() {
+		return "http://" + JDAUtil.JENKINS_BASE.get() + ":8080/job/JDA/lastSuccessfulBuild/";
 	}
 
 	public static String get(final String name) {
