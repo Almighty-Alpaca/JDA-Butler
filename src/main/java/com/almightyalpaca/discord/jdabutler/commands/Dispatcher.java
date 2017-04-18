@@ -34,6 +34,7 @@ public class Dispatcher extends ListenerAdapter {
 		this.registerCommand(new HelpCommand());
 		this.registerCommand(new JarCommand());
 		this.registerCommand(new MavenCommand());
+		this.registerCommand(new MavenProjectCommand());
 		this.registerCommand(new NotifyCommand());
 		this.registerCommand(new PingCommand());
 		this.registerCommand(new ShutdownCommand());
