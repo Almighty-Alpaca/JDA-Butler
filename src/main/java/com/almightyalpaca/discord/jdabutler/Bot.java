@@ -129,8 +129,8 @@ public class Bot {
 
 		Bot.config.save();
 		Bot.listener = new EventListener();
-		builder.addListener(Bot.listener);
-		builder.addListener(Bot.dispatcher = new Dispatcher());
+		builder.addEventListener(Bot.listener);
+		builder.addEventListener(Bot.dispatcher = new Dispatcher());
 
 		Bot.jda = (JDAImpl) builder.buildBlocking();
 
