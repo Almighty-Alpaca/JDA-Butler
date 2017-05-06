@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.core.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -160,9 +161,9 @@ public class EventListener extends ListenerAdapter {
 				role = Bot.getRoleJdaFanclub();
 			}
 
-			guild.getController().addRolesToMember(member, role).queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + user.getName() + "#" + user.getDiscriminator() + " (" + user.getId()
-					+ ") to " + role.getName()), Bot.LOG::log);
-
+			final AuditableRestAction<Void> action = guild.getController().addRolesToMember(member, role).reason("Auto Role");
+			final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), role.getName());
+			action.queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, message), Bot.LOG::log);
 		}
 	}
 
