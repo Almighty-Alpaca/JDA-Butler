@@ -10,6 +10,12 @@ import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.moduleutils.DocParser;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+import javax.security.auth.login.LoginException;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -23,14 +29,7 @@ import net.dv8tion.jda.core.utils.SimpleLog.LogListener;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpHost;
 
-import javax.security.auth.login.LoginException;
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class Bot {
-
 
 	public static JDAImpl					jda;
 	public static Config					config;
@@ -132,6 +131,8 @@ public class Bot {
 		builder.addEventListener(Bot.listener);
 		builder.addEventListener(Bot.dispatcher = new Dispatcher());
 
+		builder.setGame(Game.of("JDA"));
+
 		Bot.jda = (JDAImpl) builder.buildBlocking();
 
 		SimpleLog.addListener(new LogListener() {
@@ -164,24 +165,22 @@ public class Bot {
 		});
 
 		EventListener.start();
-
-		Bot.jda.getPresence().setGame(Game.of("JDA"));
-
 	}
 
 	public static void shutdown() {
+		Bot.jda.removeEventListener(Bot.jda.getRegisteredListeners());
+
+		try {
+			TimeUnit.SECONDS.sleep(1);
+		} catch (InterruptedException ignored) {}
+
 		Bot.jda.shutdown();
 	}
 
 	public static String hastebin(String text) {
 		try {
-			return "https://hastebin.com/" + Unirest.post("https://hastebin.com/documents")
-					.header("User-Agent", "Mozilla/5.0 JDA-Butler")
-					.header("Content-Type", "text/plain")
-					.body(text)
-					.asJson()
-					.getBody()
-					.getObject().getString("key");
+			return "https://hastebin.com/" + Unirest.post("https://hastebin.com/documents").header("User-Agent", "Mozilla/5.0 JDA-Butler").header("Content-Type", "text/plain").body(text).asJson()
+					.getBody().getObject().getString("key");
 		} catch (UnirestException e) {
 			LOG.fatal(e);
 			return null;
