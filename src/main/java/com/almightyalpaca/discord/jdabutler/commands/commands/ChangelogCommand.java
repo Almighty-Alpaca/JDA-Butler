@@ -116,7 +116,7 @@ public class ChangelogCommand implements Command {
 							Bot.LOG.fatal("!changelog connection timed out!");
 							break;
 						}
-					} while ((cause = e.getCause()) != null);
+					} while ((cause = cause.getCause()) != null);
 					throw e;
 				}
 			}
