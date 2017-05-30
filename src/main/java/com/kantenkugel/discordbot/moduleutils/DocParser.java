@@ -33,21 +33,21 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
 public class DocParser {
-	private static final SimpleLog							LOG					= SimpleLog.getLog("DocParser");
+	private static final SimpleLog LOG = SimpleLog.getLog("DocParser");
 
-	private static final String								ARTIFACT_SUFFIX		= "api/json?tree=artifacts[*]";
+	private static final String ARTIFACT_SUFFIX = "api/json?tree=artifacts[*]";
 
-	private static final Path								LOCAL_SRC_PATH		= Paths.get("jda-src.jar");
+	private static final Path LOCAL_SRC_PATH = Paths.get("jda-src.jar");
 
-	private static final String								JDA_CODE_BASE		= "net/dv8tion/jda";
+	private static final String JDA_CODE_BASE = "net/dv8tion/jda";
 
-	private static final Pattern							DOCS_PATTERN		= Pattern.compile("/\\*{2}\\s*\n(.*?)\n\\s*\\*/\\s*\n\\s*(?:@[^\n]+\n\\s*)*(.*?)\n", Pattern.DOTALL);
-	private static final Pattern							METHOD_PATTERN		= Pattern.compile(".*?\\s([a-zA-Z][a-zA-Z0-9]*)\\(([a-zA-Z0-9\\s\\.,<>]*)\\)");
-	private static final Pattern							METHOD_ARG_PATTERN	= Pattern.compile("([a-zA-Z][a-zA-Z0-9<>]*(?:\\.{3})?)\\s+[a-zA-Z][a-zA-Z0-9]");
+	private static final Pattern DOCS_PATTERN = Pattern.compile("/\\*{2}\\s*\n(.*?)\n\\s*\\*/\\s*\n\\s*(?:@[^\n]+\n\\s*)*(.*?)\n", Pattern.DOTALL);
+	private static final Pattern METHOD_PATTERN = Pattern.compile(".*?\\s([a-zA-Z][a-zA-Z0-9]*)\\(([a-zA-Z0-9\\s\\.,<>]*)\\)");
+	private static final Pattern METHOD_ARG_PATTERN = Pattern.compile("([a-zA-Z][a-zA-Z0-9<>]*(?:\\.{3})?)\\s+[a-zA-Z][a-zA-Z0-9]");
 
-	private static final String								LINK_PATTERN		= "\\{@link\\s.*?\\.?([^\\s\\.]+(?:\\([^\\)]*?\\))?)\\}";
+	private static final String LINK_PATTERN = "\\{@link\\s.*?\\.?([^\\s\\.]+(?:\\([^\\)]*?\\))?)\\}";
 
-	private static final Map<String, List<Documentation>>	docs				= new HashMap<>();
+	private static final Map<String, List<Documentation>> docs = new HashMap<>();
 
 	private static List<String> cleanupDocs(String docs) {
 		docs = docs.replace("\n", " ");
