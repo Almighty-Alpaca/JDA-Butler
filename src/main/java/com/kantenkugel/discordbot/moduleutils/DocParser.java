@@ -59,8 +59,8 @@ public class DocParser {
 
     private static final String JDA_CODE_BASE = "net/dv8tion/jda";
 
-    private static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z][a-zA-Z0-9]+)\\(([a-zA-Z0-9\\s\\.,<>]*)\\)");
-    private static final Pattern METHOD_ARG_PATTERN = Pattern.compile("\\s*([a-zA-Z][a-zA-Z0-9\\.]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
+    public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z][a-zA-Z0-9]+)\\(([a-zA-Z0-9\\s\\.,<>\\[\\]]*)\\)");
+    public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("\\s*([a-zA-Z][a-zA-Z0-9\\.]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
     private static final Pattern LINK_PATTERN = Pattern.compile("<a[^>]*>(.*?)</a>");
 
@@ -68,8 +68,6 @@ public class DocParser {
 
     public static Message get(final String name) {
         final String[] split = name.toLowerCase().split("[#\\.]");
-        if (split.length < 2)
-            return new MessageBuilder().append("Incorrect Method declaration").build();
         ClassDocumentation classDoc;
         synchronized (DocParser.docs) {
             if (!DocParser.docs.containsKey(split[0]))
@@ -164,6 +162,7 @@ public class DocParser {
     }
 
     private static String cleanupText(String docs) {
+        docs = replaceUglySpaces(docs);
         docs = docs.replace("\n", " ").replaceAll("\\s{2,}", " ");
         docs = docs.replaceAll("</?b>", "**").replaceAll("</?i>", "*").replaceAll("<br\\s?/?>", "\n");
         docs = LINK_PATTERN.matcher(docs).replaceAll("***$1***");
@@ -176,7 +175,7 @@ public class DocParser {
     }
 
     private static void download() {
-        DocParser.LOG.info("Downloading JDA sources...");
+        DocParser.LOG.info("Downloading JDA docs...");
         try {
             final HttpResponse<String> response = Unirest.get(DocParser.getPathToLastJenkinsBuild() + DocParser.ARTIFACT_SUFFIX).asString();
             if (response.getStatus() < 300 && response.getStatus() > 199) {
@@ -212,7 +211,7 @@ public class DocParser {
     }
 
     private static void parse() {
-        DocParser.LOG.info("Parsing source-file");
+        DocParser.LOG.info("Parsing docs-files");
         try (final JarFile file = new JarFile(DocParser.LOCAL_DOC_PATH.toFile())) {
             file.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(DocParser.JDA_CODE_BASE) && entry.getName().endsWith(".html")).forEach(entry -> {
                 try {
@@ -221,7 +220,7 @@ public class DocParser {
                     e.printStackTrace();
                 }
             });
-            DocParser.LOG.info("Done parsing docs-file");
+            DocParser.LOG.info("Done parsing docs-files");
         } catch (final IOException e) {
             DocParser.LOG.log(e);
         }
@@ -230,26 +229,39 @@ public class DocParser {
     private static Element getSingleElementByClass(Element root, String className) {
         Elements elementsByClass = root.getElementsByClass(className);
         if(elementsByClass.size() != 1) {
-            DocParser.LOG.warn("Found " + elementsByClass.size() + " elements with class " + className + " inside of " + root.tagName() + "-" + root.className());
+            String error = "Found " + elementsByClass.size() + " elements with class " + className + " inside of " + root.tagName() + "-" + root.className();
+            DocParser.LOG.fatal(error);
+            throw new RuntimeException(error + root.html());
         }
         return elementsByClass.size() == 0 ? null : elementsByClass.get(0);
     }
     private static Element getSingleElementByQuery(Element root, String query) {
         Elements elementsByClass = root.select(query);
-        if(elementsByClass.size() != 1) {
-            DocParser.LOG.warn("Found " + elementsByClass.size() + " elements with satisfying query \"" + query + "\" inside of " + root.tagName() + "-" + root.className());
+        if(elementsByClass.size() > 1) {
+            String error = "Found " + elementsByClass.size() + " elements matching query \"" + query + "\" inside of " + root.tagName() + "-" + root.className();
+            DocParser.LOG.fatal(error);
+            throw new RuntimeException(error + root.html());
         }
         return elementsByClass.size() == 0 ? null : elementsByClass.get(0);
     }
 
+    private static String replaceUglySpaces(String input) {
+        return input == null ? null : input.replaceAll("[\\h\\s]", " ");
+    }
+
     private static void parse(final String name, final InputStream inputStream) {
         final String[] pathSplits = name.split("/");
-        final String[] nameSplits = pathSplits[pathSplits.length - 1].split("\\.");
+        final String fileName = pathSplits[pathSplits.length - 1];
+        if(!Character.isUpperCase(fileName.charAt(0))) {
+            //ignore jdoc structure html
+            return;
+        }
+        final String[] nameSplits = fileName.split("\\.");
         final String className = nameSplits[nameSplits.length - 2];
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
             final String content = buffer.lines().collect(Collectors.joining("\n"));
             Document document = Jsoup.parse(content);
-            final String classSig = getSingleElementByClass(document, "title").text();
+            final String classSig = replaceUglySpaces(getSingleElementByClass(document, "title").text());
             final String description = cleanupText(getSingleElementByQuery(document, ".description .block").html());
             final ClassDocumentation classDoc = new ClassDocumentation(className, classSig, description, classSig.startsWith("Enum"));
             final Element details = document.getElementsByClass("details").first();
@@ -282,22 +294,23 @@ public class DocParser {
 
             //storing
             if(nameSplits.length > 2) {
+                if(!docs.containsKey(nameSplits[0].toLowerCase()))
+                    docs.put(nameSplits[0].toLowerCase(), new ClassDocumentation(null, null, null, false));
                 ClassDocumentation parent = docs.get(nameSplits[0].toLowerCase());
-                if(parent == null)
-                    throw new RuntimeException("Did not find parent class for class" + pathSplits[pathSplits.length - 1]);
                 for(int i = 1; i < nameSplits.length - 2; i++) {
+                    if(!parent.subClasses.containsKey(nameSplits[i].toLowerCase()))
+                        parent.subClasses.put(nameSplits[i].toLowerCase(), new ClassDocumentation(null, null, null, false));
                     parent = parent.subClasses.get(nameSplits[i].toLowerCase());
-                    if(parent == null)
-                        throw new RuntimeException("Did not find parent class for class" + pathSplits[pathSplits.length - 1]);
                 }
-                parent.subClasses.put(className, classDoc);
+                if(parent.subClasses.containsKey(className.toLowerCase()))
+                    classDoc.subClasses.putAll(parent.subClasses.get(className.toLowerCase()).subClasses);
+                parent.subClasses.put(className.toLowerCase(), classDoc);
             } else {
-                docs.put(className, classDoc);
+                if(docs.containsKey(className.toLowerCase()))
+                    classDoc.subClasses.putAll(docs.get(className.toLowerCase()).subClasses);
+                docs.put(className.toLowerCase(), classDoc);
             }
         } catch (final IOException | NullPointerException ignored) {}
-        catch (RuntimeException ex) {
-            DocParser.LOG.log(ex);
-        }
         try {
             inputStream.close();
         } catch (final IOException e) {
@@ -310,12 +323,12 @@ public class DocParser {
             List<DocBlock> blocks = new ArrayList<>(10);
             root.siblingElements().stream().filter(sibling -> sibling.tagName().equals("ul")).forEach(sibling -> {
                 Element tmp2 = sibling.getElementsByTag("h4").first();
-                String title = tmp2.text();
+                String title = replaceUglySpaces(tmp2.text().trim());
                 String description = null, signature = null;
                 OrderedMap<String, List<String>> fields = new ListOrderedMap<>();
                 for(;tmp2 != null; tmp2 = tmp2.nextElementSibling()) {
                     if(tmp2.tagName().equals("pre")) {
-                        signature = tmp2.text();
+                        signature = replaceUglySpaces(tmp2.text().trim());
                     } else if(tmp2.tagName().equals("div") && tmp2.className().equals("block")) {
                         description = cleanupText(tmp2.html());
                     } else if(tmp2.tagName().equals("dl")) {
@@ -327,7 +340,7 @@ public class DocParser {
                                     fields.put(fieldName, fieldValues);
                                     fieldValues = new ArrayList<>();
                                 }
-                                fieldName = element.text();
+                                fieldName = replaceUglySpaces(element.text().trim());
                             } else if(element.tagName().equals("dd")) {
                                 fieldValues.add(cleanupText(element.html()));
                             }
@@ -388,8 +401,10 @@ public class DocParser {
             this.desc = desc;
             this.fields = fields;
             Matcher matcher = METHOD_PATTERN.matcher(functionSig);
-            if(!matcher.find())
+            if(!matcher.find()) {
+                System.out.println('"' + functionSig + '"');
                 throw new RuntimeException("Got method with no proper method signature: " + functionSig);
+            }
             Matcher matcher2 = METHOD_ARG_PATTERN.matcher(matcher.group(2));
             this.argTypes = new ArrayList<>(3);
 
