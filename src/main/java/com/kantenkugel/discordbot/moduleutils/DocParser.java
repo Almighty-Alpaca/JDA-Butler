@@ -17,6 +17,23 @@
 
 package com.kantenkugel.discordbot.moduleutils;
 
+import com.almightyalpaca.discord.jdabutler.JDAUtil;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.utils.SimpleLog;
+import org.apache.commons.collections4.OrderedMap;
+import org.apache.commons.collections4.map.ListOrderedMap;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,101 +50,94 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import com.almightyalpaca.discord.jdabutler.JDAUtil;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-
-import net.dv8tion.jda.core.utils.SimpleLog;
-
 public class DocParser {
     private static final SimpleLog LOG = SimpleLog.getLog("DocParser");
 
     private static final String ARTIFACT_SUFFIX = "api/json?tree=artifacts[*]";
 
-    private static final Path LOCAL_SRC_PATH = Paths.get("jda-src.jar");
+    private static final Path LOCAL_DOC_PATH = Paths.get("jda-docs.jar");
 
     private static final String JDA_CODE_BASE = "net/dv8tion/jda";
 
-    private static final Pattern DOCS_PATTERN = Pattern.compile("/\\*{2}\\s*\n(.*?)\n\\s*\\*/\\s*\n\\s*(?:@[^\n]+\n\\s*)*(.*?)\n", Pattern.DOTALL);
-    private static final Pattern METHOD_PATTERN = Pattern.compile(".*?\\s([a-zA-Z][a-zA-Z0-9]*)\\(([a-zA-Z0-9\\s\\.,<>]*)\\)");
-    private static final Pattern METHOD_ARG_PATTERN = Pattern.compile("([a-zA-Z][a-zA-Z0-9<>]*(?:\\.{3})?)\\s+[a-zA-Z][a-zA-Z0-9]");
+    private static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z][a-zA-Z0-9]+)\\(([a-zA-Z0-9\\s\\.,<>]*)\\)");
+    private static final Pattern METHOD_ARG_PATTERN = Pattern.compile("\\s*([a-zA-Z][a-zA-Z0-9\\.]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
-    private static final String LINK_PATTERN = "\\{@link\\s.*?\\.?([^\\s\\.]+(?:\\([^\\)]*?\\))?)\\}";
+    private static final Pattern LINK_PATTERN = Pattern.compile("<a[^>]*>(.*?)</a>");
 
-    private static final Map<String, List<Documentation>> docs = new HashMap<>();
+    private static final Map<String, ClassDocumentation> docs = new HashMap<>();
 
-    private static List<String> cleanupDocs(String docs) {
-        docs = docs.replace("\n", " ");
-        docs = docs.replaceAll("(?:\\s+\\*)+\\s+", " ").replaceAll("\\s{2,}", " ");
-        docs = docs.replaceAll("</?b>", "**").replaceAll("</?i>", "*").replaceAll("<br/?>", "\n").replaceAll("<[^>]+>", "");
-        docs = docs.replaceAll("[^{]@", "\n@");
-        docs = docs.replaceAll(DocParser.LINK_PATTERN, "***$1***");
-        return Arrays.stream(docs.split("\n")).map(String::trim).collect(Collectors.toList());
-    }
+    public static Message get(final String name) {
+        final String[] split = name.toLowerCase().split("[#\\.]");
+        if (split.length < 2)
+            return new MessageBuilder().append("Incorrect Method declaration").build();
+        ClassDocumentation classDoc;
+        synchronized (DocParser.docs) {
+            if (!DocParser.docs.containsKey(split[0]))
+                return new MessageBuilder().append("Class not Found!").build();
+            classDoc = DocParser.docs.get(split[0]);
+        }
+        for(int i=1; i < split.length - 1; i++) {
+            if(!classDoc.subClasses.containsKey(split[i]))
+                return new MessageBuilder().appendFormat("Could not find Sub-Class %s of %s", split[i], classDoc.className).build();
+            classDoc = classDoc.subClasses.get(split[i]);
+        }
 
-    private static void download() {
-        DocParser.LOG.info("Downloading JDA sources...");
-        try {
-            final HttpResponse<String> response = Unirest.get(DocParser.getPathToLastJenkinsBuild() + DocParser.ARTIFACT_SUFFIX).asString();
-            if (response.getStatus() < 300 && response.getStatus() > 199) {
-                final JSONArray artifacts = new JSONObject(response.getBody()).getJSONArray("artifacts");
-                for (int i = 0; i < artifacts.length(); i++) {
-                    final JSONObject artifact = artifacts.getJSONObject(i);
-                    if (artifact.getString("fileName").endsWith("sources.jar")) {
-                        final URL artifactUrl = new URL(DocParser.getPathToLastJenkinsBuild() + "artifact/" + artifact.getString("relativePath"));
-                        final URLConnection connection = artifactUrl.openConnection();
-                        connection.setConnectTimeout(5000);
-                        connection.setReadTimeout(5000);
-                        final InputStream is = connection.getInputStream();
-                        Files.copy(is, DocParser.LOCAL_SRC_PATH, StandardCopyOption.REPLACE_EXISTING);
-                        is.close();
-                        DocParser.LOG.info("Done downloading JDA sources");
+        String searchObj = split[split.length - 1];
+        if(classDoc.subClasses.containsKey(searchObj)) {
+            classDoc = classDoc.subClasses.get(searchObj);
+            return new MessageBuilder().setEmbed(
+                    new EmbedBuilder()
+                            .setTitle(classDoc.classSig)
+                            .setDescription(classDoc.classDesc)
+                            .build()
+            ).build();
+        } else if(classDoc.classValues.containsKey(searchObj)) {
+            ValueDocumentation valueDoc = classDoc.classValues.get(searchObj);
+            if(classDoc.isEnum) {
+                return new MessageBuilder().setEmbed(
+                        new EmbedBuilder()
+                                .setTitle(classDoc.className+'.'+valueDoc.name)
+                                .setDescription(valueDoc.desc)
+                                .build()
+                ).build();
+            } else {
+                return new MessageBuilder().setEmbed(
+                        new EmbedBuilder()
+                                .setTitle(valueDoc.sig)
+                                .setDescription(valueDoc.desc)
+                                .build()
+                ).build();
+            }
+        } else {
+            Matcher matcher = METHOD_PATTERN.matcher(searchObj);
+            if(matcher.find()) {
+                String methodName = matcher.group(1);
+                if(classDoc.methodDocs.containsKey(methodName)) {
+                    List<MethodDocumentation> docs = classDoc.methodDocs.get(searchObj).parallelStream()
+                            .filter(doc -> doc.matches(searchObj))
+                            .sorted(Comparator.comparingInt(doc -> doc.argTypes.size()))
+                            .collect(Collectors.toList());
+                    if(docs.size() == 1) {
+                        MethodDocumentation doc = docs.get(0);
+                        EmbedBuilder embedBuilder = new EmbedBuilder()
+                                .setTitle(doc.functionSig)
+                                .setDescription(doc.desc);
+                        for(Map.Entry<String, List<String>> fieldEntry : doc.fields.entrySet()) {
+                            embedBuilder.addField(fieldEntry.getKey(), fieldEntry.getValue().stream().collect(Collectors.joining("\n")), false);
+                        }
+                        return new MessageBuilder().setEmbed(embedBuilder.build()).build();
+                    } else if(docs.size() == 0) {
+                        return new MessageBuilder().append("Found methods with given nabe but no matching signature").build();
+                    } else {
+                        String methods = docs.stream()
+                                .map(doc -> doc.functionName + '(' + doc.argTypes.stream().collect(Collectors.joining(", ")) + ')')
+                                .collect(Collectors.joining(", "));
+                        return new MessageBuilder().append("Found multiple valid method signatures: ").append(methods).build();
                     }
                 }
             }
-        } catch (UnirestException | IOException e) {
-            DocParser.LOG.log(e);
+            return new MessageBuilder().append("Could not find search-query").build();
         }
-    }
-
-    private static String getPathToLastJenkinsBuild() {
-        return "http://" + JDAUtil.JENKINS_BASE.get() + ":8080/job/JDA/lastSuccessfulBuild/";
-    }
-
-    public static String get(final String name) {
-        final String[] split = name.toLowerCase().split("[#\\.]", 2);
-        if (split.length != 2)
-            return "Incorrect Method declaration";
-        List<Documentation> methods;
-        synchronized (DocParser.docs) {
-            if (!DocParser.docs.containsKey(split[0]))
-                return "Class not Found!";
-            methods = DocParser.docs.get(split[0]);
-        }
-        methods = methods.parallelStream().filter(doc -> doc.matches(split[1])).sorted(Comparator.comparingInt(doc -> doc.argTypes.size())).collect(Collectors.toList());
-        if (methods.size() == 0)
-            return "Method not found/documented in Class!";
-        if (methods.size() > 1 && methods.get(0).argTypes.size() != 0)
-            return "Multiple methods found: " + methods.parallelStream().map(m -> '(' + StringUtils.join(m.argTypes, ", ") + ')').collect(Collectors.joining(", "));
-        final Documentation doc = methods.get(0);
-        final StringBuilder b = new StringBuilder();
-        b.append("```\n").append(doc.functionHead).append("\n```\n").append(doc.desc);
-        if (doc.args.size() > 0) {
-            b.append('\n').append('\n').append("**Arguments:**");
-            doc.args.entrySet().stream().map(e -> "**" + e.getKey() + "** - " + e.getValue()).forEach(a -> b.append('\n').append(a));
-        }
-        if (doc.returns != null) {
-            b.append('\n').append('\n').append("**Returns:**\n").append(doc.returns);
-        }
-        if (doc.throwing.size() > 0) {
-            b.append('\n').append('\n').append("**Throws:**");
-            doc.throwing.entrySet().stream().map(e -> "**" + e.getKey() + "** - " + e.getValue()).forEach(a -> b.append('\n').append(a));
-        }
-        return b.toString();
     }
 
     public static void init() {
@@ -137,79 +147,6 @@ public class DocParser {
         DocParser.download();
         DocParser.parse();
         DocParser.LOG.info("JDA-Docs initialized");
-    }
-
-    private static void parse() {
-        DocParser.LOG.info("Parsing source-file");
-        try (final JarFile file = new JarFile(DocParser.LOCAL_SRC_PATH.toFile())) {
-            file.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(DocParser.JDA_CODE_BASE) && entry.getName().endsWith(".java")).forEach(entry -> {
-                try {
-                    DocParser.parse(entry.getName(), file.getInputStream(entry));
-                } catch (final IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            DocParser.LOG.info("Done parsing source-file");
-        } catch (final IOException e) {
-            DocParser.LOG.log(e);
-        }
-    }
-
-    private static void parse(final String name, final InputStream inputStream) {
-        final String[] nameSplits = name.split("[/\\.]");
-        final String className = nameSplits[nameSplits.length - 2];
-        DocParser.docs.putIfAbsent(className.toLowerCase(), new ArrayList<>());
-        final List<Documentation> docs = DocParser.docs.get(className.toLowerCase());
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
-            final String content = buffer.lines().collect(Collectors.joining("\n"));
-            final Matcher matcher = DocParser.DOCS_PATTERN.matcher(content);
-            while (matcher.find()) {
-                String method = matcher.group(2).trim();
-                if (method.contains("class ") || method.contains("interface ")) {
-                    continue;
-                }
-                if (method.endsWith("{")) {
-                    method = method.substring(0, method.length() - 1).trim();
-                }
-                Matcher m2 = DocParser.METHOD_PATTERN.matcher(method);
-                if (!m2.find()) {
-                    continue;
-                }
-                final String methodName = m2.group(1);
-                final List<String> argTypes = new ArrayList<>();
-                m2 = DocParser.METHOD_ARG_PATTERN.matcher(m2.group(2));
-                while (m2.find()) {
-                    argTypes.add(m2.group(1));
-                }
-                final List<String> docText = DocParser.cleanupDocs(matcher.group(1));
-                String returns = null;
-
-                final Map<String, String> args = new HashMap<>();
-                final Map<String, String> throwing = new HashMap<>();
-                String desc = null;
-                for (final String line : docText) {
-                    if (!line.isEmpty() && line.charAt(0) == '@') {
-                        if (line.startsWith("@return ")) {
-                            returns = line.substring(8);
-                        } else if (line.startsWith("@param ")) {
-                            final String[] split = line.split("\\s+", 3);
-                            args.put(split[1], split.length == 3 ? split[2] : "*No Description*");
-                        } else if (line.startsWith("@throws ")) {
-                            final String[] split = line.split("\\s+", 3);
-                            throwing.put(split[1], split.length == 3 ? split[2] : "*No Description*");
-                        }
-                    } else {
-                        desc = desc == null ? line : desc + '\n' + line;
-                    }
-                }
-                docs.add(new Documentation(methodName, argTypes, method, desc, returns, args, throwing));
-            }
-        } catch (final IOException ignored) {}
-        try {
-            inputStream.close();
-        } catch (final IOException e) {
-            DocParser.LOG.log(e);
-        }
     }
 
     public static void reFetch() {
@@ -226,37 +163,254 @@ public class DocParser {
         }
     }
 
-    private static class Documentation {
-        private final String                functionName;
-        private final List<String>            argTypes;
-        private final String                functionHead;
-        private final String                desc;
-        private final String                returns;
-        private final Map<String, String>    args;
-        private final Map<String, String>    throwing;
+    private static String cleanupText(String docs) {
+        docs = docs.replace("\n", " ").replaceAll("\\s{2,}", " ");
+        docs = docs.replaceAll("</?b>", "**").replaceAll("</?i>", "*").replaceAll("<br\\s?/?>", "\n");
+        docs = LINK_PATTERN.matcher(docs).replaceAll("***$1***");
+        docs = docs.replaceAll("<[^>]+>", "");
+        return Arrays.stream(docs.split("\n")).map(String::trim).collect(Collectors.joining("\n"));
+    }
 
-        private Documentation(final String functionName, final List<String> argTypes, final String functionHead, final String desc, final String returns, final Map<String, String> args,
-                final Map<String, String> throwing) {
+    private static String getPathToLastJenkinsBuild() {
+        return "http://" + JDAUtil.JENKINS_BASE.get() + ":8080/job/JDA/lastSuccessfulBuild/";
+    }
+
+    private static void download() {
+        DocParser.LOG.info("Downloading JDA sources...");
+        try {
+            final HttpResponse<String> response = Unirest.get(DocParser.getPathToLastJenkinsBuild() + DocParser.ARTIFACT_SUFFIX).asString();
+            if (response.getStatus() < 300 && response.getStatus() > 199) {
+                final JSONArray artifacts = new JSONObject(response.getBody()).getJSONArray("artifacts");
+                for (int i = 0; i < artifacts.length(); i++) {
+                    final JSONObject artifact = artifacts.getJSONObject(i);
+                    if (artifact.getString("fileName").endsWith("javadoc.jar")) {
+                        if(download(artifact.getString("relativePath"), DocParser.LOCAL_DOC_PATH))
+                            DocParser.LOG.info("Done downloading JDA docs");
+                        break;
+                    }
+                }
+            }
+        } catch (UnirestException e) {
+            DocParser.LOG.log(e);
+        }
+    }
+
+    private static boolean download(String relPath, Path destination) {
+        try {
+            final URL artifactUrl = new URL(DocParser.getPathToLastJenkinsBuild() + "artifact/" + relPath);
+            final URLConnection connection = artifactUrl.openConnection();
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            final InputStream is = connection.getInputStream();
+            Files.copy(is, destination, StandardCopyOption.REPLACE_EXISTING);
+            is.close();
+            return true;
+        } catch(IOException e) {
+            DocParser.LOG.log(e);
+        }
+        return false;
+    }
+
+    private static void parse() {
+        DocParser.LOG.info("Parsing source-file");
+        try (final JarFile file = new JarFile(DocParser.LOCAL_DOC_PATH.toFile())) {
+            file.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(DocParser.JDA_CODE_BASE) && entry.getName().endsWith(".html")).forEach(entry -> {
+                try {
+                    DocParser.parse(entry.getName(), file.getInputStream(entry));
+                } catch (final IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            DocParser.LOG.info("Done parsing docs-file");
+        } catch (final IOException e) {
+            DocParser.LOG.log(e);
+        }
+    }
+
+    private static Element getSingleElementByClass(Element root, String className) {
+        Elements elementsByClass = root.getElementsByClass(className);
+        if(elementsByClass.size() != 1) {
+            DocParser.LOG.warn("Found " + elementsByClass.size() + " elements with class " + className + " inside of " + root.tagName() + "-" + root.className());
+        }
+        return elementsByClass.size() == 0 ? null : elementsByClass.get(0);
+    }
+    private static Element getSingleElementByQuery(Element root, String query) {
+        Elements elementsByClass = root.select(query);
+        if(elementsByClass.size() != 1) {
+            DocParser.LOG.warn("Found " + elementsByClass.size() + " elements with satisfying query \"" + query + "\" inside of " + root.tagName() + "-" + root.className());
+        }
+        return elementsByClass.size() == 0 ? null : elementsByClass.get(0);
+    }
+
+    private static void parse(final String name, final InputStream inputStream) {
+        final String[] pathSplits = name.split("/");
+        final String[] nameSplits = pathSplits[pathSplits.length - 1].split("\\.");
+        final String className = nameSplits[nameSplits.length - 2];
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
+            final String content = buffer.lines().collect(Collectors.joining("\n"));
+            Document document = Jsoup.parse(content);
+            final String classSig = getSingleElementByClass(document, "title").text();
+            final String description = cleanupText(getSingleElementByQuery(document, ".description .block").html());
+            final ClassDocumentation classDoc = new ClassDocumentation(className, classSig, description, classSig.startsWith("Enum"));
+            final Element details = document.getElementsByClass("details").first();
+            //methods
+            Element tmp = getSingleElementByQuery(details, "a[name=\"method.detail\"]");
+            List<DocBlock> docBlock = getDocBlock(tmp);
+            if(docBlock != null) {
+                for(DocBlock block : docBlock) {
+                    if(!classDoc.methodDocs.containsKey(block.title.toLowerCase()))
+                        classDoc.methodDocs.put(block.title.toLowerCase(), new HashSet<>());
+                    classDoc.methodDocs.get(block.title.toLowerCase()).add(new MethodDocumentation(block.title, block.signature, block.description, block.fields));
+                }
+            }
+            //vars
+            tmp = getSingleElementByQuery(details, "a[name=\"field.detail\"]");
+            docBlock = getDocBlock(tmp);
+            if(docBlock != null) {
+                for(DocBlock block : docBlock) {
+                    classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.signature, block.description));
+                }
+            }
+            //enum-values
+            tmp = getSingleElementByQuery(details, "a[name=\"enum.constant.detail\"]");
+            docBlock = getDocBlock(tmp);
+            if(docBlock != null) {
+                for(DocBlock block : docBlock) {
+                    classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.signature, block.description));
+                }
+            }
+
+            //storing
+            if(nameSplits.length > 2) {
+                ClassDocumentation parent = docs.get(nameSplits[0].toLowerCase());
+                if(parent == null)
+                    throw new RuntimeException("Did not find parent class for class" + pathSplits[pathSplits.length - 1]);
+                for(int i = 1; i < nameSplits.length - 2; i++) {
+                    parent = parent.subClasses.get(nameSplits[i].toLowerCase());
+                    if(parent == null)
+                        throw new RuntimeException("Did not find parent class for class" + pathSplits[pathSplits.length - 1]);
+                }
+                parent.subClasses.put(className, classDoc);
+            } else {
+                docs.put(className, classDoc);
+            }
+        } catch (final IOException | NullPointerException ignored) {}
+        catch (RuntimeException ex) {
+            DocParser.LOG.log(ex);
+        }
+        try {
+            inputStream.close();
+        } catch (final IOException e) {
+            DocParser.LOG.log(e);
+        }
+    }
+
+    private static List<DocBlock> getDocBlock(Element root) {
+        if(root != null) {
+            List<DocBlock> blocks = new ArrayList<>(10);
+            root.siblingElements().stream().filter(sibling -> sibling.tagName().equals("ul")).forEach(sibling -> {
+                Element tmp2 = sibling.getElementsByTag("h4").first();
+                String title = tmp2.text();
+                String description = null, signature = null;
+                OrderedMap<String, List<String>> fields = new ListOrderedMap<>();
+                for(;tmp2 != null; tmp2 = tmp2.nextElementSibling()) {
+                    if(tmp2.tagName().equals("pre")) {
+                        signature = tmp2.text();
+                    } else if(tmp2.tagName().equals("div") && tmp2.className().equals("block")) {
+                        description = cleanupText(tmp2.html());
+                    } else if(tmp2.tagName().equals("dl")) {
+                        String fieldName = null;
+                        List<String> fieldValues = new ArrayList<>();
+                        for(Element element : tmp2.children()) {
+                            if(element.tagName().equals("dt")) {
+                                if(fieldName != null) {
+                                    fields.put(fieldName, fieldValues);
+                                    fieldValues = new ArrayList<>();
+                                }
+                                fieldName = element.text();
+                            } else if(element.tagName().equals("dd")) {
+                                fieldValues.add(cleanupText(element.html()));
+                            }
+                        }
+                        if(fieldName != null) {
+                            fields.put(fieldName, fieldValues);
+                        }
+                    }
+                }
+                blocks.add(new DocBlock(title, signature, description, fields));
+            });
+            return blocks;
+        }
+        return null;
+    }
+
+    private static class DocBlock {
+        private final String                            title;
+        private final String                            signature;
+        private final String                            description;
+        private final OrderedMap<String, List<String>>  fields;
+
+        private DocBlock(String title, String signature, String description, OrderedMap<String, List<String>> fields) {
+            this.title = title;
+            this.signature = signature;
+            this.description = description;
+            this.fields = fields;
+        }
+    }
+
+    private static class ClassDocumentation {
+        private final String                                className;
+        private final String                                classSig;
+        private final String                                classDesc;
+        private final boolean                               isEnum;
+        private final Map<String, Set<MethodDocumentation>> methodDocs = new HashMap<>();
+        private final Map<String, ClassDocumentation>       subClasses = new HashMap<>();
+        private final Map<String, ValueDocumentation>       classValues = new HashMap<>();
+
+        private ClassDocumentation(String className, String classSig, String classDesc, boolean isEnum) {
+            this.className = className;
+            this.classSig = classSig;
+            this.classDesc = classDesc;
+            this.isEnum = isEnum;
+        }
+    }
+
+    private static class MethodDocumentation {
+        private final String                            functionName;
+        private final String                            functionSig;
+        private final List<String>                      argTypes;
+        private final String                            desc;
+        private final OrderedMap<String, List<String>>  fields;
+
+        private MethodDocumentation(final String functionName, final String functionSig, final String desc, final OrderedMap<String, List<String>> fields) {
             this.functionName = functionName;
-            this.argTypes = argTypes;
-            this.functionHead = functionHead;
+            this.functionSig = functionSig;
             this.desc = desc;
-            this.returns = returns;
-            this.args = args;
-            this.throwing = throwing;
+            this.fields = fields;
+            Matcher matcher = METHOD_PATTERN.matcher(functionSig);
+            if(!matcher.find())
+                throw new RuntimeException("Got method with no proper method signature: " + functionSig);
+            Matcher matcher2 = METHOD_ARG_PATTERN.matcher(matcher.group(2));
+            this.argTypes = new ArrayList<>(3);
+
+            while(matcher2.find()) {
+                this.argTypes.add(matcher2.group(1));
+            }
         }
 
         private boolean matches(String input) {
+            boolean matchExact = true;
             if (input.charAt(input.length() - 1) != ')') {
                 input += "()";
+                matchExact = false;
             }
-            final Matcher matcher = DocParser.METHOD_PATTERN.matcher(' ' + input);
+            final Matcher matcher = DocParser.METHOD_PATTERN.matcher(input);
             if (!matcher.find())
                 return false;
             if (!matcher.group(1).equalsIgnoreCase(this.functionName))
                 return false;
             final String args = matcher.group(2);
-            if (args.isEmpty())
+            if (!matchExact)
                 return true;
             final String[] split = args.split(",");
             if (split.length != this.argTypes.size())
@@ -266,6 +420,18 @@ public class DocParser {
                     return false;
             }
             return true;
+        }
+    }
+
+    private static class ValueDocumentation {
+        private final String name;
+        private final String sig;
+        private final String desc;
+
+        private ValueDocumentation(String name, String sig, String desc) {
+            this.name = name;
+            this.sig = sig;
+            this.desc = desc;
         }
     }
 }
