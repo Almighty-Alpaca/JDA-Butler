@@ -68,6 +68,7 @@ public class DocParser {
 
     public static Message get(final String name) {
         final String[] split = name.toLowerCase().split("[#\\.]");
+        System.out.println(Arrays.toString(split));
         ClassDocumentation classDoc;
         synchronized (DocParser.docs) {
             if (!DocParser.docs.containsKey(split[0]))
@@ -80,7 +81,18 @@ public class DocParser {
             classDoc = classDoc.subClasses.get(split[i]);
         }
 
+        System.out.println("Got Class " + classDoc.classSig);
+        if(split.length == 1) {
+            return new MessageBuilder().setEmbed(
+                    new EmbedBuilder()
+                            .setTitle(classDoc.classSig)
+                            .setDescription(classDoc.classDesc)
+                            .build()
+            ).build();
+        }
+
         String searchObj = split[split.length - 1];
+        System.out.println("Search-object is: " + searchObj);
         if(classDoc.subClasses.containsKey(searchObj)) {
             classDoc = classDoc.subClasses.get(searchObj);
             return new MessageBuilder().setEmbed(
@@ -107,12 +119,19 @@ public class DocParser {
                 ).build();
             }
         } else {
+            boolean fuzzy = false;
+            if(searchObj.charAt(searchObj.length() - 1) != ')') {
+                searchObj += "()";
+                fuzzy = true;
+            }
+            final String methodSig = searchObj;
+            final boolean fuzzySearch = fuzzy;
             Matcher matcher = METHOD_PATTERN.matcher(searchObj);
             if(matcher.find()) {
                 String methodName = matcher.group(1);
-                if(classDoc.methodDocs.containsKey(methodName)) {
-                    List<MethodDocumentation> docs = classDoc.methodDocs.get(searchObj).parallelStream()
-                            .filter(doc -> doc.matches(searchObj))
+                if(classDoc.methodDocs.containsKey(methodName.toLowerCase())) {
+                    List<MethodDocumentation> docs = classDoc.methodDocs.get(methodName.toLowerCase()).parallelStream()
+                            .filter(doc -> doc.matches(methodSig, fuzzySearch))
                             .sorted(Comparator.comparingInt(doc -> doc.argTypes.size()))
                             .collect(Collectors.toList());
                     if(docs.size() == 1) {
@@ -125,7 +144,7 @@ public class DocParser {
                         }
                         return new MessageBuilder().setEmbed(embedBuilder.build()).build();
                     } else if(docs.size() == 0) {
-                        return new MessageBuilder().append("Found methods with given nabe but no matching signature").build();
+                        return new MessageBuilder().append("Found methods with given name but no matching signature").build();
                     } else {
                         String methods = docs.stream()
                                 .map(doc -> doc.functionName + '(' + doc.argTypes.stream().collect(Collectors.joining(", ")) + ')')
@@ -413,12 +432,7 @@ public class DocParser {
             }
         }
 
-        private boolean matches(String input) {
-            boolean matchExact = true;
-            if (input.charAt(input.length() - 1) != ')') {
-                input += "()";
-                matchExact = false;
-            }
+        private boolean matches(String input, boolean matchExact) {
             final Matcher matcher = DocParser.METHOD_PATTERN.matcher(input);
             if (!matcher.find())
                 return false;
