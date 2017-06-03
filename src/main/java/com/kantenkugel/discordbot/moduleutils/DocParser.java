@@ -61,8 +61,10 @@ public class DocParser {
 
     private static final String JDA_CODE_BASE = "net/dv8tion/jda";
 
-    public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z][a-zA-Z0-9]+)\\(([a-zA-Z0-9\\s\\.,<>\\[\\]]*)\\)");
-    public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("\\s*([a-zA-Z][a-zA-Z0-9\\.]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
+    //return, funcName, parameters
+    public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z\\.<>\\[\\]]+)\\s+([a-zA-Z][a-zA-Z0-9]+)\\(([a-zA-Z0-9\\s\\.,<>\\[\\]]*)\\)");
+    //type, name
+    public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("\\s*(?:[a-z]+\\.)*([a-zA-Z][a-zA-Z0-9\\.<>\\[\\]]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
     private static final Pattern LINK_PATTERN = Pattern.compile("<a[^>]*href=\"([^\"]+)\"[^>]*>(.*?)</a>");
     private static final Pattern CODE_PATTERN = Pattern.compile("<code>(.*?)</code>");
@@ -71,7 +73,6 @@ public class DocParser {
 
     public static Message get(final String name) {
         final String[] split = name.toLowerCase().split("[#\\.]");
-        System.out.println(Arrays.toString(split));
         ClassDocumentation classDoc;
         synchronized (DocParser.docs) {
             if (!DocParser.docs.containsKey(split[0]))
@@ -84,42 +85,23 @@ public class DocParser {
             classDoc = classDoc.subClasses.get(split[i]);
         }
 
-        System.out.println("Got Class " + classDoc.classSig);
-        if(split.length == 1) {
-            return getMessage(
-                    new EmbedBuilder()
-                            .setTitle(classDoc.classSig, getLink(classDoc)),
-                    classDoc.classDesc,
-                    classDoc
-            );
-        }
-
         String searchObj = split[split.length - 1];
-        System.out.println("Search-object is: " + searchObj);
-        if(classDoc.subClasses.containsKey(searchObj)) {
-            classDoc = classDoc.subClasses.get(searchObj);
-            return getMessage(
-                    new EmbedBuilder()
-                            .setTitle(classDoc.classSig, getLink(classDoc)),
-                    classDoc.classDesc,
-                    classDoc
-            );
+        if(split.length == 1 || classDoc.subClasses.containsKey(searchObj)) {
+            if(split.length > 1)
+                classDoc = classDoc.subClasses.get(searchObj);
+            if(classDoc.isEnum) {
+                Map<String, List<String>> fields = new HashMap<>();
+                fields.put("Values:", classDoc.classValues.values().stream().map(valueDoc -> valueDoc.name).collect(Collectors.toList()));
+                return getMessage(classDoc.classSig, classDoc.classDesc, getLink(classDoc), fields);
+            } else {
+                return getMessage(classDoc.classSig, classDoc.classDesc, getLink(classDoc));
+            }
         } else if(classDoc.classValues.containsKey(searchObj)) {
             ValueDocumentation valueDoc = classDoc.classValues.get(searchObj);
             if(classDoc.isEnum) {
-                return getMessage(
-                        new EmbedBuilder()
-                                .setTitle(classDoc.className+'.'+valueDoc.name, getLink(classDoc)),
-                        valueDoc.desc,
-                        classDoc
-                );
+                return getMessage(classDoc.className + '.' + valueDoc.name, valueDoc.desc, getLink(classDoc) + valueDoc.hashLink);
             } else {
-                return getMessage(
-                        new EmbedBuilder()
-                                .setTitle(valueDoc.sig, getLink(classDoc)),
-                        valueDoc.desc,
-                        classDoc
-                );
+                return getMessage(valueDoc.sig, valueDoc.desc, getLink(classDoc) + valueDoc.hashLink);
             }
         } else {
             boolean fuzzy = false;
@@ -129,43 +111,46 @@ public class DocParser {
             }
             final String methodSig = searchObj;
             final boolean fuzzySearch = fuzzy;
-            Matcher matcher = METHOD_PATTERN.matcher(searchObj);
-            if(matcher.find()) {
-                String methodName = matcher.group(1);
-                if(classDoc.methodDocs.containsKey(methodName.toLowerCase())) {
-                    List<MethodDocumentation> docs = classDoc.methodDocs.get(methodName.toLowerCase()).parallelStream()
-                            .filter(doc -> doc.matches(methodSig, fuzzySearch))
-                            .sorted(Comparator.comparingInt(doc -> doc.argTypes.size()))
-                            .collect(Collectors.toList());
-                    if(docs.size() == 1) {
-                        MethodDocumentation doc = docs.get(0);
-                        EmbedBuilder embedBuilder = new EmbedBuilder()
-                                .setTitle(doc.functionSig, getLink(classDoc));
-                        for(Map.Entry<String, List<String>> fieldEntry : doc.fields.entrySet()) {
-                            embedBuilder.addField(fieldEntry.getKey(), fieldEntry.getValue().stream().collect(Collectors.joining("\n")), false);
-                        }
-                        return getMessage(embedBuilder, doc.desc, classDoc);
-                    } else if(docs.size() == 0) {
-                        return new MessageBuilder().append("Found methods with given name but no matching signature").build();
-                    } else {
-                        String methods = docs.stream()
-                                .map(doc -> doc.functionName + '(' + doc.argTypes.stream().collect(Collectors.joining(", ")) + ')')
-                                .collect(Collectors.joining(", "));
-                        return new MessageBuilder().append("Found multiple valid method signatures: ").append(methods).build();
-                    }
+            String[] methodParts = methodSig.split("[\\(\\)]");
+            String methodName = methodParts[0];
+            if(classDoc.methodDocs.containsKey(methodName.toLowerCase())) {
+                List<MethodDocumentation> docs = classDoc.methodDocs.get(methodName.toLowerCase()).parallelStream()
+                        .filter(doc -> doc.matches(methodSig, fuzzySearch))
+                        .sorted(Comparator.comparingInt(doc -> doc.argTypes.size()))
+                        .collect(Collectors.toList());
+                if(docs.size() == 1) {
+                    MethodDocumentation doc = docs.get(0);
+                    return getMessage(doc.functionSig, doc.desc, getLink(classDoc) + doc.hashLink, doc.fields);
+                } else if(docs.size() == 0) {
+                    return new MessageBuilder().append("Found methods with given name but no matching signature").build();
+                } else {
+                    String methods = docs.stream()
+                            .map(doc -> doc.functionSig)
+                            .collect(Collectors.joining("\n"));
+                    return new MessageBuilder().append("Found multiple valid method signatures: ```").append(methods).append("```").build();
                 }
             }
             return new MessageBuilder().append("Could not find search-query").build();
         }
     }
 
-    private static Message getMessage(EmbedBuilder builder, String description, ClassDocumentation reference) {
-        try {
-            builder.setDescription(description);
-        } catch(IllegalArgumentException ex) {
-            builder.setDescription("Description to long. please refer to [the docs](" + getLink(reference) + ')');
+    private static Message getMessage(String title, String description, String linkUrl) {
+        return getMessage(title, description, linkUrl, null);
+    }
+
+    private static Message getMessage(String title, String description, String linkUrl, Map<String, List<String>> fields) {
+        EmbedBuilder embedBuilder = new EmbedBuilder().setTitle(title, linkUrl);
+        if(description.length() > MessageEmbed.TEXT_MAX_LENGTH) {
+            embedBuilder.setDescription("Description to long. please refer to [the docs](" + linkUrl + ')');
+        } else {
+            embedBuilder.setDescription(description);
         }
-        return new MessageBuilder().setEmbed(builder.build()).build();
+        if(fields != null && fields.size() > 0) {
+            for(Map.Entry<String, List<String>> field : fields.entrySet()) {
+                embedBuilder.addField(field.getKey(), field.getValue().stream().collect(Collectors.joining("\n")), false);
+            }
+        }
+        return new MessageBuilder().setEmbed(embedBuilder.build()).build();
     }
 
     public static void init() {
@@ -273,7 +258,7 @@ public class DocParser {
                 try {
                     DocParser.parse(entry.getName(), file.getInputStream(entry));
                 } catch (final IOException e) {
-                    e.printStackTrace();
+                    LOG.log(e);
                 }
             });
             DocParser.LOG.info("Done parsing docs-files");
@@ -321,33 +306,36 @@ public class DocParser {
             final String classSig = replaceUglySpaces(titleElem.text());
             final String pack = replaceUglySpaces(titleElem.previousElementSibling().text());
             final String link = getLink(pack, className);
-            final String description = cleanupText(getSingleElementByQuery(document, ".description .block").html(), link);
+            Element descriptionElement = getSingleElementByQuery(document, ".description .block");
+            final String description = descriptionElement == null ? "" : cleanupText(descriptionElement.html(), link);
             final ClassDocumentation classDoc = new ClassDocumentation(pack, className, classSig, description, classSig.startsWith("Enum"));
             final Element details = document.getElementsByClass("details").first();
-            //methods
-            Element tmp = getSingleElementByQuery(details, "a[name=\"method.detail\"]");
-            List<DocBlock> docBlock = getDocBlock(tmp, classDoc);
-            if(docBlock != null) {
-                for(DocBlock block : docBlock) {
-                    if(!classDoc.methodDocs.containsKey(block.title.toLowerCase()))
-                        classDoc.methodDocs.put(block.title.toLowerCase(), new HashSet<>());
-                    classDoc.methodDocs.get(block.title.toLowerCase()).add(new MethodDocumentation(block.title, block.signature, block.description, block.fields));
+            if(details != null) {
+                //methods
+                Element tmp = getSingleElementByQuery(details, "a[name=\"method.detail\"]");
+                List<DocBlock> docBlock = getDocBlock(tmp, classDoc);
+                if(docBlock != null) {
+                    for(DocBlock block : docBlock) {
+                        if(!classDoc.methodDocs.containsKey(block.title.toLowerCase()))
+                            classDoc.methodDocs.put(block.title.toLowerCase(), new HashSet<>());
+                        classDoc.methodDocs.get(block.title.toLowerCase()).add(new MethodDocumentation(block.signature, block.hashLink, block.description, block.fields));
+                    }
                 }
-            }
-            //vars
-            tmp = getSingleElementByQuery(details, "a[name=\"field.detail\"]");
-            docBlock = getDocBlock(tmp, classDoc);
-            if(docBlock != null) {
-                for(DocBlock block : docBlock) {
-                    classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.signature, block.description));
+                //vars
+                tmp = getSingleElementByQuery(details, "a[name=\"field.detail\"]");
+                docBlock = getDocBlock(tmp, classDoc);
+                if(docBlock != null) {
+                    for(DocBlock block : docBlock) {
+                        classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.hashLink, block.signature, block.description));
+                    }
                 }
-            }
-            //enum-values
-            tmp = getSingleElementByQuery(details, "a[name=\"enum.constant.detail\"]");
-            docBlock = getDocBlock(tmp, classDoc);
-            if(docBlock != null) {
-                for(DocBlock block : docBlock) {
-                    classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.signature, block.description));
+                //enum-values
+                tmp = getSingleElementByQuery(details, "a[name=\"enum.constant.detail\"]");
+                docBlock = getDocBlock(tmp, classDoc);
+                if(docBlock != null) {
+                    for(DocBlock block : docBlock) {
+                        classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.hashLink, block.signature, block.description));
+                    }
                 }
             }
 
@@ -369,7 +357,10 @@ public class DocParser {
                     classDoc.subClasses.putAll(docs.get(className.toLowerCase()).subClasses);
                 docs.put(className.toLowerCase(), classDoc);
             }
-        } catch (final IOException | NullPointerException ignored) {}
+        } catch (final IOException | NullPointerException ex) {
+            LOG.fatal("Got excaption for element " + className);
+            LOG.log(ex);
+        }
         try {
             inputStream.close();
         } catch (final IOException e) {
@@ -377,40 +368,45 @@ public class DocParser {
         }
     }
 
-    private static List<DocBlock> getDocBlock(Element root, ClassDocumentation reference) {
-        if(root != null) {
+    private static List<DocBlock> getDocBlock(Element elem, ClassDocumentation reference) {
+        if(elem != null) {
             List<DocBlock> blocks = new ArrayList<>(10);
-            root.siblingElements().stream().filter(sibling -> sibling.tagName().equals("ul")).forEach(sibling -> {
-                Element tmp2 = sibling.getElementsByTag("h4").first();
-                String title = replaceUglySpaces(tmp2.text().trim());
-                String description = null, signature = null;
-                OrderedMap<String, List<String>> fields = new ListOrderedMap<>();
-                for(;tmp2 != null; tmp2 = tmp2.nextElementSibling()) {
-                    if(tmp2.tagName().equals("pre")) {
-                        signature = replaceUglySpaces(tmp2.text().trim());
-                    } else if(tmp2.tagName().equals("div") && tmp2.className().equals("block")) {
-                        description = cleanupText(tmp2.html(), getLink(reference));
-                    } else if(tmp2.tagName().equals("dl")) {
-                        String fieldName = null;
-                        List<String> fieldValues = new ArrayList<>();
-                        for(Element element : tmp2.children()) {
-                            if(element.tagName().equals("dt")) {
-                                if(fieldName != null) {
-                                    fields.put(fieldName, fieldValues);
-                                    fieldValues = new ArrayList<>();
+            String hashLink = null;
+            for(elem = elem.nextElementSibling(); elem != null; elem = elem.nextElementSibling()) {
+                if(elem.tagName().equals("a")) {
+                    hashLink = '#' + elem.attr("name");
+                } else if(elem.tagName().equals("ul")) {
+                    Element tmp = elem.getElementsByTag("h4").first();
+                    String title = replaceUglySpaces(tmp.text().trim());
+                    String description = null, signature = null;
+                    OrderedMap<String, List<String>> fields = new ListOrderedMap<>();
+                    for(;tmp != null; tmp = tmp.nextElementSibling()) {
+                        if(tmp.tagName().equals("pre")) {
+                            signature = replaceUglySpaces(tmp.text().trim());
+                        } else if(tmp.tagName().equals("div") && tmp.className().equals("block")) {
+                            description = cleanupText(tmp.html(), getLink(reference));
+                        } else if(tmp.tagName().equals("dl")) {
+                            String fieldName = null;
+                            List<String> fieldValues = new ArrayList<>();
+                            for(Element element : tmp.children()) {
+                                if(element.tagName().equals("dt")) {
+                                    if(fieldName != null) {
+                                        fields.put(fieldName, fieldValues);
+                                        fieldValues = new ArrayList<>();
+                                    }
+                                    fieldName = replaceUglySpaces(element.text().trim());
+                                } else if(element.tagName().equals("dd")) {
+                                    fieldValues.add(cleanupText(element.html(), getLink(reference)));
                                 }
-                                fieldName = replaceUglySpaces(element.text().trim());
-                            } else if(element.tagName().equals("dd")) {
-                                fieldValues.add(cleanupText(element.html(), getLink(reference)));
+                            }
+                            if(fieldName != null) {
+                                fields.put(fieldName, fieldValues);
                             }
                         }
-                        if(fieldName != null) {
-                            fields.put(fieldName, fieldValues);
-                        }
                     }
+                    blocks.add(new DocBlock(title, hashLink, signature, description, fields));
                 }
-                blocks.add(new DocBlock(title, signature, description, fields));
-            });
+            }
             return blocks;
         }
         return null;
@@ -418,12 +414,14 @@ public class DocParser {
 
     private static class DocBlock {
         private final String                            title;
+        private final String                            hashLink;
         private final String                            signature;
         private final String                            description;
         private final OrderedMap<String, List<String>>  fields;
 
-        private DocBlock(String title, String signature, String description, OrderedMap<String, List<String>> fields) {
+        private DocBlock(String title, String hashLink, String signature, String description, OrderedMap<String, List<String>> fields) {
             this.title = title;
+            this.hashLink = hashLink;
             this.signature = signature;
             this.description = description;
             this.fields = fields;
@@ -451,43 +449,53 @@ public class DocParser {
 
     private static class MethodDocumentation {
         private final String                            functionName;
+        private final String                            hashLink;
         private final String                            functionSig;
         private final List<String>                      argTypes;
         private final String                            desc;
         private final OrderedMap<String, List<String>>  fields;
 
-        private MethodDocumentation(final String functionName, final String functionSig, final String desc, final OrderedMap<String, List<String>> fields) {
-            this.functionName = functionName;
-            this.functionSig = functionSig;
-            this.desc = desc;
-            this.fields = fields;
-            Matcher matcher = METHOD_PATTERN.matcher(functionSig);
-            if(!matcher.find()) {
+        private MethodDocumentation(String functionSig, final String hashLink, final String desc, final OrderedMap<String, List<String>> fields) {
+            functionSig = functionSig.replaceAll("(?:[a-z]+\\.)+([A-Z])", "$1").replaceAll("\\s{2,}", " ");
+            Matcher methodMatcher = METHOD_PATTERN.matcher(functionSig);
+            if(!methodMatcher.find()) {
                 System.out.println('"' + functionSig + '"');
                 throw new RuntimeException("Got method with no proper method signature: " + functionSig);
             }
-            Matcher matcher2 = METHOD_ARG_PATTERN.matcher(matcher.group(2));
+            this.functionName = methodMatcher.group(2);
+            this.hashLink = hashLink;
+            this.functionSig = methodMatcher.group();
+            this.desc = desc;
+            this.fields = fields;
+
+            String args = methodMatcher.group(3);
+            Matcher argMatcher = METHOD_ARG_PATTERN.matcher(args);
             this.argTypes = new ArrayList<>(3);
 
-            while(matcher2.find()) {
-                this.argTypes.add(matcher2.group(1));
+            while(argMatcher.find()) {
+                this.argTypes.add(argMatcher.group(1).toLowerCase().split("<")[0]);
+            }
+
+            if(!args.isEmpty() && this.argTypes.size() == 0) {
+                throw new RuntimeException("Got non-empty parameters for method " + functionName + " but couldn't parse them. Signature: \"" + functionSig + '\"');
             }
         }
 
         private boolean matches(String input, boolean fuzzy) {
-            final Matcher matcher = DocParser.METHOD_PATTERN.matcher(input);
+            final Matcher matcher = DocParser.METHOD_PATTERN.matcher("ff " + input);
             if (!matcher.find())
                 return false;
-            if (!matcher.group(1).equalsIgnoreCase(this.functionName))
+            if (!matcher.group(2).equalsIgnoreCase(this.functionName))
                 return false;
-            final String args = matcher.group(2);
             if (fuzzy)
                 return true;
-            final String[] split = args.split(",");
-            if (split.length != this.argTypes.size())
+            final String args = matcher.group(3);
+            final String[] split = args.toLowerCase().split(",");
+            int argLength = args.trim().isEmpty() ? 0 : split.length;
+            if (argLength != this.argTypes.size())
                 return false;
-            for (int i = 0; i < split.length; i++) {
-                if (!split[i].trim().equalsIgnoreCase(this.argTypes.get(i)))
+            for (int i = 0; i < this.argTypes.size(); i++) {
+                if (!split[i].trim().equals(this.argTypes.get(i)))
                     return false;
             }
             return true;
@@ -496,11 +504,13 @@ public class DocParser {
 
     private static class ValueDocumentation {
         private final String name;
+        private final String hashLink;
         private final String sig;
         private final String desc;
 
-        private ValueDocumentation(String name, String sig, String desc) {
+        private ValueDocumentation(String name, String hashLink, String sig, String desc) {
             this.name = name;
+            this.hashLink = hashLink;
             this.sig = sig;
             this.desc = desc;
         }
