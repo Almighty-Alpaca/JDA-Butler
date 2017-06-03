@@ -72,6 +72,9 @@ public class DocParser {
     public static final Map<String, ClassDocumentation> docs = new HashMap<>();
 
     public static Message get(final String name) {
+        if(name.trim().isEmpty()) {
+            return new MessageBuilder().append("See the docs here: ").append(getPathToLastJenkinsBuild()).append("javadoc/").build();
+        }
         final String[] split = name.toLowerCase().split("[#\\.]");
         ClassDocumentation classDoc;
         synchronized (DocParser.docs) {
