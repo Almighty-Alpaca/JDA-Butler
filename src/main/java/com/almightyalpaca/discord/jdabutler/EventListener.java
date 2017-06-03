@@ -139,7 +139,7 @@ public class EventListener extends ListenerAdapter {
 							Bot.LOG.fatal("JDA 3 update checker connection timed out!");
 							return;
 						}
-					} while ((cause = e.getCause()) != null);
+					} while ((cause = cause.getCause()) != null);
 					Bot.LOG.fatal("The following response errored: " + response);
 					Bot.LOG.log(e);
 				}
