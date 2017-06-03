@@ -24,6 +24,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.ListOrderedMap;
@@ -38,6 +39,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -62,9 +64,10 @@ public class DocParser {
     public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z][a-zA-Z0-9]+)\\(([a-zA-Z0-9\\s\\.,<>\\[\\]]*)\\)");
     public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("\\s*([a-zA-Z][a-zA-Z0-9\\.]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
-    private static final Pattern LINK_PATTERN = Pattern.compile("<a[^>]*>(.*?)</a>");
+    private static final Pattern LINK_PATTERN = Pattern.compile("<a[^>]*href=\"([^\"]+)\"[^>]*>(.*?)</a>");
+    private static final Pattern CODE_PATTERN = Pattern.compile("<code>(.*?)</code>");
 
-    private static final Map<String, ClassDocumentation> docs = new HashMap<>();
+    public static final Map<String, ClassDocumentation> docs = new HashMap<>();
 
     public static Message get(final String name) {
         final String[] split = name.toLowerCase().split("[#\\.]");
@@ -83,40 +86,40 @@ public class DocParser {
 
         System.out.println("Got Class " + classDoc.classSig);
         if(split.length == 1) {
-            return new MessageBuilder().setEmbed(
+            return getMessage(
                     new EmbedBuilder()
-                            .setTitle(classDoc.classSig)
-                            .setDescription(classDoc.classDesc)
-                            .build()
-            ).build();
+                            .setTitle(classDoc.classSig, getLink(classDoc)),
+                    classDoc.classDesc,
+                    classDoc
+            );
         }
 
         String searchObj = split[split.length - 1];
         System.out.println("Search-object is: " + searchObj);
         if(classDoc.subClasses.containsKey(searchObj)) {
             classDoc = classDoc.subClasses.get(searchObj);
-            return new MessageBuilder().setEmbed(
+            return getMessage(
                     new EmbedBuilder()
-                            .setTitle(classDoc.classSig)
-                            .setDescription(classDoc.classDesc)
-                            .build()
-            ).build();
+                            .setTitle(classDoc.classSig, getLink(classDoc)),
+                    classDoc.classDesc,
+                    classDoc
+            );
         } else if(classDoc.classValues.containsKey(searchObj)) {
             ValueDocumentation valueDoc = classDoc.classValues.get(searchObj);
             if(classDoc.isEnum) {
-                return new MessageBuilder().setEmbed(
+                return getMessage(
                         new EmbedBuilder()
-                                .setTitle(classDoc.className+'.'+valueDoc.name)
-                                .setDescription(valueDoc.desc)
-                                .build()
-                ).build();
+                                .setTitle(classDoc.className+'.'+valueDoc.name, getLink(classDoc)),
+                        valueDoc.desc,
+                        classDoc
+                );
             } else {
-                return new MessageBuilder().setEmbed(
+                return getMessage(
                         new EmbedBuilder()
-                                .setTitle(valueDoc.sig)
-                                .setDescription(valueDoc.desc)
-                                .build()
-                ).build();
+                                .setTitle(valueDoc.sig, getLink(classDoc)),
+                        valueDoc.desc,
+                        classDoc
+                );
             }
         } else {
             boolean fuzzy = false;
@@ -137,12 +140,11 @@ public class DocParser {
                     if(docs.size() == 1) {
                         MethodDocumentation doc = docs.get(0);
                         EmbedBuilder embedBuilder = new EmbedBuilder()
-                                .setTitle(doc.functionSig)
-                                .setDescription(doc.desc);
+                                .setTitle(doc.functionSig, getLink(classDoc));
                         for(Map.Entry<String, List<String>> fieldEntry : doc.fields.entrySet()) {
                             embedBuilder.addField(fieldEntry.getKey(), fieldEntry.getValue().stream().collect(Collectors.joining("\n")), false);
                         }
-                        return new MessageBuilder().setEmbed(embedBuilder.build()).build();
+                        return getMessage(embedBuilder, doc.desc, classDoc);
                     } else if(docs.size() == 0) {
                         return new MessageBuilder().append("Found methods with given name but no matching signature").build();
                     } else {
@@ -155,6 +157,15 @@ public class DocParser {
             }
             return new MessageBuilder().append("Could not find search-query").build();
         }
+    }
+
+    private static Message getMessage(EmbedBuilder builder, String description, ClassDocumentation reference) {
+        try {
+            builder.setDescription(description);
+        } catch(IllegalArgumentException ex) {
+            builder.setDescription("Description to long. please refer to [the docs](" + getLink(reference) + ')');
+        }
+        return new MessageBuilder().setEmbed(builder.build()).build();
     }
 
     public static void init() {
@@ -180,13 +191,39 @@ public class DocParser {
         }
     }
 
-    private static String cleanupText(String docs) {
+    private static String cleanupText(String docs, String currentUrl) {
         docs = replaceUglySpaces(docs);
         docs = docs.replace("\n", " ").replaceAll("\\s{2,}", " ");
         docs = docs.replaceAll("</?b>", "**").replaceAll("</?i>", "*").replaceAll("<br\\s?/?>", "\n");
-        docs = LINK_PATTERN.matcher(docs).replaceAll("***$1***");
+        docs = CODE_PATTERN.matcher(docs).replaceAll("***$1***");
+        Matcher matcher = LINK_PATTERN.matcher(docs);
+        StringBuffer sb = new StringBuffer();
+        while(matcher.find()) {
+            matcher.appendReplacement(sb, '[' + matcher.group(2) + "](" + resolveLink(matcher.group(1), currentUrl) + ')');
+        }
+        matcher.appendTail(sb);
+        docs = sb.toString();
         docs = docs.replaceAll("<[^>]+>", "");
         return Arrays.stream(docs.split("\n")).map(String::trim).collect(Collectors.joining("\n"));
+    }
+
+    private static String getLink(ClassDocumentation doc) {
+        return getLink(doc.pack, doc.className);
+    }
+
+    private static String getLink(String classPackage, String className) {
+        return getPathToLastJenkinsBuild() + "javadoc/" + classPackage.replace(".", "/") + '/' + className + ".html";
+    }
+
+    private static String resolveLink(String href, String relativeTo) {
+        try {
+            URL base = new URL(relativeTo);
+            URL result = new URL(base, href);
+            return result.toString();
+        } catch(MalformedURLException e) {
+            LOG.log(e);
+        }
+        return null;
     }
 
     private static String getPathToLastJenkinsBuild() {
@@ -280,13 +317,16 @@ public class DocParser {
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
             final String content = buffer.lines().collect(Collectors.joining("\n"));
             Document document = Jsoup.parse(content);
-            final String classSig = replaceUglySpaces(getSingleElementByClass(document, "title").text());
-            final String description = cleanupText(getSingleElementByQuery(document, ".description .block").html());
-            final ClassDocumentation classDoc = new ClassDocumentation(className, classSig, description, classSig.startsWith("Enum"));
+            Element titleElem = getSingleElementByClass(document, "title");
+            final String classSig = replaceUglySpaces(titleElem.text());
+            final String pack = replaceUglySpaces(titleElem.previousElementSibling().text());
+            final String link = getLink(pack, className);
+            final String description = cleanupText(getSingleElementByQuery(document, ".description .block").html(), link);
+            final ClassDocumentation classDoc = new ClassDocumentation(pack, className, classSig, description, classSig.startsWith("Enum"));
             final Element details = document.getElementsByClass("details").first();
             //methods
             Element tmp = getSingleElementByQuery(details, "a[name=\"method.detail\"]");
-            List<DocBlock> docBlock = getDocBlock(tmp);
+            List<DocBlock> docBlock = getDocBlock(tmp, classDoc);
             if(docBlock != null) {
                 for(DocBlock block : docBlock) {
                     if(!classDoc.methodDocs.containsKey(block.title.toLowerCase()))
@@ -296,7 +336,7 @@ public class DocParser {
             }
             //vars
             tmp = getSingleElementByQuery(details, "a[name=\"field.detail\"]");
-            docBlock = getDocBlock(tmp);
+            docBlock = getDocBlock(tmp, classDoc);
             if(docBlock != null) {
                 for(DocBlock block : docBlock) {
                     classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.signature, block.description));
@@ -304,7 +344,7 @@ public class DocParser {
             }
             //enum-values
             tmp = getSingleElementByQuery(details, "a[name=\"enum.constant.detail\"]");
-            docBlock = getDocBlock(tmp);
+            docBlock = getDocBlock(tmp, classDoc);
             if(docBlock != null) {
                 for(DocBlock block : docBlock) {
                     classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.signature, block.description));
@@ -314,11 +354,11 @@ public class DocParser {
             //storing
             if(nameSplits.length > 2) {
                 if(!docs.containsKey(nameSplits[0].toLowerCase()))
-                    docs.put(nameSplits[0].toLowerCase(), new ClassDocumentation(null, null, null, false));
+                    docs.put(nameSplits[0].toLowerCase(), new ClassDocumentation(null, null, null, null, false));
                 ClassDocumentation parent = docs.get(nameSplits[0].toLowerCase());
                 for(int i = 1; i < nameSplits.length - 2; i++) {
                     if(!parent.subClasses.containsKey(nameSplits[i].toLowerCase()))
-                        parent.subClasses.put(nameSplits[i].toLowerCase(), new ClassDocumentation(null, null, null, false));
+                        parent.subClasses.put(nameSplits[i].toLowerCase(), new ClassDocumentation(null, null, null, null, false));
                     parent = parent.subClasses.get(nameSplits[i].toLowerCase());
                 }
                 if(parent.subClasses.containsKey(className.toLowerCase()))
@@ -337,7 +377,7 @@ public class DocParser {
         }
     }
 
-    private static List<DocBlock> getDocBlock(Element root) {
+    private static List<DocBlock> getDocBlock(Element root, ClassDocumentation reference) {
         if(root != null) {
             List<DocBlock> blocks = new ArrayList<>(10);
             root.siblingElements().stream().filter(sibling -> sibling.tagName().equals("ul")).forEach(sibling -> {
@@ -349,7 +389,7 @@ public class DocParser {
                     if(tmp2.tagName().equals("pre")) {
                         signature = replaceUglySpaces(tmp2.text().trim());
                     } else if(tmp2.tagName().equals("div") && tmp2.className().equals("block")) {
-                        description = cleanupText(tmp2.html());
+                        description = cleanupText(tmp2.html(), getLink(reference));
                     } else if(tmp2.tagName().equals("dl")) {
                         String fieldName = null;
                         List<String> fieldValues = new ArrayList<>();
@@ -361,7 +401,7 @@ public class DocParser {
                                 }
                                 fieldName = replaceUglySpaces(element.text().trim());
                             } else if(element.tagName().equals("dd")) {
-                                fieldValues.add(cleanupText(element.html()));
+                                fieldValues.add(cleanupText(element.html(), getLink(reference)));
                             }
                         }
                         if(fieldName != null) {
@@ -391,6 +431,7 @@ public class DocParser {
     }
 
     private static class ClassDocumentation {
+        private final String                                pack;
         private final String                                className;
         private final String                                classSig;
         private final String                                classDesc;
@@ -399,7 +440,8 @@ public class DocParser {
         private final Map<String, ClassDocumentation>       subClasses = new HashMap<>();
         private final Map<String, ValueDocumentation>       classValues = new HashMap<>();
 
-        private ClassDocumentation(String className, String classSig, String classDesc, boolean isEnum) {
+        private ClassDocumentation(String pack, String className, String classSig, String classDesc, boolean isEnum) {
+            this.pack = pack;
             this.className = className;
             this.classSig = classSig;
             this.classDesc = classDesc;
@@ -432,14 +474,14 @@ public class DocParser {
             }
         }
 
-        private boolean matches(String input, boolean matchExact) {
+        private boolean matches(String input, boolean fuzzy) {
             final Matcher matcher = DocParser.METHOD_PATTERN.matcher(input);
             if (!matcher.find())
                 return false;
             if (!matcher.group(1).equalsIgnoreCase(this.functionName))
                 return false;
             final String args = matcher.group(2);
-            if (!matchExact)
+            if (fuzzy)
                 return true;
             final String[] split = args.split(",");
             if (split.length != this.argTypes.size())
