@@ -17,6 +17,7 @@
 
 package com.kantenkugel.discordbot.jdocparser;
 
+import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -114,7 +115,10 @@ public class JDoc {
     }
 
     private static Message getMessage(String title, String description, String linkUrl, Map<String, List<String>> fields) {
-        EmbedBuilder embedBuilder = new EmbedBuilder().setTitle(title, linkUrl);
+        EmbedBuilder embedBuilder = new EmbedBuilder()
+                .setTitle(title, linkUrl)
+                .setAuthor("JDA JavaDocs", null, EmbedUtil.JDA_ICON)
+                .setColor(EmbedUtil.COLOR_JDA_PRUPLE);
         if(description.length() > MessageEmbed.TEXT_MAX_LENGTH) {
             embedBuilder.setDescription("Description to long. please refer to [the docs](" + linkUrl + ')');
         } else if(description.length() > 0) {
