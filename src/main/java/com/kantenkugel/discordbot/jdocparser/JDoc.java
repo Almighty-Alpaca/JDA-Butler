@@ -139,6 +139,7 @@ public class JDoc {
                 .setColor(EmbedUtil.COLOR_JDA_PRUPLE);
         if(description.length() > MessageEmbed.TEXT_MAX_LENGTH) {
             embedBuilder.setDescription("Description to long. please refer to [the docs](" + linkUrl + ')');
+            embedBuilder.clearFields();
         } else if(description.length() > 0) {
             embedBuilder.setDescription(description);
         } else {
