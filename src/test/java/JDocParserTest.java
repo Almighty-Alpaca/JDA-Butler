@@ -19,6 +19,10 @@ public class JDocParserTest {
         Message msg = JDoc.get("bla");
         assertEquals("Non-Existent class should not generate Embeds", 0, msg.getEmbeds().size());
         assertEquals("Class not Found!", msg.getRawContent());
+
+        msg = JDoc.get("user.bla");
+        assertEquals("Non-Existent element should not generate Embeds", 0, msg.getEmbeds().size());
+        assertEquals("Could not find search-query", msg.getRawContent());
     }
 
     @Test
