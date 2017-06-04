@@ -86,30 +86,45 @@ public class JDoc {
                 fixedSearchObj += "()";
                 fuzzy = true;
             }
-            final String methodSig = fixedSearchObj;
-            final boolean fuzzySearch = fuzzy;
-            String[] methodParts = methodSig.split("[\\(\\)]");
+            String[] methodParts = fixedSearchObj.split("[\\(\\)]");
             String methodName = methodParts[0];
             if(classDoc.methodDocs.containsKey(methodName.toLowerCase())) {
-                List<JDocParser.MethodDocumentation> docs = classDoc.methodDocs.get(methodName.toLowerCase()).parallelStream()
-                        .filter(doc -> doc.matches(methodSig, fuzzySearch))
-                        .sorted(Comparator.comparingInt(doc -> doc.argTypes.size()))
-                        .collect(Collectors.toList());
-                if(docs.size() == 1) {
-                    JDocParser.MethodDocumentation doc = docs.get(0);
-                    return getMessage(doc.functionSig, doc.desc, JDocUtil.getLink(classDoc) + doc.hashLink, doc.fields);
-                } else if(docs.size() == 0) {
-                    return new MessageBuilder().append("Found methods with given name but no matching signature").build();
-                } else {
-                    String methods = docs.stream()
-                            .map(doc -> doc.functionSig)
-                            .collect(Collectors.joining("\n"));
-                    return new MessageBuilder().append("Found multiple valid method signatures: ```").append(methods).append("```").build();
-                }
+                return getMethodMessage(classDoc, methodName, fixedSearchObj, fuzzy);
             } else if(classDoc.inheritedMethods.containsKey(methodName.toLowerCase())) {
                 return get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
             }
             return new MessageBuilder().append("Could not find search-query").build();
+        }
+    }
+
+    private static Message getMethodMessage(JDocParser.ClassDocumentation classDoc, String methodName, String methodSig, boolean isFuzzy) {
+        List<JDocParser.MethodDocumentation> docs = classDoc.methodDocs.get(methodName.toLowerCase())
+                .stream()
+                .sorted(Comparator.comparingInt(m -> m.argTypes.size()))
+                .collect(Collectors.toList());
+        List<JDocParser.MethodDocumentation> filteredDocs = docs.parallelStream()
+                .filter(doc -> doc.matches(methodSig, isFuzzy))
+                .collect(Collectors.toList());
+        if(filteredDocs.size() == 1) {
+            JDocParser.MethodDocumentation doc = filteredDocs.get(0);
+            return getMessage(doc.functionSig, doc.desc, JDocUtil.getLink(classDoc) + doc.hashLink, doc.fields);
+        } else if(filteredDocs.size() == 0) {
+            return getMessage(
+                    "Incorrect signature",
+                    "Did you mean:\n"
+                            + docs.parallelStream()
+                            .map(m -> '[' + m.functionSig + "](" + JDocUtil.getLink(classDoc) + m.hashLink + ')')
+                            .collect(Collectors.joining("\n")),
+                    null
+            );
+        } else {
+            return getMessage(
+                    "Found multiple methods with given name",
+                    filteredDocs.parallelStream()
+                            .map(m -> '[' + m.functionSig + "](" + JDocUtil.getLink(classDoc) + m.hashLink + ')')
+                            .collect(Collectors.joining("\n")),
+                    null
+            );
         }
     }
 
