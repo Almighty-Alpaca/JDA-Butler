@@ -66,17 +66,17 @@ public class JDocParser {
             JDocUtil.LOG.fatal(error);
             throw new RuntimeException(error + root.html());
         }
-        return elementsByClass.size() == 0 ? null : elementsByClass.get(0);
+        return elementsByClass.first();
     }
 
     private static Element getSingleElementByQuery(Element root, String query) {
-        Elements elementsByClass = root.select(query);
-        if(elementsByClass.size() > 1) {
-            String error = "Found " + elementsByClass.size() + " elements matching query \"" + query + "\" inside of " + root.tagName() + "-" + root.className();
+        Elements elementsByQuery = root.select(query);
+        if(elementsByQuery.size() > 1) {
+            String error = "Found " + elementsByQuery.size() + " elements matching query \"" + query + "\" inside of " + root.tagName() + "-" + root.className();
             JDocUtil.LOG.fatal(error);
             throw new RuntimeException(error + root.html());
         }
-        return elementsByClass.size() == 0 ? null : elementsByClass.get(0);
+        return elementsByQuery.first();
     }
 
     private static void parse(final String name, final InputStream inputStream, Map<String, ClassDocumentation> docs) {
@@ -127,6 +127,8 @@ public class JDocParser {
                     }
                 }
             }
+            final Element methodSummary = getSingleElementByQuery(document, "a[name=\"method.summary\"]");
+            classDoc.inheritedMethods.putAll(getInheritedMethods(methodSummary));
 
             //storing
             if(nameSplits.length > 2) {
@@ -155,6 +157,34 @@ public class JDocParser {
         } catch (final IOException e) {
             JDocUtil.LOG.log(e);
         }
+    }
+
+    private static Map<String, String> getInheritedMethods(Element summaryAnchor) {
+        Map<String, String> inherited = new HashMap<>();
+        if(summaryAnchor == null)
+            return inherited;
+        summaryAnchor = summaryAnchor.parent();
+        Elements inheritAnchors = summaryAnchor.select("a[name^=\"methods.inherited.from.class\"]");
+        for(Element inheritAnchor : inheritAnchors) {
+            if(inheritAnchor.siblingElements().size() != 2)
+                throw new RuntimeException("Got unexpected html while parsing inherited methods from class " + inheritAnchor.attr("name"));
+            Element next = inheritAnchor.nextElementSibling();
+            if(!next.tagName().equals("h3"))
+                throw new RuntimeException("Got unexpected html while parsing inherited methods from class " + inheritAnchor.attr("name"));
+            Element sub = next.children().last();
+            if(sub == null || !sub.tagName().equals("a"))
+                continue;
+            String parent = sub.text().toLowerCase();
+            next = next.nextElementSibling();
+            if(!next.tagName().equals("code"))
+                throw new RuntimeException("Got unexpected html while parsing inherited methods from class " + inheritAnchor.attr("name"));
+            for(sub = next.children().first(); sub != null; sub = sub.nextElementSibling()) {
+                if(sub.tagName().equals("a")) {
+                    inherited.putIfAbsent(sub.text().toLowerCase(), parent);
+                }
+            }
+        }
+        return inherited;
     }
 
     private static List<DocBlock> getDocBlock(Element elem, ClassDocumentation reference) {
@@ -226,6 +256,7 @@ public class JDocParser {
         final Map<String, Set<MethodDocumentation>> methodDocs = new HashMap<>();
         final Map<String, ClassDocumentation>       subClasses = new HashMap<>();
         final Map<String, ValueDocumentation>       classValues = new HashMap<>();
+        final Map<String, String>                   inheritedMethods = new HashMap<>();
 
         private ClassDocumentation(String pack, String className, String classSig, String classDesc, boolean isEnum) {
             this.pack = pack;

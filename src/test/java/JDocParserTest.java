@@ -72,4 +72,10 @@ public class JDocParserTest {
         assertTrue("Text for to long description should be shown",
                 msg.getEmbeds().get(0).getDescription().startsWith("Description to long. please refer to [the docs]("));
     }
+
+    @Test
+    public void getInheritedMethod() {
+        Message msg = JDoc.get("user.getid");
+        assertEquals("User.getId - inherited should be found and therefore generate embed", 1, msg.getEmbeds().size());
+    }
 }

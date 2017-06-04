@@ -81,11 +81,12 @@ public class JDoc {
             }
         } else {
             boolean fuzzy = false;
-            if(searchObj.charAt(searchObj.length() - 1) != ')') {
-                searchObj += "()";
+            String fixedSearchObj = searchObj;
+            if(fixedSearchObj.charAt(fixedSearchObj.length() - 1) != ')') {
+                fixedSearchObj += "()";
                 fuzzy = true;
             }
-            final String methodSig = searchObj;
+            final String methodSig = fixedSearchObj;
             final boolean fuzzySearch = fuzzy;
             String[] methodParts = methodSig.split("[\\(\\)]");
             String methodName = methodParts[0];
@@ -105,6 +106,9 @@ public class JDoc {
                             .collect(Collectors.joining("\n"));
                     return new MessageBuilder().append("Found multiple valid method signatures: ```").append(methods).append("```").build();
                 }
+            } else if(classDoc.inheritedMethods.containsKey(methodName.toLowerCase())) {
+                System.out.println("have inherited method "+methodName.toLowerCase()+" from parent "+classDoc.inheritedMethods.get(methodName.toLowerCase()));
+                return get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
             }
             return new MessageBuilder().append("Could not find search-query").build();
         }
