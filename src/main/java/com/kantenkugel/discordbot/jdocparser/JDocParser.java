@@ -167,7 +167,7 @@ public class JDocParser {
                 } else if(elem.tagName().equals("ul")) {
                     Element tmp = elem.getElementsByTag("h4").first();
                     String title = JDocUtil.fixSpaces(tmp.text().trim());
-                    String description = null, signature = null;
+                    String description = "", signature = "";
                     OrderedMap<String, List<String>> fields = new ListOrderedMap<>();
                     for(;tmp != null; tmp = tmp.nextElementSibling()) {
                         if(tmp.tagName().equals("pre")) {
