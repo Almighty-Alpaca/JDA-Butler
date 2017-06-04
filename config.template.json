@@ -1,6 +1,6 @@
 {
   "discord": {
-    "token": "MTUwMjAzODQxODI3MDQ1Mzc2.DBQVvw.7V1ZiVyqBmbzZzrNKEJy4PaBTf8"
+    "token": ""
   },
   "proxy": {
     "host": "",
@@ -9,8 +9,6 @@
   },
   "jda": {
     "version": {
-      "build": 210,
-      "name": "3.1.1_210",
       "gradle-example-link": "https://www.dropbox.com/s/0n4l6zdrw0zt8nz/jda%20gradle%20setup%20example.zip?dl=1"
     }
   },
