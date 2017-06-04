@@ -1,7 +1,7 @@
 package com.almightyalpaca.discord.jdabutler;
 
 import com.almightyalpaca.discord.jdabutler.eval.Engine;
-import com.kantenkugel.discordbot.moduleutils.DocParser;
+import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.mashape.unirest.http.Unirest;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -68,7 +68,7 @@ public class EventListener extends ListenerAdapter {
 						Bot.config.save();
 
 						EventListener.executor.submit(() -> {
-							DocParser.reFetch();
+							JDoc.reFetch();
 							GradleProjectDropboxUploader.uploadProject();
 						});
 
