@@ -107,7 +107,6 @@ public class JDoc {
                     return new MessageBuilder().append("Found multiple valid method signatures: ```").append(methods).append("```").build();
                 }
             } else if(classDoc.inheritedMethods.containsKey(methodName.toLowerCase())) {
-                System.out.println("have inherited method "+methodName.toLowerCase()+" from parent "+classDoc.inheritedMethods.get(methodName.toLowerCase()));
                 return get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
             }
             return new MessageBuilder().append("Could not find search-query").build();
