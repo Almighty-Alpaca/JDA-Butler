@@ -117,8 +117,10 @@ public class JDoc {
         EmbedBuilder embedBuilder = new EmbedBuilder().setTitle(title, linkUrl);
         if(description.length() > MessageEmbed.TEXT_MAX_LENGTH) {
             embedBuilder.setDescription("Description to long. please refer to [the docs](" + linkUrl + ')');
-        } else {
+        } else if(description.length() > 0) {
             embedBuilder.setDescription(description);
+        } else {
+            embedBuilder.setDescription("No description available!");
         }
         if(fields != null && fields.size() > 0) {
             for(Map.Entry<String, List<String>> field : fields.entrySet()) {
