@@ -1,5 +1,12 @@
+import com.kantenkugel.discordbot.jdocparser.Documentation;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.List;
+
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 public class JDocParserTest {
 
@@ -8,72 +15,61 @@ public class JDocParserTest {
         JDoc.init();
     }
 
-//    @Test
-//    public void getNonExistentClass() {
-//        Message msg = JDoc.get("bla");
-//        assertEquals("Non-Existent class should not generate Embeds", 0, msg.getEmbeds().size());
-//        assertEquals("Class not Found!", msg.getRawContent());
-//
-//        msg = JDoc.get("user.bla");
-//        assertEquals("Non-Existent element should not generate Embeds", 0, msg.getEmbeds().size());
-//        assertEquals("Could not find search-query", msg.getRawContent());
-//    }
-//
-//    @Test
-//    public void getMethodWithReturnAndThrows() {
-//        Message msg = JDoc.get("messagechannel.getiterablehistory");
-//        assertEquals("MessageChannel.getIterableHistory should be found and therefore generate embed", 1, msg.getEmbeds().size());
-//        MessageEmbed embed = msg.getEmbeds().get(0);
-//        assertTrue("Embed should have Return field", embed.getFields().stream().anyMatch(f -> f.getName().equals("Returns:")));
-//        assertTrue("Embed should have Throws field", embed.getFields().stream().anyMatch(f -> f.getName().equals("Throws:")));
-//    }
-//
-//    @Test
-//    public void getMethodWithParameter() {
-//        Message msg = JDoc.get("jda.getUserById(long)");
-//        assertEquals("JDA.getUserById(long) should be found and therefore generate embed", 1, msg.getEmbeds().size());
-//        MessageEmbed embed = msg.getEmbeds().get(0);
-//        assertTrue("Embed should have Parameters field", embed.getFields().stream().anyMatch(f -> f.getName().equals("Parameters:")));
-//    }
-//
-//    @Test
-//    public void getEnumClass() {
-//        Message msg = JDoc.get("accounttype");
-//        assertEquals("AccountType should be found and therefore generate embed", 1, msg.getEmbeds().size());
-//        MessageEmbed embed = msg.getEmbeds().get(0);
-//        assertTrue("Embed should have Throws field", embed.getFields().stream().anyMatch(f -> f.getName().equals("Values:")));
-//    }
-//
-//    @Test
-//    public void getInnerClass() {
-//        Message msg = JDoc.get("messagebuilder.formatting");
-//        assertEquals("MessageBuilder.Formatting should be found and therefore generate embed", 1, msg.getEmbeds().size());
-//    }
-//
-//    @Test
-//    public void getValue() {
-//        Message msg = JDoc.get("simplelog.name");
-//        assertEquals("SimpleLog.name should be found and therefore generate embed", 1, msg.getEmbeds().size());
-//    }
-//
-//    @Test
-//    public void getValueWithoutDescription() {
-//        Message msg = JDoc.get("simplelog.name");
-//        assertEquals("SimpleLog.name should be found and therefore generate embed", 1, msg.getEmbeds().size());
-//        assertEquals("Text for no avail description should be shown", "No description available!", msg.getEmbeds().get(0).getDescription());
-//    }
-//
-//    @Test
-//    public void getToLongDescription() {
-//        Message msg = JDoc.get("restaction");
-//        assertEquals("RestAction should be found and therefore generate embed", 1, msg.getEmbeds().size());
-//        assertTrue("Text for to long description should be shown",
-//                msg.getEmbeds().get(0).getDescription().startsWith("Description to long. please refer to [the docs]("));
-//    }
-//
-//    @Test
-//    public void getInheritedMethod() {
-//        Message msg = JDoc.get("user.getid");
-//        assertEquals("User.getId - inherited should be found and therefore generate embed", 1, msg.getEmbeds().size());
-//    }
+    @Test
+    public void getNonExistentClass() {
+        List<Documentation> docs = JDoc.get("bla");
+        assertEquals("Non-Existent class should not return a Documentation", 0, docs.size());
+
+        docs = JDoc.get("user.bla");
+        assertEquals("Non-Existent class (child) should not return a Documentation", 0, docs.size());
+    }
+
+    @Test
+    public void getMethodWithReturnAndThrows() {
+        List<Documentation> docs = JDoc.get("messagechannel.getiterablehistory");
+        assertEquals("MessageChannel.getIterableHistory should be found", 1, docs.size());
+        Documentation doc = docs.get(0);
+        assertTrue("Embed should have Return field", doc.getFields().keySet().stream().anyMatch(f -> f.equals("Returns:")));
+        assertTrue("Embed should have Throws field", doc.getFields().keySet().stream().anyMatch(f -> f.equals("Throws:")));
+    }
+
+    @Test
+    public void getMethodWithParameter() {
+        List<Documentation> docs = JDoc.get("jda.getUserById(long)");
+        assertEquals("JDA.getUserById(long) should be found", 1, docs.size());
+        Documentation doc = docs.get(0);
+        assertTrue("Embed should have Parameters field", doc.getFields().keySet().stream().anyMatch(f -> f.equals("Parameters:")));
+    }
+
+    @Test
+    public void getEnumClass() {
+        List<Documentation> docs = JDoc.get("accounttype");
+        assertEquals("AccountType should be found", 1, docs.size());
+        Documentation doc = docs.get(0);
+        assertTrue("Embed should have Throws field", doc.getFields().keySet().stream().anyMatch(f -> f.equals("Values:")));
+    }
+
+    @Test
+    public void getInnerClass() {
+        List<Documentation> docs = JDoc.get("messagebuilder.formatting");
+        assertEquals("MessageBuilder.Formatting should be found", 1, docs.size());
+    }
+
+    @Test
+    public void getValue() {
+        List<Documentation> docs = JDoc.get("simplelog.name");
+        assertEquals("SimpleLog.name should be found", 1, docs.size());
+    }
+
+    @Test
+    public void getInheritedMethod() {
+        List<Documentation> docs = JDoc.get("user.getid");
+        assertEquals("User.getId - inherited should be found", 1, docs.size());
+    }
+
+    @Test
+    public void getFuzzyResult() {
+        List<Documentation> docs = JDoc.get("restaction.queue");
+        assertEquals("restaction.queue should find 3 contestants", 3, docs.size());
+    }
 }
