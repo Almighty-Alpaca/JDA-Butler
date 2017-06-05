@@ -107,7 +107,7 @@ public class JDocParser {
                     for(DocBlock block : docBlock) {
                         if(!classDoc.methodDocs.containsKey(block.title.toLowerCase()))
                             classDoc.methodDocs.put(block.title.toLowerCase(), new HashSet<>());
-                        classDoc.methodDocs.get(block.title.toLowerCase()).add(new MethodDocumentation(block.signature, block.hashLink, block.description, block.fields));
+                        classDoc.methodDocs.get(block.title.toLowerCase()).add(new MethodDocumentation(classDoc, block.signature, block.hashLink, block.description, block.fields));
                     }
                 }
                 //vars
@@ -115,7 +115,7 @@ public class JDocParser {
                 docBlock = getDocBlock(tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
-                        classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.hashLink, block.signature, block.description));
+                        classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(classDoc, block.title, block.hashLink, block.signature, block.description));
                     }
                 }
                 //enum-values
@@ -123,7 +123,7 @@ public class JDocParser {
                 docBlock = getDocBlock(tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
-                        classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(block.title, block.hashLink, block.signature, block.description));
+                        classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(classDoc, block.title, block.hashLink, block.signature, block.description));
                     }
                 }
             }
@@ -247,7 +247,7 @@ public class JDocParser {
         }
     }
 
-    static class ClassDocumentation {
+    static class ClassDocumentation implements Documentation {
         final String                                pack;
         final String                                className;
         final String                                classSig;
@@ -265,9 +265,34 @@ public class JDocParser {
             this.classDesc = classDesc;
             this.isEnum = isEnum;
         }
+
+        @Override
+        public String getTitle() {
+            return classSig;
+        }
+
+        @Override
+        public String getUrl() {
+            return JDocUtil.getLink(this);
+        }
+
+        @Override
+        public String getContent() {
+            return classDesc;
+        }
+
+        @Override
+        public Map<String, List<String>> getFields() {
+            if(!isEnum)
+                return null;
+            Map<String, List<String>> fields = new HashMap<>();
+            fields.put("Values:", classValues.values().stream().map(valueDoc -> valueDoc.name).collect(Collectors.toList()));
+            return fields;
+        }
     }
 
-    static class MethodDocumentation {
+    static class MethodDocumentation implements Documentation {
+        final ClassDocumentation                parent;
         final String                            functionName;
         final String                            hashLink;
         final String                            functionSig;
@@ -275,13 +300,14 @@ public class JDocParser {
         final String                            desc;
         final OrderedMap<String, List<String>>  fields;
 
-        private MethodDocumentation(String functionSig, final String hashLink, final String desc, final OrderedMap<String, List<String>> fields) {
+        private MethodDocumentation(ClassDocumentation parent, String functionSig, final String hashLink, final String desc, final OrderedMap<String, List<String>> fields) {
             functionSig = functionSig.replaceAll("(?:[a-z]+\\.)+([A-Z])", "$1").replaceAll("\\s{2,}", " ");
             Matcher methodMatcher = METHOD_PATTERN.matcher(functionSig);
             if(!methodMatcher.find()) {
                 System.out.println('"' + functionSig + '"');
                 throw new RuntimeException("Got method with no proper method signature: " + functionSig);
             }
+            this.parent = parent;
             this.functionName = methodMatcher.group(2);
             this.hashLink = hashLink;
             this.functionSig = methodMatcher.group();
@@ -320,19 +346,56 @@ public class JDocParser {
             }
             return true;
         }
+
+        @Override
+        public String getTitle() {
+            return functionSig;
+        }
+
+        @Override
+        public String getUrl() {
+            return JDocUtil.getLink(parent) + hashLink;
+        }
+
+        @Override
+        public String getContent() {
+            return desc;
+        }
+
+        @Override
+        public Map<String, List<String>> getFields() {
+            return fields;
+        }
     }
 
-    static class ValueDocumentation {
+    static class ValueDocumentation implements Documentation {
+        final ClassDocumentation parent;
         final String name;
         final String hashLink;
         final String sig;
         final String desc;
 
-        private ValueDocumentation(String name, String hashLink, String sig, String desc) {
+        private ValueDocumentation(ClassDocumentation parent, String name, String hashLink, String sig, String desc) {
+            this.parent = parent;
             this.name = name;
             this.hashLink = hashLink;
             this.sig = sig;
             this.desc = desc;
+        }
+
+        @Override
+        public String getTitle() {
+            return parent.isEnum ? parent.className + '.' + this.name : this.sig;
+        }
+
+        @Override
+        public String getUrl() {
+            return JDocUtil.getLink(parent) + hashCode();
+        }
+
+        @Override
+        public String getContent() {
+            return desc;
         }
     }
 }

@@ -27,7 +27,7 @@ public class Dispatcher extends ListenerAdapter {
 	public Dispatcher() {
 		this.registerCommand(new BuildGradleCommand());
 		this.registerCommand(new ChangelogCommand());
-		this.registerCommand(new DocsCommand());
+		this.registerCommand(new DocsCommand(this.reactListReg));
 		this.registerCommand(new EvalCommand());
 		this.registerCommand(new GradleCommand());
 		this.registerCommand(new GradleProjectCommand());

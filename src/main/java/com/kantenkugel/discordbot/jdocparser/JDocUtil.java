@@ -33,7 +33,7 @@ public class JDocUtil {
     static final Path LOCAL_DOC_PATH = Paths.get("jda-docs.jar");
 
     static final String JENKINSBASE = "http://" + JDAUtil.JENKINS_BASE.get() + ":8080/job/JDA/lastSuccessfulBuild/";
-    static final String JDOCBASE = JENKINSBASE + "javadoc/";
+    public static final String JDOCBASE = JENKINSBASE + "javadoc/";
     static final String ARTIFACT_URL = JENKINSBASE + "api/json?tree=artifacts[*]";
 
     static final String JDA_CODE_BASE = "net/dv8tion/jda";

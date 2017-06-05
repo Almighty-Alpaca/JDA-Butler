@@ -17,14 +17,9 @@
 
 package com.kantenkugel.discordbot.jdocparser;
 
-import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageEmbed;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -35,29 +30,23 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JDoc {
     private static final Map<String, JDocParser.ClassDocumentation> docs = new HashMap<>();
 
-    public static Message get(final String name) {
-        if(name.trim().isEmpty()) {
-            return new MessageBuilder().append("See the docs here: ").append(JDocUtil.JDOCBASE).build();
-        }
+    public static List<Documentation> get(final String name) {
         final String[] split = name.toLowerCase().split("[#\\.]");
         JDocParser.ClassDocumentation classDoc;
         synchronized(docs) {
             if (!docs.containsKey(split[0]))
-                return new MessageBuilder().append("Class not Found!").build();
+                return new ArrayList<>(0);
             classDoc = docs.get(split[0]);
         }
         for(int i=1; i < split.length - 1; i++) {
             if(!classDoc.subClasses.containsKey(split[i]))
-                return new MessageBuilder().appendFormat("Could not find Sub-Class %s of %s", split[i], classDoc.className).build();
+                return new ArrayList<>(0);
             classDoc = classDoc.subClasses.get(split[i]);
         }
 
@@ -65,20 +54,9 @@ public class JDoc {
         if(split.length == 1 || classDoc.subClasses.containsKey(searchObj)) {
             if(split.length > 1)
                 classDoc = classDoc.subClasses.get(searchObj);
-            if(classDoc.isEnum) {
-                Map<String, List<String>> fields = new HashMap<>();
-                fields.put("Values:", classDoc.classValues.values().stream().map(valueDoc -> valueDoc.name).collect(Collectors.toList()));
-                return getMessage(classDoc.classSig, classDoc.classDesc, JDocUtil.getLink(classDoc), fields);
-            } else {
-                return getMessage(classDoc.classSig, classDoc.classDesc, JDocUtil.getLink(classDoc));
-            }
+            return Collections.singletonList(classDoc);
         } else if(classDoc.classValues.containsKey(searchObj)) {
-            JDocParser.ValueDocumentation valueDoc = classDoc.classValues.get(searchObj);
-            if(classDoc.isEnum) {
-                return getMessage(classDoc.className + '.' + valueDoc.name, valueDoc.desc, JDocUtil.getLink(classDoc) + valueDoc.hashLink);
-            } else {
-                return getMessage(valueDoc.sig, valueDoc.desc, JDocUtil.getLink(classDoc) + valueDoc.hashLink);
-            }
+            return Collections.singletonList(classDoc.classValues.get(searchObj));
         } else {
             boolean fuzzy = false;
             String fixedSearchObj = searchObj;
@@ -89,15 +67,15 @@ public class JDoc {
             String[] methodParts = fixedSearchObj.split("[\\(\\)]");
             String methodName = methodParts[0];
             if(classDoc.methodDocs.containsKey(methodName.toLowerCase())) {
-                return getMethodMessage(classDoc, methodName, fixedSearchObj, fuzzy);
+                return getMethodDocs(classDoc, methodName, fixedSearchObj, fuzzy);
             } else if(classDoc.inheritedMethods.containsKey(methodName.toLowerCase())) {
                 return get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
             }
-            return new MessageBuilder().append("Could not find search-query").build();
+            return new ArrayList<>(0);
         }
     }
 
-    private static Message getMethodMessage(JDocParser.ClassDocumentation classDoc, String methodName, String methodSig, boolean isFuzzy) {
+    private static List<Documentation> getMethodDocs(JDocParser.ClassDocumentation classDoc, String methodName, String methodSig, boolean isFuzzy) {
         List<JDocParser.MethodDocumentation> docs = classDoc.methodDocs.get(methodName.toLowerCase())
                 .stream()
                 .sorted(Comparator.comparingInt(m -> m.argTypes.size()))
@@ -106,51 +84,12 @@ public class JDoc {
                 .filter(doc -> doc.matches(methodSig, isFuzzy))
                 .collect(Collectors.toList());
         if(filteredDocs.size() == 1) {
-            JDocParser.MethodDocumentation doc = filteredDocs.get(0);
-            return getMessage(doc.functionSig, doc.desc, JDocUtil.getLink(classDoc) + doc.hashLink, doc.fields);
+            return Collections.singletonList(filteredDocs.get(0));
         } else if(filteredDocs.size() == 0) {
-            return getMessage(
-                    "Incorrect signature",
-                    "Did you mean:\n"
-                            + docs.parallelStream()
-                            .map(m -> '[' + m.functionSig + "](" + JDocUtil.getLink(classDoc) + m.hashLink + ')')
-                            .collect(Collectors.joining("\n")),
-                    null
-            );
+            return Collections.unmodifiableList(docs);
         } else {
-            return getMessage(
-                    "Found multiple methods with given name",
-                    filteredDocs.parallelStream()
-                            .map(m -> '[' + m.functionSig + "](" + JDocUtil.getLink(classDoc) + m.hashLink + ')')
-                            .collect(Collectors.joining("\n")),
-                    null
-            );
+            return Collections.unmodifiableList(filteredDocs);
         }
-    }
-
-    private static Message getMessage(String title, String description, String linkUrl) {
-        return getMessage(title, description, linkUrl, null);
-    }
-
-    private static Message getMessage(String title, String description, String linkUrl, Map<String, List<String>> fields) {
-        EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setTitle(title, linkUrl)
-                .setAuthor("JDA JavaDocs", null, EmbedUtil.JDA_ICON)
-                .setColor(EmbedUtil.COLOR_JDA_PRUPLE);
-        if(description.length() > MessageEmbed.TEXT_MAX_LENGTH) {
-            embedBuilder.setDescription("Description to long. please refer to [the docs](" + linkUrl + ')');
-            embedBuilder.clearFields();
-        } else if(description.length() > 0) {
-            embedBuilder.setDescription(description);
-        } else {
-            embedBuilder.setDescription("No description available!");
-        }
-        if(fields != null && fields.size() > 0) {
-            for(Map.Entry<String, List<String>> field : fields.entrySet()) {
-                embedBuilder.addField(field.getKey(), field.getValue().stream().collect(Collectors.joining("\n")), false);
-            }
-        }
-        return new MessageBuilder().setEmbed(embedBuilder.build()).build();
     }
 
     public static void init() {
