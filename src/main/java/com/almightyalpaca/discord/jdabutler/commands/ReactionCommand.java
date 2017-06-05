@@ -80,7 +80,10 @@ public abstract class ReactionCommand implements Command {
             if(message.getChannelType() == ChannelType.TEXT && !message.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_ADD_REACTION))
                 return;
             for(String reaction : allowedReactions) {
-                Emote emote = message.getJDA().getEmoteById(reaction);
+                Emote emote = null;
+                try {
+                    emote = message.getJDA().getEmoteById(reaction);
+                } catch(NumberFormatException ignored) {}
                 if(emote == null) {
                     message.addReaction(reaction).queue();
                 } else {
