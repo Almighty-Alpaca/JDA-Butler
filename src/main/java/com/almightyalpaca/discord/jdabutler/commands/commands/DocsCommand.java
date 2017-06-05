@@ -14,10 +14,12 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class DocsCommand extends ReactionCommand {
@@ -44,16 +46,24 @@ public class DocsCommand extends ReactionCommand {
 				embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl() + ")\n");
 			}
 			embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
+			final AtomicReference<Message> responseMessage = new AtomicReference<>();
+			List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, docs.size())));
+			options.add(ReactionCommand.CANCEL);
 			channel.sendMessage(embedB.build()).queue(m -> this.addReactions(
 					m,
-					Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, docs.size())),
-					2, TimeUnit.MINUTES,
+					options,
+					20, TimeUnit.SECONDS,
 					index -> {
 						if(index < 0 || index >= docs.size()) {
 							stopReactions(m);
 							return;
 						}
-						channel.sendMessage(getDocMessage(docs.get(index))).queue();
+						Message currentResponse = responseMessage.get();
+						if(currentResponse != null) {
+							currentResponse.editMessage(getDocMessage(docs.get(index))).queue();
+							return;
+						}
+						channel.sendMessage(getDocMessage(docs.get(index))).queue(responseMessage::set);
 					}
 			));
 		}
