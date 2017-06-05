@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.core.exceptions.PermissionException;
 import net.dv8tion.jda.core.utils.MiscUtil;
 
 import java.util.List;
@@ -65,11 +66,11 @@ public abstract class ReactionCommand implements Command {
                 return;
             MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
             String reaction = reactionEmote.isEmote() ? reactionEmote.getEmote().getId() : reactionEmote.getName();
-            if(!allowedReactions.contains(reaction)) {
+            try {
                 event.getReaction().removeReaction(event.getUser()).queue();
-                return;
-            }
-            callback.accept(allowedReactions.indexOf(reaction));
+            } catch(PermissionException ignored) {}
+            if(allowedReactions.contains(reaction))
+                callback.accept(allowedReactions.indexOf(reaction));
         }
 
         private void stop() {
