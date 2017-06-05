@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.util.Collections;
@@ -19,8 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Dispatcher extends ListenerAdapter {
 
-	private final Set<Command>		commands	= ConcurrentHashMap.newKeySet();
-	private final ExecutorService	pool		= Executors.newCachedThreadPool();
+	private final Set<Command>				commands	 = ConcurrentHashMap.newKeySet();
+	private final ExecutorService			pool		 = Executors.newCachedThreadPool();
+	private final ReactionListenerRegistry 	reactListReg = new ReactionListenerRegistry();
 
 	public Dispatcher() {
 		this.registerCommand(new BuildGradleCommand());
@@ -88,6 +90,11 @@ public class Dispatcher extends ListenerAdapter {
 	}
 
 	@Override
+	public void onMessageReactionAdd(MessageReactionAddEvent event) {
+		reactListReg.handle(event);
+	}
+
+	@Override
 	public void onShutdown(final ShutdownEvent event) {
 		MoreExecutors.shutdownAndAwaitTermination(this.pool, 10, TimeUnit.SECONDS);
 	}
@@ -108,5 +115,33 @@ public class Dispatcher extends ListenerAdapter {
 			content = content.substring(1);
 		}
 		return content;
+	}
+
+	public static class ReactionListenerRegistry {
+		private final Set<ReactionCommand.ReactionListener> listeners;
+
+		private ReactionListenerRegistry() {
+			this.listeners = new HashSet<>();
+		}
+
+		public void register(ReactionCommand.ReactionListener listener) {
+			synchronized(listeners) {
+				listeners.add(listener);
+			}
+		}
+
+		public void remove(ReactionCommand.ReactionListener listener) {
+			synchronized(listeners) {
+				listeners.remove(listener);
+			}
+		}
+
+		private void handle(MessageReactionAddEvent event) {
+			synchronized(listeners) {
+				for(ReactionCommand.ReactionListener listener : listeners) {
+					listener.handle(event);
+				}
+			}
+		}
 	}
 }
