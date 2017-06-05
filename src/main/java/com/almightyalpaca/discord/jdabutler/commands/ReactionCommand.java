@@ -1,11 +1,11 @@
 package com.almightyalpaca.discord.jdabutler.commands;
 
+import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.core.utils.MiscUtil;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -28,7 +28,7 @@ public abstract class ReactionCommand implements Command {
     }
 
     public static final class ReactionListener {
-        private static final Map<Long, ReactionListener> instances = new HashMap<>();
+        private static final TLongObjectMap<ReactionListener> instances = MiscUtil.newLongMap();
         private final Message message;
         private final List<String> allowedReactions;
         private final Dispatcher.ReactionListenerRegistry registry;
