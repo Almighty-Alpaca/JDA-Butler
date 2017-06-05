@@ -1,6 +1,9 @@
 package com.almightyalpaca.discord.jdabutler.commands;
 
 import gnu.trove.map.TLongObjectMap;
+import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.core.utils.MiscUtil;
@@ -10,6 +13,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public abstract class ReactionCommand implements Command {
+
+    public final static String[] NUMBERS = new String[]{"1\u20E3","2\u20E3","3\u20E3",
+            "4\u20E3","5\u20E3","6\u20E3","7\u20E3","8\u20E3","9\u20E3", "\uD83D\uDD1F"};
+    public final static String[] LETTERS = new String[]{"\uD83C\uDDE6","\uD83C\uDDE7","\uD83C\uDDE8",
+            "\uD83C\uDDE9","\uD83C\uDDEA","\uD83C\uDDEB","\uD83C\uDDEC","\uD83C\uDDED","\uD83C\uDDEE","\uD83C\uDDEF"};
+    public final static String CANCEL = "\u274C";
+
     private final Dispatcher.ReactionListenerRegistry listenerRegistry;
 
     public ReactionCommand(Dispatcher.ReactionListenerRegistry registry) {
@@ -43,6 +53,7 @@ public abstract class ReactionCommand implements Command {
             this.callback = callback;
             this.timeoutThread = new Thread(new TimeoutHandler(timeout, timeUnit));
             this.timeoutThread.start();
+            addReactions();
             registry.register(this);
         }
 
@@ -53,7 +64,7 @@ public abstract class ReactionCommand implements Command {
                 return;
             String name = event.getReactionEmote().getName();
             if(!allowedReactions.contains(name)) {
-                event.getReaction().removeReaction(event.getUser());
+                event.getReaction().removeReaction(event.getUser()).queue();
                 return;
             }
             callback.accept(allowedReactions.indexOf(name));
@@ -63,9 +74,22 @@ public abstract class ReactionCommand implements Command {
             this.timeoutThread.interrupt();
         }
 
+        private void addReactions() {
+            if(message.getChannelType() == ChannelType.TEXT && !message.getGuild().getSelfMember().hasPermission(Permission.MESSAGE_ADD_REACTION))
+                return;
+            for(String reaction : allowedReactions) {
+                Emote emote = message.getJDA().getEmoteById(reaction);
+                if(emote == null) {
+                    message.addReaction(reaction).queue();
+                } else {
+                    message.addReaction(emote).queue();
+                }
+            }
+        }
+
         private void cleanup() {
             registry.remove(ReactionListener.this);
-            message.clearReactions();
+            message.clearReactions().queue();
             instances.remove(message.getIdLong());
         }
 
