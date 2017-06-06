@@ -88,16 +88,17 @@ public class JDocParser {
         }
         final String[] nameSplits = fileName.split("\\.");
         final String className = nameSplits[nameSplits.length - 2];
+        final String fullName = fileName.substring(0, fileName.length() - nameSplits[nameSplits.length - 1].length() - 1);
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
             final String content = buffer.lines().collect(Collectors.joining("\n"));
             Document document = Jsoup.parse(content);
             Element titleElem = getSingleElementByClass(document, "title");
             final String classSig = JDocUtil.fixSpaces(titleElem.text());
             final String pack = JDocUtil.fixSpaces(titleElem.previousElementSibling().text());
-            final String link = JDocUtil.getLink(pack, className);
+            final String link = JDocUtil.getLink(pack, fullName);
             Element descriptionElement = getSingleElementByQuery(document, ".description .block");
             final String description = descriptionElement == null ? "" : JDocUtil.formatText(descriptionElement.html(), link);
-            final ClassDocumentation classDoc = new ClassDocumentation(pack, className, classSig, description, classSig.startsWith("Enum"));
+            final ClassDocumentation classDoc = new ClassDocumentation(pack, fullName, classSig, description, classSig.startsWith("Enum"));
             final Element details = document.getElementsByClass("details").first();
             if(details != null) {
                 //methods
@@ -143,13 +144,16 @@ public class JDocParser {
                 if(parent.subClasses.containsKey(className.toLowerCase()))
                     classDoc.subClasses.putAll(parent.subClasses.get(className.toLowerCase()).subClasses);
                 parent.subClasses.put(className.toLowerCase(), classDoc);
-            } else {
-                if(docs.containsKey(className.toLowerCase()))
-                    classDoc.subClasses.putAll(docs.get(className.toLowerCase()).subClasses);
-                docs.put(className.toLowerCase(), classDoc);
             }
+            if(docs.containsKey(fullName.toLowerCase())) {
+                ClassDocumentation current = docs.get(fullName.toLowerCase());
+                if(current.classSig != null)
+                    throw new RuntimeException("Got a class-name conflict with classes " + classDoc.classSig + "(" + classDoc.className + ") AND " + current.classSig + "(" + current.className + ")");
+                classDoc.subClasses.putAll(current.subClasses);
+            }
+            docs.put(fullName.toLowerCase(), classDoc);
         } catch (final IOException | NullPointerException ex) {
-            JDocUtil.LOG.fatal("Got excaption for element " + className);
+            JDocUtil.LOG.fatal("Got excaption for element " + fullName);
             JDocUtil.LOG.log(ex);
         }
         try {
