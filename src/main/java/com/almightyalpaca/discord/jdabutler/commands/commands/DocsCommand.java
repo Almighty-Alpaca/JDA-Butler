@@ -94,7 +94,12 @@ public class DocsCommand extends ReactionCommand {
 		}
 		if(documentation.getFields() != null && documentation.getFields().size() > 0) {
 			for(Map.Entry<String, List<String>> field : documentation.getFields().entrySet()) {
-				embed.addField(field.getKey(), field.getValue().stream().collect(Collectors.joining("\n")), false);
+				String fieldValue = String.join("\n", field.getValue());
+				if(fieldValue.length() > MessageEmbed.VALUE_MAX_LENGTH) {
+					embed.addField(field.getKey(), "This section is to long. Please look at [the docs](" + documentation.getUrl() + ')', false);
+				} else {
+					embed.addField(field.getKey(), field.getValue().stream().collect(Collectors.joining("\n")), false);
+				}
 			}
 		}
 		return new MessageBuilder().setEmbed(embed.build()).build();
