@@ -14,10 +14,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -52,13 +49,17 @@ public class DocsCommand extends ReactionCommand {
 			channel.sendMessage(embedB.build()).queue(m -> this.addReactions(
 					m,
 					options,
-					20, TimeUnit.SECONDS,
+					Collections.singleton(sender),
+					30, TimeUnit.SECONDS,
 					index -> {
-						if(index < 0 || index >= docs.size()) {
-							stopReactions(m);
+						Message currentResponse = responseMessage.get();
+						if(index >= docs.size()) {				//cancel button or other error
+							stopReactions(m, false);
+							m.delete().queue();
+							if(currentResponse != null)
+								currentResponse.delete().queue();
 							return;
 						}
-						Message currentResponse = responseMessage.get();
 						if(currentResponse != null) {
 							currentResponse.editMessage(getDocMessage(docs.get(index))).queue();
 							return;

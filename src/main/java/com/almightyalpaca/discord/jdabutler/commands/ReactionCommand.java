@@ -2,15 +2,13 @@ package com.almightyalpaca.discord.jdabutler.commands;
 
 import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.Emote;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageReaction;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.core.exceptions.PermissionException;
 import net.dv8tion.jda.core.utils.MiscUtil;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -28,29 +26,37 @@ public abstract class ReactionCommand implements Command {
         this.listenerRegistry = registry;
     }
 
-    protected final void addReactions(Message message, List<String> reactions, int timeout, TimeUnit timeUnit, Consumer<Integer> callback) {
+    protected final void addReactions(Message message, List<String> reactions, Set<User> allowedUsers, int timeout, TimeUnit timeUnit, Consumer<Integer> callback) {
         if(!ReactionListener.instances.containsKey(message.getIdLong()))
-            new ReactionListener(message, reactions, listenerRegistry, timeout, timeUnit, callback);
+            new ReactionListener(message, reactions, allowedUsers, listenerRegistry, timeout, timeUnit, callback);
     }
 
     protected final void stopReactions(Message message) {
+        stopReactions(message, true);
+    }
+
+    protected final void stopReactions(Message message, boolean removeReactions) {
         ReactionListener reactionListener = ReactionListener.instances.get(message.getIdLong());
         if(reactionListener != null)
-            reactionListener.stop();
+            reactionListener.stop(removeReactions);
     }
 
     public static final class ReactionListener {
         private static final TLongObjectMap<ReactionListener> instances = MiscUtil.newLongMap();
         private final Message message;
         private final List<String> allowedReactions;
+        private final Set<User> allowedUsers;
         private final Dispatcher.ReactionListenerRegistry registry;
         private final Consumer<Integer> callback;
         private final Thread timeoutThread;
 
-        public ReactionListener(Message message, List<String> allowedReactions, Dispatcher.ReactionListenerRegistry registry, int timeout, TimeUnit timeUnit, Consumer<Integer> callback) {
+        private boolean shouldDeleteReactions = true;
+
+        public ReactionListener(Message message, List<String> allowedReactions, Set<User> allowedUsers, Dispatcher.ReactionListenerRegistry registry, int timeout, TimeUnit timeUnit, Consumer<Integer> callback) {
             instances.put(message.getIdLong(), this);
             this.message = message;
             this.allowedReactions = allowedReactions;
+            this.allowedUsers = allowedUsers;
             this.registry = registry;
             this.callback = callback;
             this.timeoutThread = new Thread(new TimeoutHandler(timeout, timeUnit));
@@ -64,16 +70,22 @@ public abstract class ReactionCommand implements Command {
                 return;
             if(event.getUser() == event.getJDA().getSelfUser())
                 return;
-            MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
-            String reaction = reactionEmote.isEmote() ? reactionEmote.getEmote().getId() : reactionEmote.getName();
+
             try {
                 event.getReaction().removeReaction(event.getUser()).queue();
             } catch(PermissionException ignored) {}
+
+            if(!allowedUsers.isEmpty() && !allowedUsers.contains(event.getUser()))
+                return;
+
+            MessageReaction.ReactionEmote reactionEmote = event.getReactionEmote();
+            String reaction = reactionEmote.isEmote() ? reactionEmote.getEmote().getId() : reactionEmote.getName();
             if(allowedReactions.contains(reaction))
                 callback.accept(allowedReactions.indexOf(reaction));
         }
 
-        private void stop() {
+        private void stop(boolean removeReactions) {
+            this.shouldDeleteReactions = removeReactions;
             this.timeoutThread.interrupt();
         }
 
@@ -95,7 +107,8 @@ public abstract class ReactionCommand implements Command {
 
         private void cleanup() {
             registry.remove(ReactionListener.this);
-            message.clearReactions().queue();
+            if(shouldDeleteReactions)
+                message.clearReactions().queue();
             instances.remove(message.getIdLong());
         }
 
