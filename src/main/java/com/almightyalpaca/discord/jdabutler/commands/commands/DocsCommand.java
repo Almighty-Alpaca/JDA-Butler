@@ -16,7 +16,6 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class DocsCommand extends ReactionCommand {
@@ -43,7 +42,6 @@ public class DocsCommand extends ReactionCommand {
 				embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl() + ")\n");
 			}
 			embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
-			final AtomicReference<Message> responseMessage = new AtomicReference<>();
 			List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, docs.size())));
 			options.add(ReactionCommand.CANCEL);
 			channel.sendMessage(embedB.build()).queue(m -> this.addReactions(
@@ -52,19 +50,13 @@ public class DocsCommand extends ReactionCommand {
 					Collections.singleton(sender),
 					30, TimeUnit.SECONDS,
 					index -> {
-						Message currentResponse = responseMessage.get();
 						if(index >= docs.size()) {				//cancel button or other error
 							stopReactions(m, false);
 							m.delete().queue();
-							if(currentResponse != null)
-								currentResponse.delete().queue();
 							return;
 						}
-						if(currentResponse != null) {
-							currentResponse.editMessage(getDocMessage(docs.get(index))).queue();
-							return;
-						}
-						channel.sendMessage(getDocMessage(docs.get(index))).queue(responseMessage::set);
+						stopReactions(m);
+						m.editMessage(getDocMessage(docs.get(index))).queue();
 					}
 			));
 		}

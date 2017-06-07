@@ -52,7 +52,9 @@ public abstract class ReactionCommand implements Command {
 
         private boolean shouldDeleteReactions = true;
 
-        public ReactionListener(Message message, List<String> allowedReactions, Set<User> allowedUsers, Dispatcher.ReactionListenerRegistry registry, int timeout, TimeUnit timeUnit, Consumer<Integer> callback) {
+        public ReactionListener(Message message, List<String> allowedReactions, Set<User> allowedUsers,
+                                 Dispatcher.ReactionListenerRegistry registry, int timeout, TimeUnit timeUnit,
+                                 Consumer<Integer> callback) {
             instances.put(message.getIdLong(), this);
             this.message = message;
             this.allowedReactions = allowedReactions;
@@ -107,8 +109,11 @@ public abstract class ReactionCommand implements Command {
 
         private void cleanup() {
             registry.remove(ReactionListener.this);
-            if(shouldDeleteReactions)
-                message.clearReactions().queue();
+            if(shouldDeleteReactions) {
+                try {
+                    message.clearReactions().queue();
+                } catch(PermissionException ignored) {}
+            }
             instances.remove(message.getIdLong());
         }
 
