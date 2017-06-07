@@ -76,7 +76,7 @@ public class DocsCommand extends ReactionCommand {
 		EmbedBuilder embed = getDefaultEmbed()
 				.setTitle(documentation.getTitle(), documentation.getUrl());
 		if(documentation.getContent().length() > MessageEmbed.TEXT_MAX_LENGTH) {
-			embed.setDescription("Description to long. Please refer to [the docs].(" + documentation.getUrl() + ')');
+			embed.setDescription("Description to long. Please refer to [the docs](" + documentation.getUrl() + ')');
 			return new MessageBuilder().setEmbed(embed.build()).build();
 		}
 		if(documentation.getContent().length() == 0) {
