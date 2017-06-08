@@ -1,10 +1,10 @@
 import com.kantenkugel.discordbot.jdocparser.JDocParser;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class DocParserRegex {
     @Test
@@ -42,5 +42,45 @@ public class DocParserRegex {
         Matcher matcher = JDocParser.METHOD_PATTERN.matcher("java.lang.String getInviteUrl(java.util.Collection<Permission> permissions, byte[] arr)");
         assertTrue("Matcher can't find methods with generics + dots + arrs", matcher.find());
         assertEquals("Matcher doesn't extract function-args with generics and correctly", "java.util.Collection<Permission> permissions, byte[] arr", matcher.group(3));
+    }
+
+    @Test
+    public void testRegexSplitPattern() {
+        final String normalRegex = "[\\.#]";
+        final String escapedRegex = "(?:\\\\{1,2}\\.|#)";
+        String test = "restaction.queue";
+        String[] split = test.split(normalRegex);
+        assertEquals("Splitting by normal dot should return array of size 2. Array is: " + Arrays.toString(split), 2, split.length);
+        assertArrayEquals(new String[]{"restaction", "queue"}, split);
+        split = test.split(escapedRegex);
+        assertEquals("Splitting by escaped dot should return array of size 1. Array is: " + Arrays.toString(split), 1, split.length);
+        assertArrayEquals(new String[]{"restaction.queue"}, split);
+
+
+        test = "restaction#queue";
+        split = test.split(normalRegex);
+        assertEquals("Splitting by normal dot should return array of size 2. Array is: " + Arrays.toString(split), 2, split.length);
+        assertArrayEquals(new String[]{"restaction", "queue"}, split);
+        split = test.split(escapedRegex);
+        assertEquals("Splitting by escaped dot should return array of size 2. Array is: " + Arrays.toString(split), 2, split.length);
+        assertArrayEquals(new String[]{"restaction", "queue"}, split);
+
+
+        test = "restaction\\.queue";
+        split = test.split(normalRegex);
+        assertEquals("Splitting by normal dot should return array of size 2. Array is: " + Arrays.toString(split), 2, split.length);
+        assertArrayEquals(new String[]{"restaction\\", "queue"}, split);
+        split = test.split(escapedRegex);
+        assertEquals("Splitting by escaped dot should return array of size 2. Array is: " + Arrays.toString(split), 2, split.length);
+        assertArrayEquals(new String[]{"restaction", "queue"}, split);
+
+
+        test = "restaction\\\\.queue";
+        split = test.split(normalRegex);
+        assertEquals("Splitting by normal dot should return array of size 2. Array is: " + Arrays.toString(split), 2, split.length);
+        assertArrayEquals(new String[]{"restaction\\\\", "queue"}, split);
+        split = test.split(escapedRegex);
+        assertEquals("Splitting by escaped dot should return array of size 2. Array is: " + Arrays.toString(split), 2, split.length);
+        assertArrayEquals(new String[]{"restaction", "queue"}, split);
     }
 }

@@ -13,6 +13,7 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +29,30 @@ public class DocsCommand extends ReactionCommand {
 	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
 		if(content.trim().isEmpty()) {
 			channel.sendMessage(new MessageBuilder().append("See the docs here: ").append(JDocUtil.JDOCBASE).build()).queue();
+			return;
+		}
+		if(content.contains(":")) {
+			String[] split = content.split(":", 4);
+			if(split.length > 3) {
+				channel.sendMessage("Invalid syntax!").queue();
+				return;
+			}
+			if(!split[0].toLowerCase().equals("search")) {
+				channel.sendMessage("Unsupported operation "+split[0]).queue();
+				return;
+			}
+			String[] options = split.length == 3 ? split[1].toLowerCase().split(",") : new String[0];
+			Set<Pair<String, ? extends Documentation>> search = JDoc.search(split[split.length - 1], options);
+			if(search.size() == 0) {
+				channel.sendMessage("Did not find anything matching query " + split[split.length - 1]).queue();
+				return;
+			}
+			EmbedBuilder embedB = getDefaultEmbed().setTitle("Found following:");
+			for(Pair<String, ? extends Documentation> pair : search) {
+				embedB.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl() + ")\n");
+			}
+			embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
+			channel.sendMessage(embedB.build()).queue();
 			return;
 		}
 		final List<Documentation> docs = JDoc.get(content);
