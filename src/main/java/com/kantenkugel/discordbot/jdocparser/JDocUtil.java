@@ -72,7 +72,7 @@ public class JDocUtil {
         while(matcher.find()) {
             matcher.appendReplacement(sb, '[' +
                     ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "") +
-                    matcher.group(4).replace("*", "") +
+                    fixSignature(matcher.group(4).replace("*", "")) +
                     ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "") +
                     "](" + resolveLink(matcher.group(2), currentUrl) + ')'
             );
@@ -118,5 +118,8 @@ public class JDocUtil {
         return null;
     }
 
+    static String fixSignature(String sig) {
+        return sig.replaceAll("(?:[a-z]+\\.)+([A-Z])", "$1").replaceAll("\\s{2,}", " ");
+    }
 
 }

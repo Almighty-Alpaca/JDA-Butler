@@ -305,7 +305,7 @@ public class JDocParser {
         final OrderedMap<String, List<String>>  fields;
 
         private MethodDocumentation(ClassDocumentation parent, String functionSig, final String hashLink, final String desc, final OrderedMap<String, List<String>> fields) {
-            functionSig = functionSig.replaceAll("(?:[a-z]+\\.)+([A-Z])", "$1").replaceAll("\\s{2,}", " ");
+            functionSig = JDocUtil.fixSignature(functionSig);
             Matcher methodMatcher = METHOD_PATTERN.matcher(functionSig);
             if(!methodMatcher.find()) {
                 System.out.println('"' + functionSig + '"');
