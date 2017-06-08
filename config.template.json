@@ -1,0 +1,17 @@
+{
+  "discord": {
+    "token": ""
+  },
+  "proxy": {
+    "host": "",
+    "port": 8080,
+    "use": false
+  },
+  "jda": {
+    "version": {
+      "gradle-example-link": "https://www.dropbox.com/s/0n4l6zdrw0zt8nz/jda%20gradle%20setup%20example.zip?dl=1"
+    }
+  },
+  "testing": true,
+  "prefix": "|"
+}

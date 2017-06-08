@@ -145,6 +145,7 @@ local.properties
 
 ## File-based project format:
 *.iws
+*.ipr
 
 ## Plugin-specific files:
 
@@ -184,6 +185,7 @@ hs_err_pid*
 ### Gradle ###
 .gradle
 build/
+classes/
 
 # Ignore Gradle GUI config
 gradle-app.setting

@@ -7,15 +7,9 @@ import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundExceptio
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import com.kantenkugel.discordbot.moduleutils.DocParser;
+import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
-import javax.security.auth.login.LoginException;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -28,6 +22,13 @@ import net.dv8tion.jda.core.utils.SimpleLog.Level;
 import net.dv8tion.jda.core.utils.SimpleLog.LogListener;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.http.HttpHost;
+
+import javax.security.auth.login.LoginException;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class Bot {
 
@@ -107,7 +108,7 @@ public class Bot {
 	public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException,
 			InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException {
 
-		EventListener.executor.submit(DocParser::init);
+		EventListener.executor.submit(JDoc::init);
 
 		SimpleLog.addFileLogs(new File("out.log"), new File("err.log"));
 
