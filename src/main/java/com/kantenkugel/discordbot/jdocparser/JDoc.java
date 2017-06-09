@@ -84,9 +84,9 @@ public class JDoc {
      * @param options Options refining the search. Valid options are:
      *                <ul>
      *                <li>cs - makes matching case-sensitive</li>
-     *                <li>m or f - only methods are searched. Can't be used together with c or v.</li>
-     *                <li>c - only classes are searched. Can't be used together with m/f or v.</li>
-     *                <li>v - only values are searched. Can't be used together with m/f or c.</li>
+     *                <li>f - only methods are searched. Can't be used together with c or v.</li>
+     *                <li>c - only classes are searched. Can't be used together with f or v.</li>
+     *                <li>v - only values are searched. Can't be used together with f or c.</li>
      *                </ul>
      * @return Pairs of the form: Text-representation - Documentation
      * @throws PatternSyntaxException if regex was used and the regex is not valid
@@ -95,7 +95,7 @@ public class JDoc {
         Set<String> opts = Arrays.stream(options).map(String::toLowerCase).collect(Collectors.toSet());
         final boolean isCaseSensitive = opts.contains("cs");
         String key = input.toLowerCase();
-        if(opts.contains("m") || opts.contains("f")) {
+        if(opts.contains("f")) {
             return docs.values().stream()
                     .flatMap(cls -> cls.methodDocs.entrySet().stream()
                             .filter(mds -> mds.getKey().contains(key))
