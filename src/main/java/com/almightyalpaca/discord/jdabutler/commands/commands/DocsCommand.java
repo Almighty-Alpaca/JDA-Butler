@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DocsCommand extends ReactionCommand {
+	private static final int RESULTS_PER_PAGE = 5;
 
 	public DocsCommand(Dispatcher.ReactionListenerRegistry registry) {
 		super(registry);
@@ -48,7 +49,7 @@ public class DocsCommand extends ReactionCommand {
 				channel.sendMessage("Did not find anything matching query!").queue();
 				return;
 			}
-			if(search.size() > 10) {
+			if(search.size() > RESULTS_PER_PAGE) {
 				AtomicInteger page = new AtomicInteger(0);
 				List<Pair<String, ? extends Documentation>> sorted = search.stream().sorted((p1, p2) -> p1.getKey().compareTo(p2.getKey())).collect(Collectors.toList());
 				channel.sendMessage(getMultiResult(sorted, page.get())).queue(m -> this.addReactions(
@@ -62,7 +63,10 @@ public class DocsCommand extends ReactionCommand {
 								m.delete().queue();
 								return;
 							}
-							int nextPage = page.updateAndGet(current -> index == 1 ? Math.min(current + 1, sorted.size()/10) : Math.max(current - 1, 0));
+							int nextPage = page.updateAndGet(current ->
+									index == 1
+											? Math.min(current + 1, (sorted.size() - 1) / RESULTS_PER_PAGE)
+											: Math.max(current - 1, 0));
 							m.editMessage(getMultiResult(sorted, nextPage)).queue();
 						}
 				));
@@ -145,8 +149,8 @@ public class DocsCommand extends ReactionCommand {
 
 	private static Message getMultiResult(List<Pair<String, ? extends Documentation>> search, int page) {
 		EmbedBuilder embed = getDefaultEmbed()
-				.setTitle("Found "+search.size()+" Results. Page "+(page+1)+'/'+(search.size()/10 + 1));
-		for(int index = page*10; index < search.size() && index < (page+1) * 10; index++) {
+				.setTitle("Found " + search.size() + " Results. Page " + (page + 1) + '/' + ((search.size() - 1) / RESULTS_PER_PAGE + 1));
+		for(int index = page*RESULTS_PER_PAGE; index < search.size() && index < (page+1) * RESULTS_PER_PAGE; index++) {
 			Pair<String, ? extends Documentation> pair = search.get(index);
 			embed.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl() + ")\n");
 		}
