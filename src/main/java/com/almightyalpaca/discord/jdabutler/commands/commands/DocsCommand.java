@@ -17,6 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DocsCommand extends ReactionCommand {
@@ -41,18 +42,38 @@ public class DocsCommand extends ReactionCommand {
 				channel.sendMessage("Unsupported operation "+split[0]).queue();
 				return;
 			}
-			String[] options = split.length == 3 ? split[1].toLowerCase().split(",") : new String[0];
+			String[] options = split.length == 3 ? split[1].toLowerCase().split("\\s*,\\s*") : new String[0];
 			Set<Pair<String, ? extends Documentation>> search = JDoc.search(split[split.length - 1], options);
 			if(search.size() == 0) {
-				channel.sendMessage("Did not find anything matching query " + split[split.length - 1]).queue();
+				channel.sendMessage("Did not find anything matching query!").queue();
 				return;
 			}
-			EmbedBuilder embedB = getDefaultEmbed().setTitle("Found following:");
-			for(Pair<String, ? extends Documentation> pair : search) {
-				embedB.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl() + ")\n");
+			if(search.size() > 10) {
+				AtomicInteger page = new AtomicInteger(0);
+				List<Pair<String, ? extends Documentation>> sorted = search.stream().sorted((p1, p2) -> p1.getKey().compareTo(p2.getKey())).collect(Collectors.toList());
+				channel.sendMessage(getMultiResult(sorted, page.get())).queue(m -> this.addReactions(
+						m,
+						Arrays.asList(ReactionCommand.LEFT_ARROW, ReactionCommand.RIGHT_ARROW, ReactionCommand.CANCEL),
+						Collections.singleton(sender),
+						3, TimeUnit.MINUTES,
+						index -> {
+							if(index >= 2) {				//cancel button or other error
+								stopReactions(m, false);
+								m.delete().queue();
+								return;
+							}
+							int nextPage = page.updateAndGet(current -> index == 1 ? Math.min(current + 1, sorted.size()/10) : Math.max(current - 1, 0));
+							m.editMessage(getMultiResult(sorted, nextPage)).queue();
+						}
+				));
+			} else {
+				EmbedBuilder embedB = getDefaultEmbed().setTitle("Found following:");
+				for(Pair<String, ? extends Documentation> pair : search) {
+					embedB.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl() + ")\n");
+				}
+				embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
+				channel.sendMessage(embedB.build()).queue();
 			}
-			embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
-			channel.sendMessage(embedB.build()).queue();
 			return;
 		}
 		final List<Documentation> docs = JDoc.get(content);
@@ -118,6 +139,16 @@ public class DocsCommand extends ReactionCommand {
 					embed.addField(field.getKey(), field.getValue().stream().collect(Collectors.joining("\n")), false);
 				}
 			}
+		}
+		return new MessageBuilder().setEmbed(embed.build()).build();
+	}
+
+	private static Message getMultiResult(List<Pair<String, ? extends Documentation>> search, int page) {
+		EmbedBuilder embed = getDefaultEmbed()
+				.setTitle("Found "+search.size()+" Results. Page "+(page+1)+'/'+(search.size()/10 + 1));
+		for(int index = page*10; index < search.size() && index < (page+1) * 10; index++) {
+			Pair<String, ? extends Documentation> pair = search.get(index);
+			embed.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl() + ")\n");
 		}
 		return new MessageBuilder().setEmbed(embed.build()).build();
 	}
