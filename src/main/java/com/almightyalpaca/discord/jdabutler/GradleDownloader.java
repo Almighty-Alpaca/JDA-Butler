@@ -4,54 +4,56 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.io.FileUtils;
-
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.io.FileUtils;
 
-public class GradleDownloader {
+public class GradleDownloader
+{
 
-	public static final String			GRADLE_VERSION	= "3.2.1";
+    public static final File GRADLE_DIR = new File("gradle-cache/");
 
-	public static final File			GRADLE_DIR		= new File("gradle-cache/");
-	public static final File			GRADLE_ZIP		= new File(GradleDownloader.GRADLE_DIR, "gradle-" + GradleDownloader.GRADLE_VERSION + "-bin.zip");
+    public static final String GRADLE_VERSION = "3.2.1";
+    public static final File GRADLE_ZIP = new File(GradleDownloader.GRADLE_DIR, "gradle-" + GradleDownloader.GRADLE_VERSION + "-bin.zip");
 
-	private static final AtomicBoolean	initialized		= new AtomicBoolean(false);
+    private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
-	private static void downloadGradle() {
-		if (!GradleDownloader.getGradlePath().exists()) {
-			try {
+    public static String getGradleDitributionURL()
+    {
+        return "https://services.gradle.org/distributions/gradle-" + GradleDownloader.GRADLE_VERSION + "-bin.zip";
+    }
 
-				if (GradleDownloader.GRADLE_ZIP.exists()) {
-					GradleDownloader.GRADLE_ZIP.delete();
-				} else {
-					GradleDownloader.GRADLE_ZIP.getParentFile().mkdirs();
-				}
-				GradleDownloader.GRADLE_ZIP.createNewFile();
+    public static File getGradlePath()
+    {
+        if (!GradleDownloader.initialized.getAndSet(true))
+            GradleDownloader.downloadGradle();
 
-				FileUtils.copyURLToFile(new URL(GradleDownloader.getGradleDitributionURL()), GradleDownloader.GRADLE_ZIP);
+        return new File(GradleDownloader.GRADLE_DIR, "/gradle-" + GradleDownloader.GRADLE_VERSION + "/bin/gradle" + (System.getProperty("os.name").toLowerCase().contains("windows") ? ".bat" : ""));
+    }
 
-				final ZipFile zip = new ZipFile(GradleDownloader.GRADLE_ZIP);
+    private static void downloadGradle()
+    {
+        if (!GradleDownloader.getGradlePath().exists())
+            try
+            {
 
-				zip.extractAll(GradleDownloader.GRADLE_DIR.getAbsolutePath());
+                if (GradleDownloader.GRADLE_ZIP.exists())
+                    GradleDownloader.GRADLE_ZIP.delete();
+                else
+                    GradleDownloader.GRADLE_ZIP.getParentFile().mkdirs();
+                GradleDownloader.GRADLE_ZIP.createNewFile();
 
-			} catch (IOException | ZipException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
+                FileUtils.copyURLToFile(new URL(GradleDownloader.getGradleDitributionURL()), GradleDownloader.GRADLE_ZIP);
 
-	public static String getGradleDitributionURL() {
-		return "https://services.gradle.org/distributions/gradle-" + GradleDownloader.GRADLE_VERSION + "-bin.zip";
-	}
+                final ZipFile zip = new ZipFile(GradleDownloader.GRADLE_ZIP);
 
-	public static File getGradlePath() {
-		if (!GradleDownloader.initialized.getAndSet(true)) {
-			GradleDownloader.downloadGradle();
-		}
+                zip.extractAll(GradleDownloader.GRADLE_DIR.getAbsolutePath());
 
-		return new File(GradleDownloader.GRADLE_DIR, "/gradle-" + GradleDownloader.GRADLE_VERSION + "/bin/gradle" + (System.getProperty("os.name").toLowerCase().contains("windows") ? ".bat" : ""));
-	}
+            }
+            catch (IOException | ZipException e)
+            {
+                throw new RuntimeException(e);
+            }
+    }
 
 }
