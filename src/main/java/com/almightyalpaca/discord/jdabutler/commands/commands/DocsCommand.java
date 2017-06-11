@@ -1,5 +1,6 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.commands.ReactionCommand;
@@ -88,6 +89,23 @@ public class DocsCommand extends ReactionCommand
         if (content.trim().isEmpty())
         {
             channel.sendMessage(new MessageBuilder().append("See the docs here: ").append(JDocUtil.JDOCBASE).build()).queue();
+            return;
+        }
+        if (content.trim().equalsIgnoreCase("help"))
+        {
+            channel.sendMessage("Prints out JDA documentation.\n" +
+                    "Syntax: `"+Bot.config.getString("prefix")+"docs [[search:[params:]]term | help]`.\n" +
+                    "While not searching, `term` is a class name or a class-prefixed variable or method name (for example `JDA#getUserById`, `RestAction.queue()`).\n" +
+                    "Both `.` and `#` can be used to specify inner classes, methods and variables.\n" +
+                    "Omitting the method parentheses will print all available methods with given name. " +
+                    "When specified (with parameter types), only the specific one is returned (`RestAction#queue` vs `RestAction.queue(Consumer)`).\n\n" +
+                    "While in search mode, `.` and `#` won't work and all documentations that **contain** `term` in their name/signature are returned.\n" +
+                    "Search parameters can be used to restrict the search:\n" +
+                    "`f` to only search for methods\n" +
+                    "`v` to only search for variables\n" +
+                    "`c` to only search for classes\n" +
+                    "`cs` to make matching case-sensitive"
+            ).queue();
             return;
         }
         if (content.contains(":"))
@@ -188,7 +206,7 @@ public class DocsCommand extends ReactionCommand
     @Override
     public String getHelp()
     {
-        return "Displays documentation";
+        return "Displays documentation. Use `" + Bot.config.getString("prefix") + "docs help` for more help";
     }
 
     @Override
