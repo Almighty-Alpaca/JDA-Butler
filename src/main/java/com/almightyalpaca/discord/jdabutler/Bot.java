@@ -30,161 +30,186 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-public class Bot {
+public class Bot
+{
 
-	public static JDAImpl					jda;
-	public static Config					config;
-	public static EventListener				listener;
-	public static Dispatcher				dispatcher;
+    public static Config config;
+    public static Dispatcher dispatcher;
+    public static final String INVITE_LINK = "https://discord.gg/0hMr4ce0tIk3pSjp";
+    public static JDAImpl jda;
 
-	public static final SimpleLog			LOG			= SimpleLog.getLog("Bot");
+    public static EventListener listener;
 
-	private static final SimpleDateFormat	DATEFORMAT	= new SimpleDateFormat("HH:mm:ss");
+    public static final SimpleLog LOG = SimpleLog.getLog("Bot");
 
-	private static final String				LOGFORMAT	= "[%time%] [%level%] [%name%]: %text%";
-	public static final String				INVITE_LINK	= "https://discord.gg/0hMr4ce0tIk3pSjp";
+    private static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("HH:mm:ss");
+    private static final String LOGFORMAT = "[%time%] [%level%] [%name%]: %text%";
 
-	public static TextChannel getChannelAnnouncements() {
-		return Bot.jda.getTextChannelById("125227483518861312");
-	}
+    public static TextChannel getChannelAnnouncements()
+    {
+        return Bot.jda.getTextChannelById("125227483518861312");
+    }
 
-	public static TextChannel getChannelExperimental() {
-		return Bot.jda.getTextChannelById("289742061220134912");
-	}
+    public static TextChannel getChannelExperimental()
+    {
+        return Bot.jda.getTextChannelById("289742061220134912");
+    }
 
-	public static TextChannel getChannelLavaplayer() {
-		return Bot.jda.getTextChannelById("263484072389640193");
-	}
+    public static TextChannel getChannelLavaplayer()
+    {
+        return Bot.jda.getTextChannelById("263484072389640193");
+    }
 
-	public static TextChannel getChannelLogs() {
-		return Bot.jda.getTextChannelById("241926199666802690");
-	}
+    public static TextChannel getChannelLogs()
+    {
+        return Bot.jda.getTextChannelById("241926199666802690");
+    }
 
-	public static TextChannel getChannelTesting() {
-		return Bot.jda.getTextChannelById("115567590495092740");
-	}
+    public static TextChannel getChannelTesting()
+    {
+        return Bot.jda.getTextChannelById("115567590495092740");
+    }
 
-	public static Guild getGuildJda() {
-		return Bot.jda.getGuildById("125227483518861312");
-	}
+    public static Guild getGuildJda()
+    {
+        return Bot.jda.getGuildById("125227483518861312");
+    }
 
-	public static Role getRoleBots() {
-		return Bot.getGuildJda().getRoleById("125616720156033024");
-	}
+    public static Role getRoleBots()
+    {
+        return Bot.getGuildJda().getRoleById("125616720156033024");
+    }
 
-	public static Role getRoleExperimentalUpdates() {
-		return Bot.getGuildJda().getRoleById("289744006433472513");
-	}
+    public static Role getRoleExperimentalUpdates()
+    {
+        return Bot.getGuildJda().getRoleById("289744006433472513");
+    }
 
-	public static Role getRoleHelper() {
-		return Bot.getGuildJda().getRoleById("183963327033114624");
-	}
+    public static Role getRoleHelper()
+    {
+        return Bot.getGuildJda().getRoleById("183963327033114624");
+    }
 
-	public static Role getRoleJdaFanclub() {
-		return Bot.getGuildJda().getRoleById("169558668126322689");
-	}
+    public static Role getRoleJdaFanclub()
+    {
+        return Bot.getGuildJda().getRoleById("169558668126322689");
+    }
 
-	public static Role getRoleJdaUpdates() {
-		return Bot.getGuildJda().getRoleById("241948671325765632");
-	}
+    public static Role getRoleJdaUpdates()
+    {
+        return Bot.getGuildJda().getRoleById("241948671325765632");
+    }
 
-	public static Role getRoleLavaplayerUpdates() {
-		return Bot.getGuildJda().getRoleById("241948768113524762");
-	}
+    public static Role getRoleLavaplayerUpdates()
+    {
+        return Bot.getGuildJda().getRoleById("241948768113524762");
+    }
 
-	public static Role getRoleStaff() {
-		return Bot.getGuildJda().getRoleById("169481978268090369");
-	}
+    public static Role getRoleStaff()
+    {
+        return Bot.getGuildJda().getRoleById("169481978268090369");
+    }
 
-	public static boolean isAdmin(final User user) {
-		final Member member = Bot.getGuildJda().getMember(user);
-		return member != null && member.getRoles().contains(Bot.getRoleStaff());
-	}
+    public static String hastebin(final String text)
+    {
+        try
+        {
+            return "https://hastebin.com/" + Unirest.post("https://hastebin.com/documents").header("User-Agent", "Mozilla/5.0 JDA-Butler").header("Content-Type", "text/plain").body(text).asJson().getBody().getObject().getString("key");
+        }
+        catch (final UnirestException e)
+        {
+            Bot.LOG.fatal(e);
+            return null;
+        }
+    }
 
-	public static boolean isHelper(final User sender) {
-		return Bot.getGuildJda().isMember(sender) && (Bot.isAdmin(sender) || Bot.getGuildJda().getMember(sender).getRoles().contains(Bot.getRoleHelper()));
-	}
+    public static boolean isAdmin(final User user)
+    {
+        final Member member = Bot.getGuildJda().getMember(user);
+        return member != null && member.getRoles().contains(Bot.getRoleStaff());
+    }
 
-	public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException,
-			InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException {
+    public static boolean isHelper(final User sender)
+    {
+        return Bot.getGuildJda().isMember(sender) && (Bot.isAdmin(sender) || Bot.getGuildJda().getMember(sender).getRoles().contains(Bot.getRoleHelper()));
+    }
 
-		EventListener.executor.submit(JDoc::init);
+    public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException
+    {
 
-		SimpleLog.addFileLogs(new File("out.log"), new File("err.log"));
+        EventListener.executor.submit(JDoc::init);
 
-		Bot.config = ConfigFactory.getConfig(new File("config.json"));
+        SimpleLog.addFileLogs(new File("out.log"), new File("err.log"));
 
-		final JDABuilder builder = new JDABuilder(AccountType.BOT);
-		builder.setBulkDeleteSplittingEnabled(false);
+        Bot.config = ConfigFactory.getConfig(new File("config.json"));
 
-		final String token = Bot.config.getString("discord.token", "Your token");
-		builder.setToken(token);
+        final JDABuilder builder = new JDABuilder(AccountType.BOT);
+        builder.setBulkDeleteSplittingEnabled(false);
 
-		final String proxyAdress = Bot.config.getString("proxy.host", "");
-		final int proxyPort = Bot.config.getInt("proxy.port", 8080);
-		final boolean useProxy = Bot.config.getBoolean("proxy.use", false);
-		if (useProxy) {
-			builder.setProxy(new HttpHost(proxyAdress, proxyPort));
-		}
+        final String token = Bot.config.getString("discord.token", "Your token");
+        builder.setToken(token);
 
-		Bot.config.save();
-		Bot.listener = new EventListener();
-		builder.addEventListener(Bot.listener);
-		builder.addEventListener(Bot.dispatcher = new Dispatcher());
+        final String proxyAdress = Bot.config.getString("proxy.host", "");
+        final int proxyPort = Bot.config.getInt("proxy.port", 8080);
+        final boolean useProxy = Bot.config.getBoolean("proxy.use", false);
+        if (useProxy)
+            builder.setProxy(new HttpHost(proxyAdress, proxyPort));
 
-		builder.setGame(Game.of("JDA"));
+        Bot.config.save();
+        Bot.listener = new EventListener();
+        builder.addEventListener(Bot.listener);
+        builder.addEventListener(Bot.dispatcher = new Dispatcher());
 
-		Bot.jda = (JDAImpl) builder.buildBlocking();
+        builder.setGame(Game.of("JDA"));
 
-		SimpleLog.addListener(new LogListener() {
+        Bot.jda = (JDAImpl) builder.buildBlocking();
 
-			@Override
-			public void onError(final SimpleLog log, final Throwable t) {
-				log.log(Level.FATAL, ExceptionUtils.getStackTrace(t));
-			}
+        SimpleLog.addListener(new LogListener()
+        {
 
-			@Override
-			public void onLog(final SimpleLog log, final Level level, final Object message) {
-				try {
-					if (level.getPriority() >= Level.INFO.getPriority()) {
-						String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String
-								.valueOf(message)) + "`";
-						if (format.length() >= 2000) {
-							format = format.substring(0, 1999);
-						}
-						final TextChannel channel = Bot.getChannelLogs();
-						if (channel != null) {
-							for (final Message m : new MessageBuilder().append(format).buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE)) {
-								channel.sendMessage(m).queue();
-							}
-						}
-					}
-				} catch (final Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+            @Override
+            public void onError(final SimpleLog log, final Throwable t)
+            {
+                log.log(Level.FATAL, ExceptionUtils.getStackTrace(t));
+            }
 
-		EventListener.start();
-	}
+            @Override
+            public void onLog(final SimpleLog log, final Level level, final Object message)
+            {
+                try
+                {
+                    if (level.getPriority() >= Level.INFO.getPriority())
+                    {
+                        String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String.valueOf(message)) + "`";
+                        if (format.length() >= 2000)
+                            format = format.substring(0, 1999);
+                        final TextChannel channel = Bot.getChannelLogs();
+                        if (channel != null)
+                            for (final Message m : new MessageBuilder().append(format).buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE))
+                                channel.sendMessage(m).queue();
+                    }
+                }
+                catch (final Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        });
 
-	public static void shutdown() {
-		Bot.jda.removeEventListener(Bot.jda.getRegisteredListeners());
+        EventListener.start();
+    }
 
-		try {
-			TimeUnit.SECONDS.sleep(1);
-		} catch (InterruptedException ignored) {}
+    public static void shutdown()
+    {
+        Bot.jda.removeEventListener(Bot.jda.getRegisteredListeners());
 
-		Bot.jda.shutdown();
-	}
+        try
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
+        catch (final InterruptedException ignored)
+        {}
 
-	public static String hastebin(String text) {
-		try {
-			return "https://hastebin.com/" + Unirest.post("https://hastebin.com/documents").header("User-Agent", "Mozilla/5.0 JDA-Butler").header("Content-Type", "text/plain").body(text).asJson()
-					.getBody().getObject().getString("key");
-		} catch (UnirestException e) {
-			LOG.fatal(e);
-			return null;
-		}
-	}
+        Bot.jda.shutdown();
+    }
 }

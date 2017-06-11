@@ -1,5 +1,11 @@
 package com.almightyalpaca.discord.jdabutler;
 
+import com.mashape.unirest.http.Unirest;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.User;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.DateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -7,92 +13,91 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+public class FormattingUtil
+{
 
-import com.mashape.unirest.http.Unirest;
+    public static String formatTimestap(final long timestap)
+    {
+        return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, Locale.ENGLISH).format(Date.from(Instant.ofEpochMilli(timestap)));
+    }
 
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.User;
+    public static List<String> getChangelog(final JSONArray changeSets)
+    {
+        final List<String> fields = new ArrayList<>();
 
-public class FormattingUtil {
+        StringBuilder builder = new StringBuilder();
 
-	public static String formatTimestap(final long timestap) {
-		return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, Locale.ENGLISH).format(Date.from(Instant.ofEpochMilli(timestap)));
-	}
+        for (int i = 0; i < changeSets.length(); i++)
+        {
+            final JSONObject item = changeSets.getJSONObject(i);
 
-	public static List<String> getChangelog(final JSONArray changeSets) {
-		final List<String> fields = new ArrayList<>();
+            final String id = item.getString("id");
 
-		StringBuilder builder = new StringBuilder();
+            final String comment = item.getString("comment");
+            final String[] lines = comment.split("\n");
+            for (int j = 0; j < lines.length; j++)
+            {
 
-		for (int i = 0; i < changeSets.length(); i++) {
-			final JSONObject item = changeSets.getJSONObject(i);
+                final StringBuilder line = new StringBuilder();
+                line.append("[`").append(j == 0 ? id.substring(0, 6) : "`......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/" + id + ")").append(" ").append(lines[j]).append("\n");
 
-			final String id = item.getString("id");
+                if (builder.length() + line.length() > 1021)
+                {
+                    fields.add(builder.toString());
+                    builder = new StringBuilder();
+                }
 
-			final String comment = item.getString("comment");
-			final String[] lines = comment.split("\n");
-			for (int j = 0; j < lines.length; j++) {
+                builder.append(line);
+            }
+        }
 
-				final StringBuilder line = new StringBuilder();
-				line.append("[`").append(j == 0 ? id.substring(0, 6) : "`......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/" + id + ")").append(" ").append(lines[j]).append("\n");
+        if (builder.length() > 0)
+            fields.add(builder.toString());
 
-				if (builder.length() + line.length() > 1021) {
-					fields.add(builder.toString());
-					builder = new StringBuilder();
-				}
+        return fields;
 
-				builder.append(line);
-			}
-		}
+    }
 
-		if (builder.length() > 0) {
-			fields.add(builder.toString());
-		}
+    public static void setFooter(final EmbedBuilder eb, final JSONArray culprits, final String timestamp)
+    {
 
-		return fields;
+        if (culprits.length() == 1)
+            try
+            {
+                final JSONObject author = Unirest.get(culprits.getJSONObject(0).getString("absoluteUrl") + "/api/json").asJson().getBody().getObject();
 
-	}
+                if (!author.isNull("description"))
+                {
 
-	public static void setFooter(final EmbedBuilder eb, final JSONArray culprits, final String timestamp) {
+                    final String description = author.getString("description");
 
-		if (culprits.length() == 1) {
-			try {
-				final JSONObject author = Unirest.get(culprits.getJSONObject(0).getString("absoluteUrl") + "/api/json").asJson().getBody().getObject();
+                    User user = null;
 
-				if (!author.isNull("description")) {
+                    for (final String line : description.split("\n"))
+                        if (line.startsWith("discord: "))
+                        {
+                            user = Bot.jda.getUserById(line.substring(7));
+                            break;
+                        }
 
-					final String description = author.getString("description");
+                    if (user != null)
+                        eb.setFooter(user.getName() + "   |    " + timestamp, user.getAvatarUrl());
+                    else
+                        eb.setFooter("unknown user   |   " + timestamp, null);
+                }
+                else
+                    eb.setFooter("unknown user   |   " + timestamp, null);
 
-					User user = null;
+            }
+            catch (final Exception e)
+            {
+                eb.setFooter("unknown user   |   " + timestamp, null);
+                Bot.LOG.log(e);
+            }
+        if (culprits.length() > 1)
+            eb.setFooter("multiple users   |   " + timestamp, null);
+        else
+            eb.setFooter(timestamp, null);
 
-					for (final String line : description.split("\n")) {
-						if (line.startsWith("discord: ")) {
-							user = Bot.jda.getUserById(line.substring(7));
-							break;
-						}
-					}
-
-					if (user != null) {
-						eb.setFooter(user.getName() + "   |    " + timestamp, user.getAvatarUrl());
-					} else {
-						eb.setFooter("unknown user   |   " + timestamp, null);
-					}
-				} else {
-					eb.setFooter("unknown user   |   " + timestamp, null);
-				}
-
-			} catch (final Exception e) {
-				eb.setFooter("unknown user   |   " + timestamp, null);
-				Bot.LOG.log(e);
-			}
-		}
-		if (culprits.length() > 1) {
-			eb.setFooter("multiple users   |   " + timestamp, null);
-		} else {
-			eb.setFooter(timestamp, null);
-		}
-
-	}
+    }
 }

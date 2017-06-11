@@ -1,40 +1,45 @@
 package com.almightyalpaca.discord.jdabutler.config;
 
-import java.io.*;
-
-import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
-
-import com.google.gson.*;
-
 import com.almightyalpaca.discord.jdabutler.config.exception.ConfigSaveException;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
+import com.google.gson.*;
+import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
 
-public class RootConfig extends Config {
+import java.io.*;
 
-	private final File configFile;
+public class RootConfig extends Config
+{
 
-	RootConfig(final File file) throws WrongTypeException, KeyNotFoundException, JsonIOException, JsonSyntaxException, FileNotFoundException {
-		super(null, new JsonParser().parse(new FileReader(file)).getAsJsonObject());
-		this.configFile = file;
-	}
+    private final File configFile;
 
-	@Override
-	public File getConfigFile() {
-		return this.configFile;
-	}
+    RootConfig(final File file) throws WrongTypeException, KeyNotFoundException, JsonIOException, JsonSyntaxException, FileNotFoundException
+    {
+        super(null, new JsonParser().parse(new FileReader(file)).getAsJsonObject());
+        this.configFile = file;
+    }
 
-	@Override
-	public void save() throws ConfigSaveException {
-		final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().serializeSpecialFloatingPointValues().create();
-		final String json = gson.toJson(this.config);
-		try {
-			final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.configFile), "UTF-8"));
-			new UnicodeUnescaper().translate(json, writer);
-			writer.close();
-		} catch (final IOException e) {
-			throw new ConfigSaveException(e);
-		}
-	}
+    @Override
+    public File getConfigFile()
+    {
+        return this.configFile;
+    }
+
+    @Override
+    public void save() throws ConfigSaveException
+    {
+        final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().serializeSpecialFloatingPointValues().create();
+        final String json = gson.toJson(this.config);
+        try
+        {
+            final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.configFile), "UTF-8"));
+            new UnicodeUnescaper().translate(json, writer);
+            writer.close();
+        }
+        catch (final IOException e)
+        {
+            throw new ConfigSaveException(e);
+        }
+    }
 
 }

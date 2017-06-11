@@ -4,42 +4,50 @@ import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.Lavaplayer;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class VersionsCommand implements Command {
-	@Override
-	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) {
-		final EmbedBuilder eb = new EmbedBuilder();
+public class VersionsCommand implements Command
+{
 
-		EmbedUtil.setColor(eb);
+    private static final String[] ALIASES = new String[]
+    { "version", "latest" };
 
-		eb.setAuthor("Latest versions", null, EmbedUtil.JDA_ICON);
+    @Override
+    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
+    {
+        final EmbedBuilder eb = new EmbedBuilder();
 
-		eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
+        EmbedUtil.setColor(eb);
 
-		eb.addField("JDA", "[" + Bot.config.getString("jda.version.name") + "](http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/)", true);
-		eb.addField("Lavaplayer", "[" + Lavaplayer.getLatestVersion() + "](https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord)", true);
+        eb.setAuthor("Latest versions", null, EmbedUtil.JDA_ICON);
 
-		channel.sendMessage(eb.build()).queue();
-	}
+        eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
-	@Override
-	public String[] getAliases() {
-		return new String[] { "latest" };
-	}
+        eb.addField("JDA", "[" + Bot.config.getString("jda.version.name") + "](http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/)", true);
+        eb.addField("Lavaplayer", "[" + Lavaplayer.getLatestVersion() + "](https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord)", true);
 
-	@Override
-	public String getHelp() {
-		return "Prints versions of all the things that matter :D";
-	}
+        channel.sendMessage(eb.build()).queue();
+    }
 
-	@Override
-	public String getName() {
-		return "versions";
-	}
+    @Override
+    public String[] getAliases()
+    {
+        return VersionsCommand.ALIASES;
+    }
+
+    @Override
+    public String getHelp()
+    {
+        return "Prints versions of all the things that matter :D";
+    }
+
+    @Override
+    public String getName()
+    {
+        return "versions";
+    }
 }

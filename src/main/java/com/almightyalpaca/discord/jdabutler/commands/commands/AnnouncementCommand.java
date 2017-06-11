@@ -1,11 +1,8 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import java.time.OffsetDateTime;
-
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
@@ -14,64 +11,79 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class AnnouncementCommand implements Command {
+import java.time.OffsetDateTime;
 
-	@Override
-	public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception {
-		if (!Bot.isHelper(sender)) {
-			this.sendFailed(message);
-			return;
-		}
+public class AnnouncementCommand implements Command
+{
 
-		final String[] args = content.split("\\|", 2);
+    @Override
+    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception
+    {
+        if (!Bot.isHelper(sender))
+        {
+            this.sendFailed(message);
+            return;
+        }
 
-		if (args.length < 2) {
-			this.sendFailed(message);
-			return;
-		}
+        final String[] args = content.split("\\|", 2);
 
-		Role role;
-		String image;
+        if (args.length < 2)
+        {
+            this.sendFailed(message);
+            return;
+        }
 
-		if (channel.equals(Bot.getChannelAnnouncements())) {
-			role = Bot.getRoleJdaUpdates();
-			image = EmbedUtil.JDA_ICON;
-		} else if (channel.equals(Bot.getChannelLavaplayer())) {
-			role = Bot.getRoleLavaplayerUpdates();
-			image = null;
-		} else if (channel.equals(Bot.getChannelExperimental())) {
-			role = Bot.getRoleExperimentalUpdates();
-			image = EmbedUtil.JDA_ICON;
-		} else {
-			this.sendFailed(message);
-			return;
-		}
+        Role role;
+        String image;
 
-		message.delete().queue();
+        if (channel.equals(Bot.getChannelAnnouncements()))
+        {
+            role = Bot.getRoleJdaUpdates();
+            image = EmbedUtil.JDA_ICON;
+        }
+        else if (channel.equals(Bot.getChannelLavaplayer()))
+        {
+            role = Bot.getRoleLavaplayerUpdates();
+            image = null;
+        }
+        else if (channel.equals(Bot.getChannelExperimental()))
+        {
+            role = Bot.getRoleExperimentalUpdates();
+            image = EmbedUtil.JDA_ICON;
+        }
+        else
+        {
+            this.sendFailed(message);
+            return;
+        }
 
-		final MessageBuilder mb = new MessageBuilder().append(role);
-		final EmbedBuilder eb = new EmbedBuilder();
+        message.delete().queue();
 
-		EmbedUtil.setColor(eb);
-		eb.setTitle(args[0].trim(), null);
-		eb.setDescription(args[1].trim());
-		eb.setTimestamp(OffsetDateTime.now());
-		eb.setThumbnail(image);
-		eb.setFooter(sender.getName(), sender.getEffectiveAvatarUrl());
+        final MessageBuilder mb = new MessageBuilder().append(role);
+        final EmbedBuilder eb = new EmbedBuilder();
 
-		mb.setEmbed(eb.build());
+        EmbedUtil.setColor(eb);
+        eb.setTitle(args[0].trim(), null);
+        eb.setDescription(args[1].trim());
+        eb.setTimestamp(OffsetDateTime.now());
+        eb.setThumbnail(image);
+        eb.setFooter(sender.getName(), sender.getEffectiveAvatarUrl());
 
-		role.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> role.getManager().setMentionable(false).queue()));
+        mb.setEmbed(eb.build());
 
-	}
+        role.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> role.getManager().setMentionable(false).queue()));
 
-	@Override
-	public String getHelp() {
-		return "`announce [title] | [text]`";
-	}
+    }
 
-	@Override
-	public String getName() {
-		return "announce";
-	}
+    @Override
+    public String getHelp()
+    {
+        return "`announce [title] | [text]`";
+    }
+
+    @Override
+    public String getName()
+    {
+        return "announce";
+    }
 }

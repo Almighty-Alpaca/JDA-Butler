@@ -1,5 +1,19 @@
 package com.almightyalpaca.discord.jdabutler;
 
+import com.dropbox.core.DbxException;
+import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.v2.DbxClientV2;
+import com.dropbox.core.v2.files.WriteMode;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.util.Zip4jConstants;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,130 +25,123 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
+public class GradleProjectDropboxUploader
+{
 
-import com.dropbox.core.DbxException;
-import com.dropbox.core.DbxRequestConfig;
-import com.dropbox.core.v2.DbxClientV2;
-import com.dropbox.core.v2.files.WriteMode;
+    public static final String DROPBOX_FILE_NAME = "/JDA/jda gradle setup example.zip";
 
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
+    public static final File EXAMPLE_IMPL = new File(GradleProjectDropboxUploader.SRC_MAIN_JAVA, "MessageListenerExample.java");
 
-public class GradleProjectDropboxUploader {
+    public static final String EXMAPLE_IMPL_URL = "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
+    public static final File GRADLE_BUILD_FILE = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "build.gradle");
+    public static final File GRADLE_PROJECT_DIR = new File("gradle project/");
+    public static final File GRADLE_PROJECT_ZIP = new File("exmaple gradle project for jda.zip");
 
-	private static DbxClientV2			client;
+    public static final File GRADLE_SETTINGS_FILE = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "settings.gradle");
+    public static final File GRADLE_TEMP_DIR = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, ".gradle/");
 
-	private static final AtomicBoolean	initialized				= new AtomicBoolean(false);
+    public static final File SRC_MAIN_JAVA = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/java/");
 
-	public static final File			GRADLE_PROJECT_DIR		= new File("gradle project/");
-	public static final File			GRADLE_BUILD_FILE		= new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "build.gradle");
-	public static final File			GRADLE_SETTINGS_FILE	= new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "settings.gradle");
-	public static final File			GRADLE_TEMP_DIR			= new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, ".gradle/");
+    public static final File SRC_MAIN_RESOURCES = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/resources/");
 
-	public static final File			SRC_MAIN_RESOURCES		= new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/resources/");
-	public static final File			SRC_MAIN_JAVA			= new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/java/");
+    private static DbxClientV2 client;
 
-	public static final File			EXAMPLE_IMPL			= new File(GradleProjectDropboxUploader.SRC_MAIN_JAVA, "MessageListenerExample.java");
+    private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
-	public static final String			EXMAPLE_IMPL_URL		= "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
+    public static void createZip()
+    {
+        Bot.LOG.info("Creating gradle example zip...");
+        try
+        {
+            if (GradleProjectDropboxUploader.GRADLE_PROJECT_DIR.exists())
+                FileUtils.cleanDirectory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
+            else
+                GradleProjectDropboxUploader.GRADLE_PROJECT_DIR.mkdirs();
 
-	public static final File			GRADLE_PROJECT_ZIP		= new File("exmaple gradle project for jda.zip");
+            if (GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.exists())
+                GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.delete();
 
-	public static final String			DROPBOX_FILE_NAME		= "/JDA/jda gradle setup example.zip";
+            final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getGradlePath().getAbsolutePath(), "init");
+            builder.directory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
+            builder.inheritIO();
 
-	public static void createZip() {
-		Bot.LOG.info("Creating gradle example zip...");
-		try {
-			if (GradleProjectDropboxUploader.GRADLE_PROJECT_DIR.exists()) {
-				FileUtils.cleanDirectory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
-			} else {
-				GradleProjectDropboxUploader.GRADLE_PROJECT_DIR.mkdirs();
-			}
+            final Process process = builder.start();
 
-			if (GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.exists()) {
-				GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.delete();
-			}
+            process.waitFor(1L, TimeUnit.MINUTES);
 
-			final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getGradlePath().getAbsolutePath(), "init");
-			builder.directory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
-			builder.inheritIO();
+            final String jdaVersion = Bot.config.getString("jda.version.name");
 
-			final Process process = builder.start();
+            final Collection<Pair<String, String>> repositories = Collections.singleton(new ImmutablePair<>("jcenter()", null));
+            final Collection<Triple<String, String, String>> dependencies = Collections.singleton(new ImmutableTriple<>("net.dv8tion", "JDA", jdaVersion));
 
-			process.waitFor(1L, TimeUnit.MINUTES);
+            FileUtils.write(GradleProjectDropboxUploader.GRADLE_BUILD_FILE, GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "MessageListenerExample", "1.0", "1.8", dependencies, repositories, false), Charset.forName("UTF-8"));
 
-			final String jdaVersion = Bot.config.getString("jda.version.name");
+            FileUtils.write(GradleProjectDropboxUploader.GRADLE_SETTINGS_FILE, "rootProject.name = 'Example gradle project for JDA'", Charset.forName("UTF-8"));
 
-			final Collection<Pair<String, String>> repositories = Collections.singleton(new ImmutablePair<>("jcenter()", null));
-			final Collection<Triple<String, String, String>> dependencies = Collections.singleton(new ImmutableTriple<>("net.dv8tion", "JDA", jdaVersion));
+            FileUtils.deleteDirectory(GradleProjectDropboxUploader.GRADLE_TEMP_DIR);
 
-			FileUtils.write(GradleProjectDropboxUploader.GRADLE_BUILD_FILE, GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "MessageListenerExample", "1.0", "1.8", dependencies, repositories,
-					false), Charset.forName("UTF-8"));
+            GradleProjectDropboxUploader.SRC_MAIN_JAVA.mkdirs();
+            GradleProjectDropboxUploader.SRC_MAIN_RESOURCES.mkdirs();
 
-			FileUtils.write(GradleProjectDropboxUploader.GRADLE_SETTINGS_FILE, "rootProject.name = 'Example gradle project for JDA'", Charset.forName("UTF-8"));
+            FileUtils.copyURLToFile(new URL(GradleProjectDropboxUploader.EXMAPLE_IMPL_URL), GradleProjectDropboxUploader.EXAMPLE_IMPL);
 
-			FileUtils.deleteDirectory(GradleProjectDropboxUploader.GRADLE_TEMP_DIR);
+            final ZipFile zip = new ZipFile(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP);
 
-			GradleProjectDropboxUploader.SRC_MAIN_JAVA.mkdirs();
-			GradleProjectDropboxUploader.SRC_MAIN_RESOURCES.mkdirs();
+            final ZipParameters parameters = new ZipParameters();
+            parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_ULTRA);
+            parameters.setDefaultFolderPath("exmaple gradle project for jda/");
 
-			FileUtils.copyURLToFile(new URL(GradleProjectDropboxUploader.EXMAPLE_IMPL_URL), GradleProjectDropboxUploader.EXAMPLE_IMPL);
+            zip.addFolder(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, parameters);
 
-			final ZipFile zip = new ZipFile(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP);
+            Bot.LOG.info("Zip creation finished!");
 
-			final ZipParameters parameters = new ZipParameters();
-			parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_ULTRA);
-			parameters.setDefaultFolderPath("exmaple gradle project for jda/");
+        }
+        catch (final IOException | InterruptedException | ZipException e)
+        {
+            Bot.LOG.log(e);
+        }
+    }
 
-			zip.addFolder(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, parameters);
+    public static void uploadProject()
+    {
 
-			Bot.LOG.info("Zip creation finished!");
+        Bot.LOG.info("Uploading gradle example zip...");
 
-		} catch (final IOException | InterruptedException | ZipException e) {
-			Bot.LOG.log(e);
-		}
-	}
+        GradleProjectDropboxUploader.init();
 
-	private static void init() {
-		if (!GradleProjectDropboxUploader.initialized.getAndSet(true)) {
-			final String ACCESS_TOKEN = Bot.config.getString("dropbox.access_token");
+        GradleProjectDropboxUploader.createZip();
 
-			final DbxRequestConfig config = DbxRequestConfig.newBuilder("JDA-Butler").build();
+        if (Bot.config.getBoolean("testing", true))
+        {
+            Bot.LOG.debug("Skipping upload!");
+            return;
+        }
 
-			GradleProjectDropboxUploader.client = new DbxClientV2(config, ACCESS_TOKEN);
-		}
-	}
+        try (InputStream in = new FileInputStream(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP))
+        {
 
-	public static void uploadProject() {
+            GradleProjectDropboxUploader.client.files().uploadBuilder(GradleProjectDropboxUploader.DROPBOX_FILE_NAME).withMute(true).withMode(WriteMode.OVERWRITE).uploadAndFinish(in);
 
-		Bot.LOG.info("Uploading gradle example zip...");
+            Bot.LOG.info("Zip uploading finished!");
 
-		GradleProjectDropboxUploader.init();
+        }
+        catch (DbxException | IOException e)
+        {
+            Bot.LOG.log(e);
+        }
 
-		GradleProjectDropboxUploader.createZip();
+    }
 
-		if (Bot.config.getBoolean("testing", true)) {
-			Bot.LOG.debug("Skipping upload!");
-			return;
-		}
+    private static void init()
+    {
+        if (!GradleProjectDropboxUploader.initialized.getAndSet(true))
+        {
+            final String ACCESS_TOKEN = Bot.config.getString("dropbox.access_token");
 
-		try (InputStream in = new FileInputStream(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP)) {
+            final DbxRequestConfig config = DbxRequestConfig.newBuilder("JDA-Butler").build();
 
-			GradleProjectDropboxUploader.client.files().uploadBuilder(GradleProjectDropboxUploader.DROPBOX_FILE_NAME).withMute(true).withMode(WriteMode.OVERWRITE).uploadAndFinish(in);
-
-			Bot.LOG.info("Zip uploading finished!");
-
-		} catch (DbxException | IOException e) {
-			Bot.LOG.log(e);
-		}
-
-	}
+            GradleProjectDropboxUploader.client = new DbxClientV2(config, ACCESS_TOKEN);
+        }
+    }
 
 }

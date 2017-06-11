@@ -13,39 +13,39 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
-public class MavenProjectCommand implements Command {
+public class MavenProjectCommand implements Command
+{
     private static String POM;
 
-    static {
-        try {
-            POM = new BufferedReader(new InputStreamReader(MavenProjectCommand.class.getResourceAsStream("/maven.pom")))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
-        } catch (Exception e) {
+    static
+    {
+        try
+        {
+            MavenProjectCommand.POM = new BufferedReader(new InputStreamReader(MavenProjectCommand.class.getResourceAsStream("/maven.pom"))).lines().collect(Collectors.joining("\n"));
+        }
+        catch (final Exception e)
+        {
             Bot.LOG.fatal(e);
-            POM = "Load failed.";
+            MavenProjectCommand.POM = "Load failed.";
         }
     }
+
     @Override
-    public void dispatch(User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) throws Exception {
-        String pom = String.format(POM,
-                MavenUtil.getRepositoryString("jcenter", "jcenter", "https://jcenter.bintray.com/", "        "),
-                MavenUtil.getDependencyString("net.dv8tion", "JDA",
-                        String.valueOf(Bot.config.getString("jda.version.name")), "        ") +
-                        (content.contains("lavaplayer") ?
-                                MavenUtil.getDependencyString(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID,
-                                        Lavaplayer.getLatestVersion(), "        ")
-                                : ""));
+    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception
+    {
+        final String pom = String.format(MavenProjectCommand.POM, MavenUtil.getRepositoryString("jcenter", "jcenter", "https://jcenter.bintray.com/", "        "), MavenUtil.getDependencyString("net.dv8tion", "JDA", String.valueOf(Bot.config.getString("jda.version.name")), "        ") + (content.contains("lavaplayer") ? MavenUtil.getDependencyString(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion(), "        ") : ""));
         channel.sendMessage("Here: " + Bot.hastebin(pom) + ".xml").queue();
     }
 
     @Override
-    public String getHelp() {
+    public String getHelp()
+    {
         return "Example maven project";
     }
 
     @Override
-    public String getName() {
+    public String getName()
+    {
         return "pom.xml";
     }
 }
