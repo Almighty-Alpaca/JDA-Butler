@@ -37,7 +37,7 @@ public class DocsCommand extends ReactionCommand
                 .setTitle(documentation.getTitle(), documentation.getUrl());
         if (documentation.getContent().length() > MessageEmbed.TEXT_MAX_LENGTH)
         {
-            embed.setDescription("Description to long. Please refer to [the docs](" + documentation.getUrl() + ')');
+            embed.setDescription("Description too long. Please refer to [the online docs](" + documentation.getUrl() + ')');
             return new MessageBuilder().setEmbed(embed.build()).build();
         }
         if (documentation.getContent().length() == 0)
@@ -55,7 +55,7 @@ public class DocsCommand extends ReactionCommand
                 String fieldValue = String.join("\n", field.getValue());
                 if (fieldValue.length() > MessageEmbed.VALUE_MAX_LENGTH)
                 {
-                    embed.addField(field.getKey(), "This section is to long. Please look at [the docs](" + documentation.getUrl() + ')', false);
+                    embed.addField(field.getKey(), "This section is too long. Please look at [the online docs](" + documentation.getUrl() + ')', false);
                 }
                 else
                 {
