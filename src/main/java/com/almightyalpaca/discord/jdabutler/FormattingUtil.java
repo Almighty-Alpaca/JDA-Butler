@@ -1,16 +1,17 @@
 package com.almightyalpaca.discord.jdabutler;
 
 import com.mashape.unirest.http.Unirest;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.User;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.text.DateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.User;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class FormattingUtil
 {

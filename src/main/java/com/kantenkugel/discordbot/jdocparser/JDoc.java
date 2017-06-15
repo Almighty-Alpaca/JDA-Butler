@@ -20,6 +20,7 @@ package com.kantenkugel.discordbot.jdocparser;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -31,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 public class JDoc {
@@ -72,6 +74,69 @@ public class JDoc {
                 return get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
             }
             return new ArrayList<>(0);
+        }
+    }
+
+    /**
+     * Searches the whole JavaDocs based on input string and options
+     *
+     * @param input The text to search for.
+     * @param options Options refining the search. Valid options are:
+     *                <ul>
+     *                <li>cs - makes matching case-sensitive</li>
+     *                <li>f - only methods are searched. Can't be used together with c or v.</li>
+     *                <li>c - only classes are searched. Can't be used together with f or v.</li>
+     *                <li>v - only values are searched. Can't be used together with f or c.</li>
+     *                </ul>
+     * @return Pairs of the form: Text-representation - Documentation
+     * @throws PatternSyntaxException if regex was used and the regex is not valid
+     */
+    public static Set<Pair<String, ? extends Documentation>> search(String input, String... options) throws PatternSyntaxException {
+        Set<String> opts = Arrays.stream(options).map(String::toLowerCase).collect(Collectors.toSet());
+        final boolean isCaseSensitive = opts.contains("cs");
+        String key = input.toLowerCase();
+        if(opts.contains("f")) {
+            return docs.values().stream()
+                    .flatMap(cls -> cls.methodDocs.entrySet().stream()
+                            .filter(mds -> mds.getKey().contains(key))
+                            .map(Map.Entry::getValue)
+                            .flatMap(Collection::stream)
+                    )
+                    .filter(md -> !isCaseSensitive || md.functionName.contains(input))
+                    .map(md -> Pair.of(md.parent.className+" "+md.functionSig, md))
+                    .collect(Collectors.toSet());
+        } else if(opts.contains("c")) {
+            return docs.values().stream()
+                    .filter(cls -> isCaseSensitive ? cls.className.contains(input) : cls.className.toLowerCase().contains(key))
+                    .map(cls -> Pair.of("Class "+cls.className, cls))
+                    .collect(Collectors.toSet());
+        } else if(opts.contains("v")) {
+            return docs.values().stream()
+                    .flatMap(cls -> cls.classValues.entrySet().stream()
+                            .filter(val -> val.getKey().contains(key))
+                            .map(Map.Entry::getValue)
+                    )
+                    .filter(val -> !isCaseSensitive || val.name.contains(input))
+                    .map(val -> Pair.of(val.parent.className + " "+val.sig, val))
+                    .collect(Collectors.toSet());
+        } else {
+            //search all categories
+            Set<Pair<String, ? extends Documentation>> results = new HashSet<>();
+            for(JDocParser.ClassDocumentation classDoc : docs.values()) {
+                if(isCaseSensitive ? classDoc.className.contains(input) : classDoc.className.toLowerCase().contains(key))
+                    results.add(Pair.of("Class " + classDoc.className, classDoc));
+                for(Set<JDocParser.MethodDocumentation> mdcs : classDoc.methodDocs.values()) {
+                    for(JDocParser.MethodDocumentation mdc : mdcs) {
+                        if(isCaseSensitive ? mdc.functionName.contains(input) : mdc.functionName.toLowerCase().contains(key))
+                            results.add(Pair.of(mdc.parent.className+" "+mdc.functionSig, mdc));
+                    }
+                }
+                for(JDocParser.ValueDocumentation valueDoc : classDoc.classValues.values()) {
+                    if(isCaseSensitive ? valueDoc.name.contains(input) : valueDoc.name.toLowerCase().contains(key))
+                        results.add(Pair.of(valueDoc.parent.className+" "+valueDoc.sig, valueDoc));
+                }
+            }
+            return results;
         }
     }
 

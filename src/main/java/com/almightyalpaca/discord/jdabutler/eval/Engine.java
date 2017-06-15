@@ -2,16 +2,17 @@ package com.almightyalpaca.discord.jdabutler.eval;
 
 import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 import com.google.common.util.concurrent.MoreExecutors;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
+import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
-import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 
 public enum Engine
 {

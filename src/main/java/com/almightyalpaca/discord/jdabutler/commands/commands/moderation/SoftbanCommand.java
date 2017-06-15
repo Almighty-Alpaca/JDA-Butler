@@ -1,11 +1,12 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands.moderation;
 
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-import java.util.List;
 import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.managers.GuildController;
+
+import java.util.List;
 
 public class SoftbanCommand implements Command
 {

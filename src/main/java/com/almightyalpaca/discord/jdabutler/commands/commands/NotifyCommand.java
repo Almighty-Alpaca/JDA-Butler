@@ -2,11 +2,12 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-import java.util.ArrayList;
-import java.util.List;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.utils.SimpleLog;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class NotifyCommand implements Command
 {

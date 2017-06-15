@@ -1,10 +1,11 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import java.util.Arrays;
-import java.util.Collection;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 public class GradleUtil
 {

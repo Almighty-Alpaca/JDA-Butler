@@ -4,8 +4,9 @@ import com.almightyalpaca.discord.jdabutler.config.exception.ConfigSaveException
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 import com.google.gson.*;
-import java.io.*;
 import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
+
+import java.io.*;
 
 public class RootConfig extends Config
 {
