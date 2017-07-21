@@ -7,8 +7,6 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-import java.io.IOException;
-
 public class GradleProjectCommand implements Command
 {
     @Override
@@ -18,14 +16,7 @@ public class GradleProjectCommand implements Command
             channel.sendTyping().queue();
         GradleProjectDropboxUploader.createZip();
 
-        try
-        {
-            channel.sendFile(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP, null).queue();
-        }
-        catch (final IOException e)
-        {
-            channel.sendMessage("An error occured!").queue();
-        }
+        channel.sendFile(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP, null).queue();
     }
 
     @Override
