@@ -70,11 +70,13 @@ public class JDocUtil {
         matcher = LINK_PATTERN.matcher(docs);
         sb = new StringBuffer();
         while(matcher.find()) {
-            matcher.appendReplacement(sb, '[' +
+            matcher.appendReplacement(sb,
                     ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "") +
+                    '[' +
                     fixSignature(matcher.group(4).replace("*", "")) +
-                    ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "") +
-                    "](" + resolveLink(matcher.group(2), currentUrl) + ')'
+                    ']' +
+                    '(' + resolveLink(matcher.group(2), currentUrl) + ')' +
+                    ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "")
             );
         }
         matcher.appendTail(sb);
