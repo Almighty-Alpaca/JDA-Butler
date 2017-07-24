@@ -172,7 +172,7 @@ public class EventListener extends ListenerAdapter
             else
                 role = Bot.getRoleJdaFanclub();
 
-            final AuditableRestAction<Void> action = guild.getController().addRolesToMember(member, role).reason("Auto Role");
+            final AuditableRestAction<Void> action = guild.getController().addSingleRoleToMember(member, role).reason("Auto Role");
             final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), role.getName());
             action.queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, message), Bot.LOG::log);
         }

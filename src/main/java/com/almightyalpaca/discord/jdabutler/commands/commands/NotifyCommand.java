@@ -35,13 +35,19 @@ public class NotifyCommand implements Command
             roles.removeAll(member.getRoles());
 
             if (roles.size() == 0)
-                guild.getController().removeRolesFromMember(member, Bot.getRoleJdaUpdates(), Bot.getRoleLavaplayerUpdates()).queue(v ->
+            {
+                Role[] updateRoles = { Bot.getRoleJdaUpdates(), Bot.getRoleLavaplayerUpdates() };
+                guild.getController().removeRolesFromMember(member, updateRoles).queue(v ->
                 {
-                    Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + sender.getName() + "#" + sender.getDiscriminator() + " (" + sender.getId() + ") from " + Bot.getRoleJdaUpdates().getName());
-                    Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + sender.getName() + "#" + sender.getDiscriminator() + " (" + sender.getId() + ") from " + Bot.getRoleLavaplayerUpdates().getName());
+                    logRoleRemoval(sender, Bot.getRoleJdaUpdates());
+                    logRoleRemoval(sender, Bot.getRoleLavaplayerUpdates());
                 }, Bot.LOG::log);
+            }
             else
-                guild.getController().addRolesToMember(member, roles).queue(v -> roles.forEach(role -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + sender.getName() + "#" + sender.getDiscriminator() + " (" + sender.getId() + ") to " + role.getName())), Bot.LOG::log);
+            {
+                guild.getController().addRolesToMember(member, roles)
+                        .queue(v -> roles.forEach( r -> logRoleAddition(sender, r)), Bot.LOG::log);
+            }
 
         }
         else
@@ -56,12 +62,30 @@ public class NotifyCommand implements Command
                 role = Bot.getRoleJdaUpdates();
 
             if (member.getRoles().contains(role))
-                guild.getController().removeRolesFromMember(member, role).queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, "Removed " + sender.getName() + "#" + sender.getDiscriminator() + " (" + sender.getId() + ") from " + role.getName()), Bot.LOG::log);
+            {
+                guild.getController().removeSingleRoleFromMember(member, role)
+                        .queue(v -> logRoleRemoval(sender, role), Bot.LOG::log);
+            }
             else
-                guild.getController().addRolesToMember(member, role).queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, "Added " + sender.getName() + "#" + sender.getDiscriminator() + " (" + sender.getId() + ") to " + role.getName()), Bot.LOG::log);
+            {
+                guild.getController().addSingleRoleToMember(member, role)
+                        .queue(v -> logRoleAddition(sender, role), Bot.LOG::log);
+            }
         }
 
         message.addReaction("\uD83D\uDC4C\uD83C\uDFFC").queue();
+    }
+
+    private void logRoleRemoval(final User sender, final Role role)
+    {
+        final String msg = String.format("Removed %#s (%d) from %s", sender, sender.getIdLong(), role.getName());
+        Bot.LOG.log(SimpleLog.Level.WARNING, msg);
+    }
+
+    private void logRoleAddition(final User sender, final Role role)
+    {
+        final String msg = String.format("Added %#s (%d) to %s", sender, sender.getIdLong(), role.getName());
+        Bot.LOG.log(SimpleLog.Level.WARNING, msg);
     }
 
     @Override
