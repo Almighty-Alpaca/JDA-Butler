@@ -394,7 +394,7 @@ public class JDocParser {
 
         @Override
         public String getUrl() {
-            return JDocUtil.getLink(parent) + hashCode();
+            return JDocUtil.getLink(parent) + hashLink;
         }
 
         @Override
