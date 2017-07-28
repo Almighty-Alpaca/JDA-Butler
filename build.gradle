@@ -20,13 +20,9 @@ repositories {
 	maven { url 'https://jitpack.io' }
 }
 
-configurations.all {
-	resolutionStrategy.cacheChangingModulesFor 1, 'minutes'
-}
-
 dependencies {
 	// JDA
-	compile group: 'net.dv8tion', name: 'JDA', version: '3.2.0_+'
+	compile group: 'net.dv8tion', name: 'JDA', version: '3.2.0_240'
 
 	// Apache lang3 (Pair, Triple, ExceptionUtils,...)
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
@@ -62,6 +58,8 @@ run {
 	systemProperties System.properties
 }
 
-wrapper {
-	gradleVersion = '4.0.1'
+task wrapper(type: Wrapper) {
+    group = 'build setup'
+    description = 'Generates Gradle wrapper files.'
+    gradleVersion = '4.0.2'
 }

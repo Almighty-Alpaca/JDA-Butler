@@ -21,7 +21,6 @@ import net.dv8tion.jda.core.utils.SimpleLog;
 import net.dv8tion.jda.core.utils.SimpleLog.Level;
 import net.dv8tion.jda.core.utils.SimpleLog.LogListener;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.http.HttpHost;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -148,12 +147,6 @@ public class Bot
 
         final String token = Bot.config.getString("discord.token", "Your token");
         builder.setToken(token);
-
-        final String proxyAdress = Bot.config.getString("proxy.host", "");
-        final int proxyPort = Bot.config.getInt("proxy.port", 8080);
-        final boolean useProxy = Bot.config.getBoolean("proxy.use", false);
-        if (useProxy)
-            builder.setProxy(new HttpHost(proxyAdress, proxyPort));
 
         Bot.config.save();
         Bot.listener = new EventListener();
