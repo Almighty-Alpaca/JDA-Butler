@@ -102,7 +102,7 @@ public class DocsCommand extends ReactionCommand
                     "While in search mode, `.` and `#` won't work and all documentations that **contain** `term` in their name/signature are returned.\n" +
                     "Search parameters can be used to restrict the search:\n" +
                     "`f` to only search for methods\n" +
-                    "`v` to only search for variables\n" +
+                    "`var` to only search for variables\n" +
                     "`c` to only search for classes\n" +
                     "`cs` to make matching case-sensitive"
             ).queue();

@@ -84,9 +84,9 @@ public class JDoc {
      * @param options Options refining the search. Valid options are:
      *                <ul>
      *                <li>cs - makes matching case-sensitive</li>
-     *                <li>f - only methods are searched. Can't be used together with c or v.</li>
-     *                <li>c - only classes are searched. Can't be used together with f or v.</li>
-     *                <li>v - only values are searched. Can't be used together with f or c.</li>
+     *                <li>f - only methods are searched. Can't be used together with other type-specific filters.</li>
+     *                <li>c - only classes are searched. Can't be used together with other type-specific filters.</li>
+     *                <li>var - only values are searched. Can't be used together with other type-specific filters.</li>
      *                </ul>
      * @return Pairs of the form: Text-representation - Documentation
      * @throws PatternSyntaxException if regex was used and the regex is not valid
@@ -110,7 +110,7 @@ public class JDoc {
                     .filter(cls -> isCaseSensitive ? cls.className.contains(input) : cls.className.toLowerCase().contains(key))
                     .map(cls -> Pair.of("Class "+cls.className, cls))
                     .collect(Collectors.toSet());
-        } else if(opts.contains("v")) {
+        } else if(opts.contains("var")) {
             return docs.values().stream()
                     .flatMap(cls -> cls.classValues.entrySet().stream()
                             .filter(val -> val.getKey().contains(key))
