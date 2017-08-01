@@ -7,6 +7,7 @@ import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundExceptio
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import com.kantenkugel.discordbot.fakebutler.FakeButlerListener;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -152,6 +153,7 @@ public class Bot
         Bot.listener = new EventListener();
         builder.addEventListener(Bot.listener);
         builder.addEventListener(Bot.dispatcher = new Dispatcher());
+        builder.addEventListener(new FakeButlerListener());
 
         builder.setGame(Game.of("JDA"));
 
