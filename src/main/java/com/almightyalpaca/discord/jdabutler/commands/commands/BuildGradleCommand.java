@@ -2,8 +2,9 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.GradleUtil;
-import com.almightyalpaca.discord.jdabutler.Lavaplayer;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.kantenkugel.discordbot.versioncheck.VersionChecker;
+import com.kantenkugel.discordbot.versioncheck.VersionedItem;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -34,7 +35,10 @@ public class BuildGradleCommand implements Command
         repositories.add(new ImmutablePair<>("jcenter()", null));
 
         if (lavaplayer)
-            dependencies.add(new ImmutableTriple<>(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion()));
+        {
+            VersionedItem lp = VersionChecker.getItem("lavaplayer");
+            dependencies.add(new ImmutableTriple<>(lp.getGroupId(), lp.getArtifactId(), lp.getVersion()));
+        }
 
         mb.appendCodeBlock(GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "com.example.jda.Bot", "1.0", "1.8", dependencies, repositories, pretty), "gradle");
         channel.sendMessage(mb.build()).queue();

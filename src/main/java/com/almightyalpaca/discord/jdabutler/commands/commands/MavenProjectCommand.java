@@ -1,9 +1,10 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import com.almightyalpaca.discord.jdabutler.Lavaplayer;
 import com.almightyalpaca.discord.jdabutler.MavenUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.kantenkugel.discordbot.versioncheck.VersionChecker;
+import com.kantenkugel.discordbot.versioncheck.VersionedItem;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -33,7 +34,8 @@ public class MavenProjectCommand implements Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception
     {
-        final String pom = String.format(MavenProjectCommand.POM, MavenUtil.getRepositoryString("jcenter", "jcenter", "https://jcenter.bintray.com/", "        "), MavenUtil.getDependencyString("net.dv8tion", "JDA", String.valueOf(Bot.config.getString("jda.version.name")), "        ") + (content.contains("lavaplayer") ? MavenUtil.getDependencyString(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion(), "        ") : ""));
+        VersionedItem lp = VersionChecker.getItem("lavaplayer");
+        final String pom = String.format(MavenProjectCommand.POM, MavenUtil.getRepositoryString("jcenter", "jcenter", "https://jcenter.bintray.com/", "        "), MavenUtil.getDependencyString("net.dv8tion", "JDA", String.valueOf(Bot.config.getString("jda.version.name")), "        ") + (content.contains("lavaplayer") ? MavenUtil.getDependencyString(lp.getGroupId(), lp.getArtifactId(), lp.getVersion(), "        ") : ""));
         channel.sendMessage("Here: " + Bot.hastebin(pom) + ".xml").queue();
     }
 

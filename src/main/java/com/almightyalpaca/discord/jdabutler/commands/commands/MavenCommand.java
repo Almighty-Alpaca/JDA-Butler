@@ -2,9 +2,10 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
-import com.almightyalpaca.discord.jdabutler.Lavaplayer;
 import com.almightyalpaca.discord.jdabutler.MavenUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.kantenkugel.discordbot.versioncheck.VersionChecker;
+import com.kantenkugel.discordbot.versioncheck.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
@@ -32,7 +33,10 @@ public class MavenCommand implements Command
 
         field += MavenUtil.getDependencyString("net.dv8tion", "JDA", Bot.config.getString("jda.version.name"), null) + "\n";
         if (lavaplayer)
-            field += MavenUtil.getDependencyString(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion(), null) + "\n";
+        {
+            VersionedItem lp = VersionChecker.getItem("lavaplayer");
+            field += MavenUtil.getDependencyString(lp.getGroupId(), lp.getArtifactId(), lp.getVersion(), null) + "\n";
+        }
 
         field += "\n";
 

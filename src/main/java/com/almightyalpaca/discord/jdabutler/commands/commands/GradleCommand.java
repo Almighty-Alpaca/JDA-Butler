@@ -3,8 +3,9 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.GradleUtil;
-import com.almightyalpaca.discord.jdabutler.Lavaplayer;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.kantenkugel.discordbot.versioncheck.VersionChecker;
+import com.kantenkugel.discordbot.versioncheck.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
@@ -45,7 +46,10 @@ public class GradleCommand implements Command
         repositories.add(new ImmutablePair<>("jcenter()", null));
 
         if (lavaplayer)
-            dependencies.add(new ImmutableTriple<>(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion()));
+        {
+            VersionedItem lp = VersionChecker.getItem("lavaplayer");
+            dependencies.add(new ImmutableTriple<>(lp.getGroupId(), lp.getArtifactId(), lp.getVersion()));
+        }
 
         field += GradleUtil.getDependencyBlock(dependencies, pretty) + "\n";
         field += "\n";

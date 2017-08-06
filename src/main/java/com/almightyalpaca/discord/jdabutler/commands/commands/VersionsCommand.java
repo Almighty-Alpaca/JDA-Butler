@@ -27,9 +27,6 @@ public class VersionsCommand implements Command
 
         eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
-        //TODO: Replace with scheduled task
-        VersionChecker.checkVersions();
-
         for (VersionedItem versionedItem : VersionChecker.getVersionedItems())
         {
             if (versionedItem.getUrl() != null)

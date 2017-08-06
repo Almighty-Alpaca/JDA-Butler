@@ -18,8 +18,12 @@ public class VersionChecker
     private static Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
 
     static {
-        checkedItems.put("jda", new VersionedItem("JDA", RepoType.JCENTER, "net.dv8tion", "JDA", "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/"));
-        checkedItems.put("lavaplayer", new VersionedItem("Lavaplayer", RepoType.JCENTER, "com.sedmelluq", "lavaplayer", "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord"));
+        addItem(new VersionedItem("JDA", RepoType.JCENTER, "net.dv8tion", "JDA",
+                "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/"));
+        addItem(new VersionedItem("Lavaplayer", RepoType.JCENTER, "com.sedmelluq", "lavaplayer",
+                "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord"));
+        addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, "com.jagrosh", "JDA-Utilities",
+                "https://github.com/JDA-Applications/JDA-Utilities"));
     }
 
     public static Set<VersionedItem> checkVersions()
@@ -38,12 +42,16 @@ public class VersionChecker
 
     public static void addItem(String name, String repoType, String groupId, String artifactId, String url)
     {
-        VersionedItem versionedItem = new VersionedItem(name, RepoType.valueOf(repoType), groupId, artifactId, url);
-        String version = getVersion(versionedItem);
+        addItem(new VersionedItem(name, RepoType.fromString(repoType), groupId, artifactId, url));
+    }
+
+    public static void addItem(VersionedItem item)
+    {
+        String version = getVersion(item);
         if (version != null)
         {
-            versionedItem.setVersion(version);
-            checkedItems.put(name.toLowerCase(), versionedItem);
+            item.setVersion(version);
+            checkedItems.put(item.getName().toLowerCase(), item);
         }
     }
 
