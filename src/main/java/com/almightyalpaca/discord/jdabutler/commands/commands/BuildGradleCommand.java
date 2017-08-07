@@ -1,6 +1,5 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.GradleUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import com.kantenkugel.discordbot.versioncheck.VersionChecker;
@@ -10,13 +9,13 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class BuildGradleCommand implements Command
 {
@@ -25,20 +24,23 @@ public class BuildGradleCommand implements Command
     {
         final MessageBuilder mb = new MessageBuilder();
 
-        final boolean lavaplayer = content.contains("player");
+        List<VersionedItem> deps = new ArrayList<>(3);
+
+        deps.add(VersionChecker.getItem("jda"));
+        if(content.contains("player"))
+            deps.add(VersionChecker.getItem("lavaplayer"));
+        if(content.toLowerCase().contains("util"))
+            deps.add(VersionChecker.getItem("jda-utilities"));
+
         final boolean pretty = content.contains("pretty");
 
-        final Collection<Pair<String, String>> repositories = new ArrayList<>(2);
-        final Collection<Triple<String, String, String>> dependencies = new ArrayList<>(2);
-
-        dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda.version.name")));
-        repositories.add(new ImmutablePair<>("jcenter()", null));
-
-        if (lavaplayer)
-        {
-            VersionedItem lp = VersionChecker.getItem("lavaplayer");
-            dependencies.add(new ImmutableTriple<>(lp.getGroupId(), lp.getArtifactId(), lp.getVersion()));
-        }
+        final Collection<Triple<String, String, String>> dependencies = deps.stream()
+                .map(item -> Triple.of(item.getGroupId(), item.getArtifactId(), item.getVersion()))
+                .collect(Collectors.toList());
+        final Collection<Pair<String, String>> repositories = deps.stream()
+                .map(item -> item.getRepoType().getGradleImport())
+                .distinct()
+                .collect(Collectors.toList());
 
         mb.appendCodeBlock(GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "com.example.jda.Bot", "1.0", "1.8", dependencies, repositories, pretty), "gradle");
         channel.sendMessage(mb.build()).queue();
