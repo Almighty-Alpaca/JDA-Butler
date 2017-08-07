@@ -2,6 +2,8 @@ package com.almightyalpaca.discord.jdabutler;
 
 import com.almightyalpaca.discord.jdabutler.eval.Engine;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
+import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
+import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
 import com.kantenkugel.discordbot.versioncheck.VersionChecker;
 import com.kantenkugel.discordbot.versioncheck.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -13,6 +15,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -77,19 +80,15 @@ public class EventListener extends ListenerAdapter
                                         return;
                                     }
 
-                                    //TODO: think about this one (no longer have the info without fetching from CI
                                     final EmbedBuilder eb = new EmbedBuilder();
 
                                     final MessageBuilder mb = new MessageBuilder();
-                                    /*
-                                    final String timestamp = FormattingUtil.formatTimestap(object.getLong("timestamp"));
 
-                                    final JSONArray culprits = object.getJSONArray("culprits");
+                                    JenkinsBuild jenkinsBuild = JenkinsApi.fetchBuild(build);
 
-                                    FormattingUtil.setFooter(eb, culprits, timestamp);
+                                    final String timestamp = FormattingUtil.formatTimestap(jenkinsBuild.buildTime.toEpochSecond() * 1000);
 
-                                    final JSONArray changeSets = object.getJSONObject("changeSet").getJSONArray("items");
-                                    */
+                                    FormattingUtil.setFooter(eb, jenkinsBuild.culprits, timestamp);
 
                                     mb.append(Bot.getRoleJdaUpdates());
 
@@ -97,13 +96,12 @@ public class EventListener extends ListenerAdapter
 
                                     EmbedUtil.setColor(eb);
 
-                                    /*
-                                    if (changeSets.length() > 0)
+                                    if (jenkinsBuild.changes.size() > 0)
                                     {
 
                                         eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
-                                        final List<String> changelog = FormattingUtil.getChangelog(changeSets);
+                                        final List<String> changelog = FormattingUtil.getChangelog(jenkinsBuild.changes);
 
                                         int fields;
 
@@ -122,7 +120,6 @@ public class EventListener extends ListenerAdapter
                                             eb.addField("", "max embed length reached", false);
 
                                     }
-                                    */
 
                                     final MessageEmbed embed = eb.build();
 

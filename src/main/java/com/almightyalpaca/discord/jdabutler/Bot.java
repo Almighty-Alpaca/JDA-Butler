@@ -20,6 +20,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import net.dv8tion.jda.core.utils.SimpleLog.Level;
 import net.dv8tion.jda.core.utils.SimpleLog.LogListener;
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.security.auth.login.LoginException;
@@ -36,6 +37,8 @@ public class Bot
     public static Dispatcher dispatcher;
     public static final String INVITE_LINK = "https://discord.gg/0hMr4ce0tIk3pSjp";
     public static JDAImpl jda;
+
+    public static OkHttpClient httpClient;
 
     public static EventListener listener;
 
@@ -135,6 +138,8 @@ public class Bot
 
     public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException
     {
+        //TODO: customize?
+        Bot.httpClient = new OkHttpClient.Builder().build();
 
         EventListener.executor.submit(JDoc::init);
 
