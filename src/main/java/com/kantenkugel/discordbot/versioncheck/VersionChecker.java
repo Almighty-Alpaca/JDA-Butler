@@ -1,5 +1,6 @@
 package com.kantenkugel.discordbot.versioncheck;
 
+import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -13,13 +14,13 @@ import java.util.*;
 
 public class VersionChecker
 {
-    private static final SimpleLog LOG = SimpleLog.getLog("VersionChecker");
+    static final SimpleLog LOG = SimpleLog.getLog("VersionChecker");
 
     private static Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
 
     static {
         addItem(new VersionedItem("JDA", RepoType.JCENTER, "net.dv8tion", "JDA",
-                "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/"));
+                JenkinsApi.LAST_BUILD_URL));
         addItem(new VersionedItem("Lavaplayer", RepoType.JCENTER, "com.sedmelluq", "lavaplayer",
                 "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord"));
         addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, "com.jagrosh", "JDA-Utilities",

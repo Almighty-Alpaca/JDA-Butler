@@ -1,6 +1,7 @@
 package com.kantenkugel.discordbot.jenkinsutil;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import net.dv8tion.jda.core.utils.SimpleLog;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -15,6 +16,8 @@ public class JenkinsApi
     public static final String JENKINS_BASE = "http://home.dv8tion.net:8080/job/JDA/";
     public static final String CHANGE_URL = JENKINS_BASE + "changes";
     public static final String LAST_BUILD_URL = JENKINS_BASE + "lastSuccessfulBuild/";
+
+    static final SimpleLog LOG = SimpleLog.getLog("Jenkins");
 
     private static final String API_SUFFIX = "api/json?";
 
@@ -50,7 +53,8 @@ public class JenkinsApi
             return JenkinsBuild.fromJson(new JSONObject(res.body().string()));
         } catch (IOException e)
         {
-            e.printStackTrace();
+            LOG.fatal("Error while Fetching Jenkins build");
+            LOG.log(e);
         }
         return null;
     }
@@ -66,10 +70,11 @@ public class JenkinsApi
         System.out.println("Status: " + build.status);
         System.out.println("URL:    " + build.getUrl());
         System.out.println("Artifacts:");
-        for (JenkinsBuild.Artifact artifact : build.artifacts)
+        for (JenkinsBuild.Artifact artifact : build.artifacts.values())
         {
-            System.out.println(" -Name: " + artifact.fileName);
-            System.out.println("  URL:  " + artifact.getLink());
+            System.out.println(" -Name:  " + artifact.fileName);
+            System.out.println("  Ident: " + artifact.descriptor);
+            System.out.println("  URL:   " + artifact.getLink());
         }
         System.out.println("Commits:");
         for (JenkinsChange change : build.changes)

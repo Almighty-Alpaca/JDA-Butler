@@ -7,14 +7,16 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JenkinsBuild
 {
     public final int buildNum;
     public final Status status;
     public final OffsetDateTime buildTime;
-    public final List<Artifact> artifacts;
+    public final Map<String, Artifact> artifacts;
     public final List<JenkinsChange> changes;
     public final List<JenkinsUser> culprits;
 
@@ -23,7 +25,7 @@ public class JenkinsBuild
         this.buildNum = buildNum;
         this.status = status;
         this.buildTime = buildTime;
-        this.artifacts = new ArrayList<>(artifactNum);
+        this.artifacts = new HashMap<>();
         this.changes = changes;
         this.culprits = culprits;
     }
@@ -35,7 +37,12 @@ public class JenkinsBuild
 
     private void addArtifact(String fileName, String relPath)
     {
-        artifacts.add(new Artifact(fileName, relPath));
+        Artifact artifact = new Artifact(fileName, relPath);
+        if (artifacts.containsKey(artifact.descriptor))
+        {
+            JenkinsApi.LOG.warn(String.format("Warning: overwriting artifact with same descriptor: %s -> %s", artifacts.get(artifact.descriptor).fileName, artifact.fileName));
+        }
+        artifacts.put(artifact.getArtifactDescriptor(), artifact);
     }
 
     static JenkinsBuild fromJson(JSONObject json)
@@ -76,17 +83,35 @@ public class JenkinsBuild
     public class Artifact
     {
         public final String fileName;
+        public final String descriptor;
         private final String relPath;
 
         private Artifact(String fileName, String relPath)
         {
             this.fileName = fileName;
+            this.descriptor = getArtifactDescriptor();
             this.relPath = relPath;
         }
 
         public String getLink()
         {
             return JenkinsBuild.this.getUrl() + "artifact/" + relPath;
+        }
+
+        private String getArtifactDescriptor()
+        {
+            String fileEnding = fileName.substring(fileName.lastIndexOf('.') + 1);
+            String[] split = fileName
+                    .substring(0, fileName.length() - (fileEnding.length() + 1))
+                    .split("-");
+            if (fileName.startsWith("JDA"))
+            {
+                return split.length < 3 ? fileEnding : split[split.length - 1];
+            }
+            else
+            {
+                return split.length == 1 ? split[0] : split[0] + "-" + split[split.length - 1];
+            }
         }
     }
 

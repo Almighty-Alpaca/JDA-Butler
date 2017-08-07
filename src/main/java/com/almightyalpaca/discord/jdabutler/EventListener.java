@@ -68,6 +68,8 @@ public class EventListener extends ListenerAdapter
 
                                     Bot.config.save();
 
+                                    JenkinsBuild jenkinsBuild = JenkinsApi.fetchLastSuccessfulBuild();
+
                                     EventListener.executor.submit(() ->
                                     {
                                         JDoc.reFetch();
@@ -84,15 +86,13 @@ public class EventListener extends ListenerAdapter
 
                                     final MessageBuilder mb = new MessageBuilder();
 
-                                    JenkinsBuild jenkinsBuild = JenkinsApi.fetchBuild(build);
-
                                     final String timestamp = FormattingUtil.formatTimestap(jenkinsBuild.buildTime.toEpochSecond() * 1000);
 
                                     FormattingUtil.setFooter(eb, jenkinsBuild.culprits, timestamp);
 
                                     mb.append(Bot.getRoleJdaUpdates());
 
-                                    eb.setAuthor("JDA 3 version " + changedItem.getVersion() + " has been released\n", "http://home.dv8tion.net:8080/job/JDA/" + build, EmbedUtil.JDA_ICON);
+                                    eb.setAuthor("JDA 3 version " + changedItem.getVersion() + " has been released\n", JenkinsApi.JENKINS_BASE + build, EmbedUtil.JDA_ICON);
 
                                     EmbedUtil.setColor(eb);
 

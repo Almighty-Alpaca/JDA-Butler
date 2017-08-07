@@ -129,9 +129,9 @@ public class ChangelogCommand implements Command
             }
 
             if (last != null)
-                eb.setAuthor("Changelog between builds " + first + " and " + last, "http://home.dv8tion.net:8080/job/JDA/changes", EmbedUtil.JDA_ICON);
+                eb.setAuthor("Changelog between builds " + first + " and " + last, JenkinsApi.CHANGE_URL, EmbedUtil.JDA_ICON);
             else
-                eb.setAuthor("Changelog for build " + first, "http://home.dv8tion.net:8080/job/JDA/changes", EmbedUtil.JDA_ICON);
+                eb.setAuthor("Changelog for build " + first, JenkinsApi.CHANGE_URL, EmbedUtil.JDA_ICON);
 
             EmbedUtil.setColor(eb);
 
