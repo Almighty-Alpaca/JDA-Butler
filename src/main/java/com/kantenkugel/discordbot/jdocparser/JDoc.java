@@ -17,13 +17,15 @@
 
 package com.kantenkugel.discordbot.jdocparser;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -187,17 +189,27 @@ public class JDoc {
         if(lastBuild != null)
         {
             JDocUtil.LOG.info("Downloading JDA docs...");
+            ResponseBody body = null;
             try {
-                final URL artifactUrl = new URL(lastBuild.artifacts.get("JDA-javadoc").getLink());
-                final URLConnection connection = artifactUrl.openConnection();
-                connection.setConnectTimeout(5000);
-                connection.setReadTimeout(5000);
-                final InputStream is = connection.getInputStream();
+                String artifactUrl = lastBuild.artifacts.get("JDA-javadoc").getLink();
+                Response res = Bot.httpClient.newCall(new Request.Builder().url(artifactUrl).get().build()).execute();
+                if (!res.isSuccessful())
+                {
+                    JDocUtil.LOG.warn("OkHttp returned failure for " + artifactUrl);
+                    return;
+                }
+                body = res.body();
+                final InputStream is = body.byteStream();
                 Files.copy(is, JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
                 is.close();
                 JDocUtil.LOG.info("Done downloading JDA docs");
             } catch(Exception e) {
                 JDocUtil.LOG.log(e);
+            }
+            finally
+            {
+                if(body != null)
+                    body.close();
             }
         }
     }
