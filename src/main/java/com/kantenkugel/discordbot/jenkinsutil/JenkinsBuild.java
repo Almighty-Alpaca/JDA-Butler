@@ -6,10 +6,8 @@ import org.json.JSONObject;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class JenkinsBuild
 {
@@ -20,7 +18,7 @@ public class JenkinsBuild
     public final List<JenkinsChange> changes;
     public final List<JenkinsUser> culprits;
 
-    private JenkinsBuild(int buildNum, Status status, OffsetDateTime buildTime, int artifactNum, List<JenkinsChange> changes, List<JenkinsUser> culprits)
+    private JenkinsBuild(int buildNum, Status status, OffsetDateTime buildTime, List<JenkinsChange> changes, List<JenkinsUser> culprits)
     {
         this.buildNum = buildNum;
         this.status = status;
@@ -42,7 +40,7 @@ public class JenkinsBuild
         {
             JenkinsApi.LOG.warn(String.format("Warning: overwriting artifact with same descriptor: %s -> %s", artifacts.get(artifact.descriptor).fileName, artifact.fileName));
         }
-        artifacts.put(artifact.getArtifactDescriptor(), artifact);
+        artifacts.put(artifact.descriptor, artifact);
     }
 
     static JenkinsBuild fromJson(JSONObject json)
@@ -69,7 +67,7 @@ public class JenkinsBuild
 
         JSONArray artifactArr = json.getJSONArray("artifacts");
 
-        JenkinsBuild build = new JenkinsBuild(buildNum, status, buildTime, artifactArr.length(), changes, culprits);
+        JenkinsBuild build = new JenkinsBuild(buildNum, status, buildTime, changes, culprits);
 
         for (int i = 0; i < artifactArr.length(); i++)
         {
@@ -83,14 +81,33 @@ public class JenkinsBuild
     public class Artifact
     {
         public final String fileName;
+        public final List<String> fileNameParts;
+        public final String fileEnding;
         public final String descriptor;
         private final String relPath;
 
         private Artifact(String fileName, String relPath)
         {
             this.fileName = fileName;
-            this.descriptor = getArtifactDescriptor();
             this.relPath = relPath;
+
+            int fileTypeSeperatorIndex = fileName.lastIndexOf('.');
+
+            this.fileEnding = fileName.substring(fileTypeSeperatorIndex + 1);
+            this.fileNameParts = Collections.unmodifiableList(Arrays.asList(
+                    fileName.substring(0, fileTypeSeperatorIndex).split("-")
+            ));
+
+            if (this.fileNameParts.size() < 3)
+            {
+                this.descriptor = fileNameParts.get(0);
+            }
+            else
+            {
+                LinkedList<String> strings = new LinkedList<>(fileNameParts);
+                strings.remove(1);
+                this.descriptor = strings.stream().collect(Collectors.joining("-"));
+            }
         }
 
         public String getLink()
@@ -98,21 +115,6 @@ public class JenkinsBuild
             return JenkinsBuild.this.getUrl() + "artifact/" + relPath;
         }
 
-        private String getArtifactDescriptor()
-        {
-            String fileEnding = fileName.substring(fileName.lastIndexOf('.') + 1);
-            String[] split = fileName
-                    .substring(0, fileName.length() - (fileEnding.length() + 1))
-                    .split("-");
-            if (fileName.startsWith("JDA"))
-            {
-                return split.length < 3 ? fileEnding : split[split.length - 1];
-            }
-            else
-            {
-                return split.length == 1 ? split[0] : split[0] + "-" + split[split.length - 1];
-            }
-        }
     }
 
     public enum Status {

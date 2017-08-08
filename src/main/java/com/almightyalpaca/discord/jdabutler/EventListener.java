@@ -70,6 +70,12 @@ public class EventListener extends ListenerAdapter
 
                                     JenkinsBuild jenkinsBuild = JenkinsApi.fetchLastSuccessfulBuild();
 
+                                    if(jenkinsBuild == null)
+                                    {
+                                        Bot.LOG.warn("Could not fetch Jenkins-build for new version (triggered by maven update)");
+                                        return;
+                                    }
+
                                     EventListener.executor.submit(() ->
                                     {
                                         JDoc.reFetch();

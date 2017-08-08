@@ -21,7 +21,6 @@ import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
@@ -184,12 +183,12 @@ public class JDoc {
     }
 
     private static void download() {
-        JDocUtil.LOG.info("Downloading JDA docs...");
         JenkinsBuild lastBuild = JenkinsApi.getLastSuccessfulBuild();
         if(lastBuild != null)
         {
+            JDocUtil.LOG.info("Downloading JDA docs...");
             try {
-                final URL artifactUrl = new URL(lastBuild.artifacts.get("javadoc").getLink());
+                final URL artifactUrl = new URL(lastBuild.artifacts.get("JDA-javadoc").getLink());
                 final URLConnection connection = artifactUrl.openConnection();
                 connection.setConnectTimeout(5000);
                 connection.setReadTimeout(5000);
@@ -197,7 +196,7 @@ public class JDoc {
                 Files.copy(is, JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
                 is.close();
                 JDocUtil.LOG.info("Done downloading JDA docs");
-            } catch(IOException e) {
+            } catch(Exception e) {
                 JDocUtil.LOG.log(e);
             }
         }

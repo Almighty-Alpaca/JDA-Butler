@@ -1,6 +1,7 @@
 package com.kantenkugel.discordbot.jenkinsutil;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.util.FixedSizeCache;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -22,14 +23,18 @@ public class JenkinsApi
     private static final String API_SUFFIX = "api/json?";
 
     private static final String BUILD_OPTIONS = "tree=artifacts[*],id,building,result,timestamp," +
-            "changeSet[items[commitId,date,msg,author[fullName,id,description],paths[*]]]," +
+            "changeSet[items[commitId,date,comment,author[fullName,id,description],paths[*]]]," +
             "culprits[fullName,id,description]";
+
+    private static final FixedSizeCache<Integer, JenkinsBuild> resultCache = new FixedSizeCache<>(20);
 
     private static JenkinsBuild lastSuccBuild = null;
 
-    public static JenkinsBuild fetchBuild(int buildNumber)
+    public static JenkinsBuild getBuild(int buildNumber)
     {
-        return getBuild(buildNumber + "/");
+        return resultCache.contains(buildNumber)
+                ? resultCache.get(buildNumber)
+                : getBuild(buildNumber + "/");
     }
 
     public static JenkinsBuild fetchLastSuccessfulBuild()
@@ -50,11 +55,14 @@ public class JenkinsApi
         try
         {
             Response res = Bot.httpClient.newCall(req).execute();
-            return JenkinsBuild.fromJson(new JSONObject(res.body().string()));
+            JenkinsBuild build = JenkinsBuild.fromJson(new JSONObject(res.body().string()));
+            if(build.status != JenkinsBuild.Status.BUILDING)
+                resultCache.add(build.buildNum, build);
+            return build;
         } catch (IOException e)
         {
-            LOG.fatal("Error while Fetching Jenkins build");
-            LOG.log(e);
+            LOG.fatal("Error while Fetching Jenkins build " + identifier);
+            //LOG.log(e);
         }
         return null;
     }
@@ -74,6 +82,8 @@ public class JenkinsApi
         {
             System.out.println(" -Name:  " + artifact.fileName);
             System.out.println("  Ident: " + artifact.descriptor);
+            System.out.println("  Parts: " + artifact.fileNameParts);
+            System.out.println("  End:   " + artifact.fileEnding);
             System.out.println("  URL:   " + artifact.getLink());
         }
         System.out.println("Commits:");

@@ -15,10 +15,8 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ChangelogCommand implements Command
@@ -30,7 +28,7 @@ public class ChangelogCommand implements Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception
     {
-        final EmbedBuilder eb = new EmbedBuilder();
+        final EmbedBuilder eb = new EmbedBuilder().setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
         final MessageBuilder mb = new MessageBuilder();
         try
         {
@@ -49,83 +47,52 @@ public class ChangelogCommand implements Command
                 end = args.get(1);
             }
 
-            final List<JenkinsBuild> responses = new ArrayList<>(end - start + 1);
-
-            //TODO: Move to executor?
-            for (int i = start; i <= end; i++)
-                responses.add(JenkinsApi.fetchBuild(i));
-
             String first = null;
             String last = null;
 
             int fields = 0;
 
-            for (int i = responses.size() - 1; i >= 0; i--)
+            for (int i = start; i <= end; i++)
             {
-                JenkinsBuild build;
-                try
+                JenkinsBuild build = JenkinsApi.getBuild(i);
+                if(build == null)
+                    continue;
+
+                String version = build.status == JenkinsBuild.Status.SUCCESS
+                        ? build.artifacts.get("JDA").fileNameParts.get(1)
+                        : "Build " + build.buildNum + " (failed)";
+
+                if (first == null)
+                    first = version;
+                else
+                    last = version;
+
+                final List<JenkinsChange> changeSet = build.changes;
+
+                if (changeSet.size() > 0)
                 {
-                    build = responses.get(i);
+                    final List<String> changelog = FormattingUtil.getChangelog(changeSet);
 
-                    String version = build.status == JenkinsBuild.Status.SUCCESS
-                            ? build.artifacts.get(0).fileName.split("[-.]", 3)[1]
-                            : Integer.toString(build.buildNum);
+                    int currentFields = changelog.size();
 
-                    if (i == 0)
-                        first = version;
-                    else if (i == responses.size() - 1)
-                        last = version;
+                    if (fields + currentFields > 24)
+                        currentFields = 24 - fields;
+                    fields += currentFields;
 
-                    final List<JenkinsChange> changeSet = build.changes;
-
-                    if (changeSet.size() > 0)
+                    for (int j = 0; j < currentFields; j++)
                     {
+                        final String field = changelog.get(j);
+                        eb.addField(j == 0 ? version : "", field, false);
+                    }
 
-                        eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
-
-                        final List<String> changelog = FormattingUtil.getChangelog(changeSet);
-
-                        int currentFields = changelog.size();
-
-                        if (fields + changelog.size() > 24)
-                        {
-                            currentFields = Math.min(24 - fields, changelog.size());
-                            fields = 24;
-                        }
-                        else
-                        {
-                            currentFields = changelog.size();
-                            fields += currentFields;
-                        }
-
-                        for (int j = 0; j < currentFields; j++)
-                        {
-                            final String field = changelog.get(j);
-                            eb.addField(j == 0 ? version : "", field, false);
-                        }
-
-                        if (fields == 24)
-                        {
-
-                            eb.addField("max embed length reached", "", false);
-                            break;
-                        }
-
+                    if (fields == 24)
+                    {
+                        eb.addField("max embed length reached", "", false);
+                        break;
                     }
 
                 }
-                catch (final Exception e)
-                {
-                    Throwable cause = e;
-                    do
-                        if (Objects.toString(cause.getMessage()).contains("time") && Objects.toString(cause.getMessage()).contains("out"))
-                        {
-                            Bot.LOG.fatal("!changelog connection timed out!");
-                            break;
-                        }
-                    while ((cause = cause.getCause()) != null);
-                    throw e;
-                }
+
             }
 
             if (last != null)

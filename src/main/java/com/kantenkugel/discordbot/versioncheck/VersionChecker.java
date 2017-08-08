@@ -1,15 +1,16 @@
 package com.kantenkugel.discordbot.versioncheck;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import net.dv8tion.jda.core.utils.SimpleLog;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 import java.util.*;
 
 public class VersionChecker
@@ -46,14 +47,16 @@ public class VersionChecker
         addItem(new VersionedItem(name, RepoType.fromString(repoType), groupId, artifactId, url));
     }
 
-    public static void addItem(VersionedItem item)
+    public static boolean addItem(VersionedItem item)
     {
         String version = getVersion(item);
         if (version != null)
         {
             item.setVersion(version);
             checkedItems.put(item.getName().toLowerCase(), item);
+            return true;
         }
+        return false;
     }
 
     public static void removeItem(VersionedItem item)
@@ -78,25 +81,37 @@ public class VersionChecker
 
     private static String getVersion(VersionedItem item)
     {
+        ResponseBody body = null;
         try
         {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-            Document doc = dBuilder.parse(item.getRepoUrl());
+            Response res = Bot.httpClient.newCall(
+                    new Request.Builder().url(item.getRepoUrl()).get().build()
+            ).execute();
+
+            if (!res.isSuccessful())
+            {
+                LOG.warn("Could not fetch Maven metadata from " + item.getRepoUrl() + " - OkHttp returned with failure");
+                return null;
+            }
+
+            body = res.body();
+            Document doc = dBuilder.parse(body.byteStream());
 
             Element root = doc.getDocumentElement();
             root.normalize();
 
             Element versioningElem = (Element) root.getElementsByTagName("versioning").item(0);
-            if(versioningElem == null)
+            if (versioningElem == null)
             {
                 LOG.warn("Could not find versioning node");
                 return null;
             }
 
             Element versionElem = (Element) versioningElem.getElementsByTagName("release").item(0);
-            if(versionElem == null)
+            if (versionElem == null)
             {
                 LOG.warn("Could not find release node");
                 return null;
@@ -104,10 +119,15 @@ public class VersionChecker
 
             return versionElem.getTextContent();
 
-        }
-        catch (ParserConfigurationException | SAXException | IOException e)
+        } catch (Exception e)
         {
-            e.printStackTrace();
+            LOG.warn("Could not fetch Maven metadata from " + item.getRepoUrl());
+            //e.printStackTrace();
+        }
+        finally
+        {
+            if(body != null)
+                body.close();
         }
         return null;
     }

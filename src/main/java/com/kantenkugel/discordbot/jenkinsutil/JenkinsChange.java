@@ -57,6 +57,6 @@ public class JenkinsChange
 
         OffsetDateTime commitTime = OffsetDateTime.parse(json.getString("date"), commitDateFormatter);
 
-        return new JenkinsChange(json.getString("commitId"), author, json.getString("msg"), commitTime, fileChanges);
+        return new JenkinsChange(json.getString("commitId"), author, json.getString("comment").trim(), commitTime, fileChanges);
     }
 }
