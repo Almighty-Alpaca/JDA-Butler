@@ -94,5 +94,7 @@ public class FakeButlerListener implements EventListener
             presence.setStatus(OnlineStatus.INVISIBLE);
         }
         latestStamp = System.currentTimeMillis();
+
+        Bot.dispatcher.setCommandsEnabled(!online);
     }
 }

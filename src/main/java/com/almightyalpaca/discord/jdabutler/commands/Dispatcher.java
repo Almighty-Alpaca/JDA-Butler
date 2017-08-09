@@ -25,6 +25,8 @@ public class Dispatcher extends ListenerAdapter
     private final ExecutorService pool = Executors.newCachedThreadPool();
     private final ReactionListenerRegistry reactListReg = new ReactionListenerRegistry();
 
+    private boolean shouldHandleCommands = true;
+
     public Dispatcher()
     {
         this.registerCommand(new BuildGradleCommand());
@@ -52,9 +54,17 @@ public class Dispatcher extends ListenerAdapter
         return Collections.unmodifiableSet(new HashSet<>(this.commands));
     }
 
+    public void setCommandsEnabled(boolean enableCommands)
+    {
+        this.shouldHandleCommands = enableCommands;
+    }
+
     @Override
     public void onGuildMessageReceived(final GuildMessageReceivedEvent event)
     {
+        if(!shouldHandleCommands)
+            return;
+
         final String prefix = Bot.config.getString("prefix");
         final String message = event.getMessage().getRawContent();
         final TextChannel channel = event.getChannel();
