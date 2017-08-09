@@ -68,6 +68,7 @@ public class FakeButlerListener implements EventListener
             }
             Member butler = jdaGuild.getMemberById(REAL_BUTLER_ID);
             handleStatus(event.getJDA(), butler);
+            latestStamp = System.currentTimeMillis();
             onlineTime = offlineTime = 0L;
         }
     }
@@ -93,6 +94,7 @@ public class FakeButlerListener implements EventListener
             offlineTime += (System.currentTimeMillis() - latestStamp);
             presence.setStatus(OnlineStatus.INVISIBLE);
         }
+        //Only called if change occured (or if main butler is online on startup)
         latestStamp = System.currentTimeMillis();
 
         Bot.dispatcher.setCommandsEnabled(!online);
