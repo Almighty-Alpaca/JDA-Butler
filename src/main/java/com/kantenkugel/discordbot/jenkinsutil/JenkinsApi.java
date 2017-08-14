@@ -66,39 +66,4 @@ public class JenkinsApi
         }
         return null;
     }
-
-    //TODO: Remove before merging to master
-    public static void main(String[] args)
-    {
-        Bot.httpClient = new OkHttpClient.Builder().build();
-
-        JenkinsBuild build = getLastSuccessfulBuild();
-        System.out.println("Build:  " + build.buildNum);
-        System.out.println("Time:   " + build.buildTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
-        System.out.println("Status: " + build.status);
-        System.out.println("URL:    " + build.getUrl());
-        System.out.println("Artifacts:");
-        for (JenkinsBuild.Artifact artifact : build.artifacts.values())
-        {
-            System.out.println(" -Name:  " + artifact.fileName);
-            System.out.println("  Ident: " + artifact.descriptor);
-            System.out.println("  Parts: " + artifact.fileNameParts);
-            System.out.println("  End:   " + artifact.fileEnding);
-            System.out.println("  URL:   " + artifact.getLink());
-        }
-        System.out.println("Commits:");
-        for (JenkinsChange change : build.changes)
-        {
-            System.out.println(" -ID:     " + change.getShortId());
-            System.out.println("  Time:   " + change.commitTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
-            System.out.println("  Msg:    " + change.commitMsg);
-            System.out.println("  Author: " + change.author);
-            System.out.println("  Files Changed: " + change.changedFiles.size());
-        }
-        System.out.println("Culprits:");
-        for (JenkinsUser culprit : build.culprits)
-        {
-            System.out.println("  " + culprit);
-        }
-    }
 }

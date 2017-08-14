@@ -138,7 +138,6 @@ public class Bot
 
     public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException
     {
-        //TODO: customize?
         Bot.httpClient = new OkHttpClient.Builder().build();
 
         EventListener.executor.submit(JDoc::init);
