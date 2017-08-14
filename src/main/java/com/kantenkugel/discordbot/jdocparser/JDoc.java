@@ -17,19 +17,16 @@
 
 package com.kantenkugel.discordbot.jdocparser;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import com.almightyalpaca.discord.jdabutler.Bot;
+import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
+import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import org.apache.commons.lang3.tuple.Pair;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.regex.PatternSyntaxException;
@@ -188,38 +185,32 @@ public class JDoc {
     }
 
     private static void download() {
-        JDocUtil.LOG.info("Downloading JDA docs...");
-        try {
-            final HttpResponse<String> response = Unirest.get(JDocUtil.ARTIFACT_URL).asString();
-            if (response.getStatus() < 300 && response.getStatus() > 199) {
-                final JSONArray artifacts = new JSONObject(response.getBody()).getJSONArray("artifacts");
-                for (int i = 0; i < artifacts.length(); i++) {
-                    final JSONObject artifact = artifacts.getJSONObject(i);
-                    if (artifact.getString("fileName").endsWith("javadoc.jar")) {
-                        if(download(artifact.getString("relativePath"), JDocUtil.LOCAL_DOC_PATH))
-                            JDocUtil.LOG.info("Done downloading JDA docs");
-                        break;
-                    }
+        JenkinsBuild lastBuild = JenkinsApi.getLastSuccessfulBuild();
+        if(lastBuild != null)
+        {
+            JDocUtil.LOG.info("Downloading JDA docs...");
+            ResponseBody body = null;
+            try {
+                String artifactUrl = lastBuild.artifacts.get("JDA-javadoc").getLink();
+                Response res = Bot.httpClient.newCall(new Request.Builder().url(artifactUrl).get().build()).execute();
+                if (!res.isSuccessful())
+                {
+                    JDocUtil.LOG.warn("OkHttp returned failure for " + artifactUrl);
+                    return;
                 }
+                body = res.body();
+                final InputStream is = body.byteStream();
+                Files.copy(is, JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
+                is.close();
+                JDocUtil.LOG.info("Done downloading JDA docs");
+            } catch(Exception e) {
+                JDocUtil.LOG.log(e);
             }
-        } catch (UnirestException e) {
-            JDocUtil.LOG.log(e);
+            finally
+            {
+                if(body != null)
+                    body.close();
+            }
         }
-    }
-
-    private static boolean download(String relPath, Path destination) {
-        try {
-            final URL artifactUrl = new URL(JDocUtil.JENKINSBASE + "artifact/" + relPath);
-            final URLConnection connection = artifactUrl.openConnection();
-            connection.setConnectTimeout(5000);
-            connection.setReadTimeout(5000);
-            final InputStream is = connection.getInputStream();
-            Files.copy(is, destination, StandardCopyOption.REPLACE_EXISTING);
-            is.close();
-            return true;
-        } catch(IOException e) {
-            JDocUtil.LOG.log(e);
-        }
-        return false;
     }
 }

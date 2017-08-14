@@ -17,7 +17,7 @@
 
 package com.kantenkugel.discordbot.jdocparser;
 
-import com.almightyalpaca.discord.jdabutler.JDAUtil;
+import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.net.MalformedURLException;
@@ -32,9 +32,7 @@ public class JDocUtil {
 
     static final Path LOCAL_DOC_PATH = Paths.get("jda-docs.jar");
 
-    static final String JENKINSBASE = "http://" + JDAUtil.JENKINS_BASE.get() + ":8080/job/JDA/lastSuccessfulBuild/";
-    public static final String JDOCBASE = JENKINSBASE + "javadoc/";
-    static final String ARTIFACT_URL = JENKINSBASE + "api/json?tree=artifacts[*]";
+    public static final String JDOCBASE = JenkinsApi.LAST_BUILD_URL + "javadoc/";
 
     static final String JDA_CODE_BASE = "net/dv8tion/jda";
 

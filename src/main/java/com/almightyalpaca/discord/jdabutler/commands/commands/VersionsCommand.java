@@ -1,9 +1,9 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
-import com.almightyalpaca.discord.jdabutler.Lavaplayer;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.kantenkugel.discordbot.versioncheck.VersionChecker;
+import com.kantenkugel.discordbot.versioncheck.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -27,8 +27,17 @@ public class VersionsCommand implements Command
 
         eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
-        eb.addField("JDA", "[" + Bot.config.getString("jda.version.name") + "](http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/)", true);
-        eb.addField("Lavaplayer", "[" + Lavaplayer.getLatestVersion() + "](https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord)", true);
+        for (VersionedItem versionedItem : VersionChecker.getVersionedItems())
+        {
+            if (versionedItem.getUrl() != null)
+            {
+                eb.addField(versionedItem.getName(), String.format("[%s](%s)", versionedItem.getVersion(), versionedItem.getUrl()), true);
+            }
+            else
+            {
+                eb.addField(versionedItem.getName(), versionedItem.getVersion(), true);
+            }
+        }
 
         channel.sendMessage(eb.build()).queue();
     }
