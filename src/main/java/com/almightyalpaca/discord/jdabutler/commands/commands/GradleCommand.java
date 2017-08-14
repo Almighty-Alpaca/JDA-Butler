@@ -1,23 +1,23 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.GradleUtil;
-import com.almightyalpaca.discord.jdabutler.Lavaplayer;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.kantenkugel.discordbot.versioncheck.VersionChecker;
+import com.kantenkugel.discordbot.versioncheck.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class GradleCommand implements Command
 {
@@ -27,25 +27,34 @@ public class GradleCommand implements Command
         final MessageBuilder mb = new MessageBuilder();
         final EmbedBuilder eb = new EmbedBuilder();
 
-        final boolean lavaplayer = content.contains("player");
         final boolean pretty = content.contains("pretty");
 
+        List<VersionedItem> deps = new ArrayList<>(3);
+        deps.add(VersionChecker.getItem("jda"));
+
         String author = "Gradle dependencies for JDA";
-        if (lavaplayer)
+        if (content.contains("player"))
+        {
+            deps.add(VersionChecker.getItem("lavaplayer"));
             author += " and Lavaplayer";
+        }
+        if (content.toLowerCase().contains("util"))
+        {
+            deps.add(VersionChecker.getItem("jda-utilities"));
+            author += " and JDA-Utilities";
+        }
 
         eb.setAuthor(author, null, EmbedUtil.JDA_ICON);
 
         String field = "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n";
 
-        final Collection<Pair<String, String>> repositories = new ArrayList<>(2);
-        final Collection<Triple<String, String, String>> dependencies = new ArrayList<>(2);
-
-        dependencies.add(new ImmutableTriple<>("net.dv8tion", "JDA", Bot.config.getString("jda.version.name")));
-        repositories.add(new ImmutablePair<>("jcenter()", null));
-
-        if (lavaplayer)
-            dependencies.add(new ImmutableTriple<>(Lavaplayer.GROUP_ID, Lavaplayer.ARTIFACT_ID, Lavaplayer.getLatestVersion()));
+        final Collection<Triple<String, String, String>> dependencies = deps.stream()
+                .map(item -> Triple.of(item.getGroupId(), item.getArtifactId(), item.getVersion()))
+                .collect(Collectors.toList());
+        final Collection<Pair<String, String>> repositories = deps.stream()
+                .map(item -> item.getRepoType().getGradleImport())
+                .distinct()
+                .collect(Collectors.toList());
 
         field += GradleUtil.getDependencyBlock(dependencies, pretty) + "\n";
         field += "\n";
