@@ -62,11 +62,21 @@ public class Dispatcher extends ListenerAdapter
     @Override
     public void onGuildMessageReceived(final GuildMessageReceivedEvent event)
     {
-        if(!shouldHandleCommands)
-            return;
-
         final String prefix = Bot.config.getString("prefix");
-        final String message = event.getMessage().getRawContent();
+        String message = event.getMessage().getRawContent();
+
+        if (!shouldHandleCommands)
+        {
+            if (message.startsWith(prefix) && message.startsWith("fake", prefix.length()))
+            {
+                message = prefix + message.substring(prefix.length() + 4); //change back to !cmd
+            }
+            else
+            {
+                return;
+            }
+        }
+
         final TextChannel channel = event.getChannel();
 
         // In DAPI only listen to messages in #java_jda
