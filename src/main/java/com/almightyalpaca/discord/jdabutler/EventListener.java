@@ -82,7 +82,7 @@ public class EventListener extends ListenerAdapter
                                         GradleProjectDropboxUploader.uploadProject();
                                     });
 
-                                    if (Bot.config.getBoolean("testing", true))
+                                    if (Bot.isStealth)
                                     {
                                         Bot.LOG.debug("Skipping announcement!");
                                         return;
@@ -98,7 +98,7 @@ public class EventListener extends ListenerAdapter
 
                                     mb.append(Bot.getRoleJdaUpdates());
 
-                                    eb.setAuthor("JDA 3 version " + changedItem.getVersion() + " has been released\n", JenkinsApi.JENKINS_BASE + build, EmbedUtil.JDA_ICON);
+                                    eb.setAuthor("JDA version " + changedItem.getVersion() + " has been released\n", JenkinsApi.JENKINS_BASE + build, EmbedUtil.JDA_ICON);
 
                                     EmbedUtil.setColor(eb);
 

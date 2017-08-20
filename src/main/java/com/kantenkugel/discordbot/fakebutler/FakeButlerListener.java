@@ -97,6 +97,6 @@ public class FakeButlerListener implements EventListener
         //Only called if change occured (or if main butler is online on startup)
         latestStamp = System.currentTimeMillis();
 
-        Bot.dispatcher.setCommandsEnabled(!online);
+        Bot.isStealth = online;
     }
 }

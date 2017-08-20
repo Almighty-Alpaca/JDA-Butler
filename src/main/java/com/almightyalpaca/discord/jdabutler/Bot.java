@@ -38,6 +38,7 @@ public class Bot
     public static Dispatcher dispatcher;
     public static final String INVITE_LINK = "https://discord.gg/0hMr4ce0tIk3pSjp";
     public static JDAImpl jda;
+    public static boolean isStealth = false;
 
     public static OkHttpClient httpClient;
 
