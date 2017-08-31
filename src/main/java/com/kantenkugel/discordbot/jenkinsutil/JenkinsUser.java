@@ -16,6 +16,6 @@ public class JenkinsUser
     @Override
     public String toString()
     {
-        return fullName + " (" + id + ")";
+        return String.format("CI User %s (%s)", fullName, id);
     }
 }

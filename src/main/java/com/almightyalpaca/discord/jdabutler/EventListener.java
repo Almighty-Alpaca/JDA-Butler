@@ -92,9 +92,7 @@ public class EventListener extends ListenerAdapter
 
                                     final MessageBuilder mb = new MessageBuilder();
 
-                                    final String timestamp = FormattingUtil.formatTimestap(jenkinsBuild.buildTime.toEpochSecond() * 1000);
-
-                                    FormattingUtil.setFooter(eb, jenkinsBuild.culprits, timestamp);
+                                    FormattingUtil.setFooter(eb, jenkinsBuild.culprits, jenkinsBuild.buildTime);
 
                                     mb.append(Bot.getRoleJdaUpdates());
 

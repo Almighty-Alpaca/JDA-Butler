@@ -7,6 +7,7 @@ import net.dv8tion.jda.core.entities.User;
 
 import java.text.DateFormat;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -54,9 +55,9 @@ public class FormattingUtil
 
     }
 
-    public static void setFooter(final EmbedBuilder eb, final List<JenkinsUser> culprits, final String timestamp)
+    public static void setFooter(final EmbedBuilder eb, final List<JenkinsUser> culprits, OffsetDateTime timestamp)
     {
-
+        eb.setTimestamp(timestamp);
         if (culprits.size() == 1)
         {
             JenkinsUser author = culprits.get(0);
@@ -65,26 +66,38 @@ public class FormattingUtil
             if (description != null)
             {
                 User user = null;
+                String friendlyName = null;
 
-                for (final String line : description.split("\n"))
-                    if (line.startsWith("discord: "))
+                for (final String line : description.split("\r?\n"))
+                {
+                    if (line.startsWith("discord:"))
                     {
-                        user = Bot.jda.getUserById(line.substring(7));
-                        break;
+                        try
+                        {
+                            user = Bot.jda.getUserById(line.substring(8).trim());
+                            break;
+                        }
+                        catch(NumberFormatException ignored) {}
                     }
+                    else if (line.startsWith("name:"))
+                    {
+                        friendlyName = line.substring(5).trim();
+                    }
+                }
 
                 if (user != null)
-                    eb.setFooter(user.getName() + "   |    " + timestamp, user.getAvatarUrl());
+                    eb.setFooter(user.getName(), user.getAvatarUrl());
+                else if (friendlyName != null)
+                    eb.setFooter(friendlyName, null);
                 else
-                    eb.setFooter(author.toString() + "   |   " + timestamp, null);
+                    eb.setFooter(author.toString(), null);
             }
             else
-                eb.setFooter(author.toString() + "   |   " + timestamp, null);
+                eb.setFooter(author.toString(), null);
         }
         else if (culprits.size() > 1)
-            eb.setFooter("multiple users   |   " + timestamp, null);
+            eb.setFooter("Multiple users", null);
         else
-            eb.setFooter(timestamp, null);
-
+            eb.setFooter("Unknown user", null);
     }
 }
