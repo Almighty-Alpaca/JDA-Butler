@@ -68,7 +68,7 @@ public class FormattingUtil
                 User user = null;
                 String friendlyName = null;
 
-                for (final String line : description.split("\n"))
+                for (final String line : description.split("\r?\n"))
                 {
                     if (line.startsWith("discord:"))
                     {
