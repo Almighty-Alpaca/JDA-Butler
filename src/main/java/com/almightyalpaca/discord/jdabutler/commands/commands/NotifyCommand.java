@@ -4,7 +4,6 @@ import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,12 +40,12 @@ public class NotifyCommand implements Command
                 {
                     logRoleRemoval(sender, Bot.getRoleJdaUpdates());
                     logRoleRemoval(sender, Bot.getRoleLavaplayerUpdates());
-                }, Bot.LOG::log);
+                }, Bot.LOG::fatal);
             }
             else
             {
                 guild.getController().addRolesToMember(member, roles)
-                        .queue(v -> roles.forEach( r -> logRoleAddition(sender, r)), Bot.LOG::log);
+                        .queue(v -> roles.forEach( r -> logRoleAddition(sender, r)), Bot.LOG::fatal);
             }
 
         }
@@ -64,12 +63,12 @@ public class NotifyCommand implements Command
             if (member.getRoles().contains(role))
             {
                 guild.getController().removeSingleRoleFromMember(member, role)
-                        .queue(v -> logRoleRemoval(sender, role), Bot.LOG::log);
+                        .queue(v -> logRoleRemoval(sender, role), Bot.LOG::fatal);
             }
             else
             {
                 guild.getController().addSingleRoleToMember(member, role)
-                        .queue(v -> logRoleAddition(sender, role), Bot.LOG::log);
+                        .queue(v -> logRoleAddition(sender, role), Bot.LOG::fatal);
             }
         }
 
@@ -79,13 +78,13 @@ public class NotifyCommand implements Command
     private void logRoleRemoval(final User sender, final Role role)
     {
         final String msg = String.format("Removed %#s (%d) from %s", sender, sender.getIdLong(), role.getName());
-        Bot.LOG.log(SimpleLog.Level.WARNING, msg);
+        Bot.LOG.warn(msg);
     }
 
     private void logRoleAddition(final User sender, final Role role)
     {
         final String msg = String.format("Added %#s (%d) to %s", sender, sender.getIdLong(), role.getName());
-        Bot.LOG.log(SimpleLog.Level.WARNING, msg);
+        Bot.LOG.warn(msg);
     }
 
     @Override

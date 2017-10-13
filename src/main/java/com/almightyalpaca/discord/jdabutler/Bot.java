@@ -13,22 +13,15 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.MessageBuilder.SplitPolicy;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.utils.SimpleLog;
-import net.dv8tion.jda.core.utils.SimpleLog.Level;
-import net.dv8tion.jda.core.utils.SimpleLog.LogListener;
 import okhttp3.OkHttpClient;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class Bot
@@ -46,8 +39,8 @@ public class Bot
 
     public static final SimpleLog LOG = SimpleLog.getLog("Bot");
 
-    private static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("HH:mm:ss");
-    private static final String LOGFORMAT = "[%time%] [%level%] [%name%]: %text%";
+//    private static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("HH:mm:ss");
+//    private static final String LOGFORMAT = "[%time%] [%level%] [%name%]: %text%";
 
     public static TextChannel getChannelAnnouncements()
     {
@@ -144,8 +137,6 @@ public class Bot
 
         EventListener.executor.submit(JDoc::init);
 
-        SimpleLog.addFileLogs(new File("out.log"), new File("err.log"));
-
         Bot.config = ConfigFactory.getConfig(new File("config.json"));
 
         final JDABuilder builder = new JDABuilder(AccountType.BOT);
@@ -165,37 +156,37 @@ public class Bot
 
         Bot.jda = (JDAImpl) builder.buildBlocking();
 
-        SimpleLog.addListener(new LogListener()
-        {
-
-            @Override
-            public void onError(final SimpleLog log, final Throwable t)
-            {
-                log.log(Level.FATAL, ExceptionUtils.getStackTrace(t));
-            }
-
-            @Override
-            public void onLog(final SimpleLog log, final Level level, final Object message)
-            {
-                try
-                {
-                    if (level.getPriority() >= Level.INFO.getPriority())
-                    {
-                        String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String.valueOf(message)) + "`";
-                        if (format.length() >= 2000)
-                            format = format.substring(0, 1999);
-                        final TextChannel channel = Bot.getChannelLogs();
-                        if (channel != null)
-                            for (final Message m : new MessageBuilder().append(format).buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE))
-                                channel.sendMessage(m).queue();
-                    }
-                }
-                catch (final Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        });
+//        SimpleLog.addListener(new LogListener()
+//        {
+//
+//            @Override
+//            public void onError(final SimpleLog log, final Throwable t)
+//            {
+//                log.log(Level.FATAL, ExceptionUtils.getStackTrace(t));
+//            }
+//
+//            @Override
+//            public void onLog(final SimpleLog log, final Level level, final Object message)
+//            {
+//                try
+//                {
+//                    if (level.getPriority() >= Level.INFO.getPriority())
+//                    {
+//                        String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String.valueOf(message)) + "`";
+//                        if (format.length() >= 2000)
+//                            format = format.substring(0, 1999);
+//                        final TextChannel channel = Bot.getChannelLogs();
+//                        if (channel != null)
+//                            for (final Message m : new MessageBuilder().append(format).buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE))
+//                                channel.sendMessage(m).queue();
+//                    }
+//                }
+//                catch (final Exception e)
+//                {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
 
         EventListener.start();
     }

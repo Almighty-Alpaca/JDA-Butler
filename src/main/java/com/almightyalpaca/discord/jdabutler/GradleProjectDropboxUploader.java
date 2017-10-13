@@ -98,7 +98,7 @@ public class GradleProjectDropboxUploader
         }
         catch (final IOException | InterruptedException | ZipException e)
         {
-            Bot.LOG.log(e);
+            Bot.LOG.fatal(e);
         }
     }
 
@@ -127,7 +127,7 @@ public class GradleProjectDropboxUploader
         }
         catch (DbxException | IOException e)
         {
-            Bot.LOG.log(e);
+            Bot.LOG.fatal(e);
         }
 
     }

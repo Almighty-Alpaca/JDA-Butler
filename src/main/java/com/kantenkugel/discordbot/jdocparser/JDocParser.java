@@ -39,7 +39,7 @@ public class JDocParser {
     //return, funcName, parameters
     public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z.<>?\\[\\]]+)\\s+([a-zA-Z][a-zA-Z0-9]+)\\(([@a-zA-Z0-9\\s.,<>?\\[\\]]*)\\)");
     //type, name
-    public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("(?:[a-z]+\\.)*([a-zA-Z][a-zA-Z0-9.<>\\[\\]]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
+    public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("(?:[a-z]+\\.)*([a-zA-Z][a-zA-Z0-9.<>?\\[\\]]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
     static Map<String, ClassDocumentation> parse() {
         JDocUtil.LOG.info("Parsing docs-files");
@@ -49,12 +49,12 @@ public class JDocParser {
                 try {
                     parse(entry.getName(), file.getInputStream(entry), docs);
                 } catch (final IOException e) {
-                    JDocUtil.LOG.log(e);
+                    JDocUtil.LOG.fatal(e);
                 }
             });
             JDocUtil.LOG.info("Done parsing docs-files");
         } catch (final Exception e) {
-            JDocUtil.LOG.log(e);
+            JDocUtil.LOG.fatal(e);
         }
         return docs;
     }
@@ -154,12 +154,12 @@ public class JDocParser {
             docs.put(fullName.toLowerCase(), classDoc);
         } catch (final IOException | NullPointerException ex) {
             JDocUtil.LOG.fatal("Got excaption for element " + fullName);
-            JDocUtil.LOG.log(ex);
+            JDocUtil.LOG.fatal(ex);
         }
         try {
             inputStream.close();
         } catch (final IOException e) {
-            JDocUtil.LOG.log(e);
+            JDocUtil.LOG.fatal(e);
         }
     }
 
