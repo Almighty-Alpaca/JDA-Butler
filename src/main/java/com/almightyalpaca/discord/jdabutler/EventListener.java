@@ -13,7 +13,6 @@ import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.core.utils.SimpleLog;
 
 import java.util.List;
 import java.util.Set;
@@ -145,7 +144,7 @@ public class EventListener extends ListenerAdapter
                 catch (final Exception e)
                 {
                     Bot.LOG.fatal("Checking updates errored");
-                    Bot.LOG.log(e);
+                    Bot.LOG.fatal(e);
                 }
             }, 0, 30, TimeUnit.SECONDS);
         }
@@ -167,7 +166,7 @@ public class EventListener extends ListenerAdapter
 
             final AuditableRestAction<Void> action = guild.getController().addSingleRoleToMember(member, role).reason("Auto Role");
             final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), role.getName());
-            action.queue(v -> Bot.LOG.log(SimpleLog.Level.WARNING, message), Bot.LOG::log);
+            action.queue(v -> Bot.LOG.warn(message), Bot.LOG::fatal);
         }
     }
 

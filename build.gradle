@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
 	// JDA
-	compile group: 'net.dv8tion', name: 'JDA', version: '3.3.0_263'
+	compile group: 'net.dv8tion', name: 'JDA', version: '3.3.1_287'
 
 	// Apache lang3 (Pair, Triple, ExceptionUtils,...)
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
@@ -50,6 +50,9 @@ dependencies {
 
     // Unirest until I can get myself to remove it from the code
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
+
+	//Logback
+	compile 'ch.qos.logback:logback-classic:1.2.3'
 
 	testCompile 'junit:junit:4.12'
 }

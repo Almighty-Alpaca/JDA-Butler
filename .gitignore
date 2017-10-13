@@ -1,3 +1,12 @@
+### Project ###
+logs
+err.log
+out.log
+config.json
+/.idea/
+exmaple gradle project for jda.zip
+gradle project/
+gradle-cache/
 
 # Created by https://www.gitignore.io/api/windows,osx,linux,eclipse,intellij,java,gradle
 
@@ -198,12 +207,3 @@ gradle-app.setting
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
-
-### Project ###
-err.log
-out.log
-config.json
-/.idea/
-exmaple gradle project for jda.zip
-gradle project/
-gradle-cache/

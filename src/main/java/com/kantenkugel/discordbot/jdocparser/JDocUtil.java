@@ -113,7 +113,7 @@ public class JDocUtil {
             URL result = new URL(base, href);
             return result.toString();
         } catch(MalformedURLException e) {
-            LOG.log(e);
+            LOG.fatal(e);
         }
         return null;
     }
