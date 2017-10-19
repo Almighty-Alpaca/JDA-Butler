@@ -57,7 +57,7 @@ public class EventListener extends ListenerAdapter
                         switch (changedItem.getName())
                         {
                             case "JDA":
-                                final int build = Integer.valueOf(changedItem.getVersion().split("_")[1]);
+                                final int build = Integer.parseInt(changedItem.getVersion().split("_")[1]);
                                 if (build != Bot.config.getInt("jda.version.build", -1))
                                 {
                                     Bot.LOG.debug("Update found!");

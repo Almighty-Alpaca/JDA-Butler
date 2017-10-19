@@ -1,6 +1,5 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.FormattingUtil;
 import com.almightyalpaca.discord.jdabutler.JDAUtil;
@@ -38,7 +37,7 @@ public class ChangelogCommand implements Command
             final int end;
 
             if (args.size() == 0)
-                start = end = Bot.config.getInt("jda.version.build");
+                start = end = JenkinsApi.getLastSuccessfulBuild().buildNum;
             else if (args.size() == 1)
                 start = end = args.get(0);
             else

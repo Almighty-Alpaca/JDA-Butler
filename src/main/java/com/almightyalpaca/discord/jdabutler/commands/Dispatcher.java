@@ -55,12 +55,15 @@ public class Dispatcher extends ListenerAdapter
     @Override
     public void onGuildMessageReceived(final GuildMessageReceivedEvent event)
     {
+        if(event.getAuthor().isBot() || event.getAuthor().isFake())
+            return;
+
         final String prefix = Bot.config.getString("prefix");
         final String message = event.getMessage().getRawContent();
         final TextChannel channel = event.getChannel();
 
         // In DAPI only listen to messages in #java_jda
-        if (channel.getGuild().getId().equals("81384788765712384") && !channel.getId().equals("129750718931271681"))
+        if (channel.getGuild().getIdLong() == 81384788765712384L && channel.getIdLong() != 129750718931271681L)
             return;
 
         if (message.toLowerCase().startsWith(prefix.toLowerCase()))
