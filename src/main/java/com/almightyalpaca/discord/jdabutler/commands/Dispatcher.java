@@ -83,14 +83,14 @@ public class Dispatcher extends ListenerAdapter
             for (final Command c : this.getCommands())
                 if (message.toLowerCase().startsWith(prefix.toLowerCase() + c.getName().toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + c.getName()))
                 {
-                    this.executeCommand(c, c.getName(), prefix, event);
+                    this.executeCommand(c, c.getName(), prefix, message, event);
                     return;
                 }
                 else
                     for (final String alias : c.getAliases())
                         if (message.toLowerCase().startsWith(prefix.toLowerCase() + alias.toLowerCase() + ' ') || message.equalsIgnoreCase(prefix + alias))
                         {
-                            this.executeCommand(c, alias, prefix, event);
+                            this.executeCommand(c, alias, prefix, message, event);
                             return;
                         }
     }
@@ -117,13 +117,14 @@ public class Dispatcher extends ListenerAdapter
         return true;
     }
 
-    private void executeCommand(final Command c, final String alias, final String prefix, final GuildMessageReceivedEvent event)
+    private void executeCommand(final Command c, final String alias, final String prefix, final String message,
+                                final GuildMessageReceivedEvent event)
     {
         this.pool.submit(() ->
         {
             try
             {
-                final String content = this.removePrefix(alias, prefix, event);
+                final String content = this.removePrefix(alias, prefix, message);
                 Bot.LOG.info("Dispatching command '" + c.getName().toLowerCase() + "' with: " + content);
                 c.dispatch(event.getAuthor(), event.getChannel(), event.getMessage(), content, event);
             }
@@ -135,10 +136,9 @@ public class Dispatcher extends ListenerAdapter
         });
     }
 
-    private String removePrefix(final String c, final String prefix, final GuildMessageReceivedEvent event)
+    private String removePrefix(final String commandName, final String prefix, String content)
     {
-        String content = event.getMessage().getRawContent();
-        content = content.substring(c.length() + prefix.length());
+        content = content.substring(commandName.length() + prefix.length());
         if (content.startsWith(" "))
             content = content.substring(1);
         return content;
