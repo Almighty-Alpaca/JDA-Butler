@@ -119,7 +119,7 @@ public class JDocUtil {
     }
 
     static String fixSignature(String sig) {
-        return sig.replaceAll("\\b(?:[a-z]+\\.)+([A-Z])", "$1").replaceAll("\\s{2,}", " ");
+        return sig.replace("\u200B", "").replaceAll("\\b(?:[a-z]+\\.)+([A-Z])", "$1").replaceAll("\\s{2,}", " ");
     }
 
 }
