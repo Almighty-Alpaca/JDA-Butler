@@ -1,5 +1,7 @@
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jdocparser.Documentation;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
+import okhttp3.OkHttpClient;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -12,6 +14,7 @@ public class JDocParserTest {
 
     @BeforeClass
     public static void init() {
+        Bot.httpClient = new OkHttpClient.Builder().build();
         JDoc.init();
     }
 
@@ -57,8 +60,8 @@ public class JDocParserTest {
 
     @Test
     public void getValue() {
-        List<Documentation> docs = JDoc.get("simplelog.name");
-        assertEquals("SimpleLog.name should be found", 1, docs.size());
+        List<Documentation> docs = JDoc.get("messageembed.TITLE_MAX_LENGTH");
+        assertEquals("MessageEmbed.TITLE_MAX_LENGTH should be found", 1, docs.size());
     }
 
     @Test
@@ -71,5 +74,15 @@ public class JDocParserTest {
     public void getFuzzyResult() {
         List<Documentation> docs = JDoc.get("restaction.queue");
         assertEquals("restaction.queue should find 3 contestants", 3, docs.size());
+    }
+
+    @Test
+    public void checkURL() {
+        List<Documentation> message = JDoc.get("Message");
+        assertEquals("Message should be found as single result", 1, message.size());
+        assertEquals("URL of Message docs mismatches",
+                "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/javadoc/net/dv8tion/jda/core/entities/Message.html",
+                message.get(0).getUrl()
+        );
     }
 }

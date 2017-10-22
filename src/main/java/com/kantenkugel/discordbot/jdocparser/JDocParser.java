@@ -94,7 +94,7 @@ public class JDocParser {
             Document document = Jsoup.parse(content);
             Element titleElem = getSingleElementByClass(document, "title");
             final String classSig = JDocUtil.fixSpaces(titleElem.text());
-            final String pack = JDocUtil.fixSpaces(titleElem.previousElementSibling().text());
+            final String pack = JDocUtil.fixSpaces(titleElem.previousElementSibling().children().last().text());
             final String link = JDocUtil.getLink(pack, fullName);
             Element descriptionElement = getSingleElementByQuery(document, ".description .block");
             final String description = descriptionElement == null ? "" : JDocUtil.formatText(descriptionElement.html(), link);
