@@ -20,7 +20,6 @@ package com.kantenkugel.discordbot.jdocparser;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -29,7 +28,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -42,16 +40,16 @@ public class JDoc {
     private static final Map<String, String> javaJavaDocs = new HashMap<>();
 
     public static List<Documentation> get(final String name) {
-        final String[] split = name.toLowerCase().split("[#\\.]");
+        final String[] split = name.toLowerCase().split("[#.]");
         JDocParser.ClassDocumentation classDoc;
         synchronized(docs) {
             if (!docs.containsKey(split[0]))
-                return new ArrayList<>(0);
+                return Collections.emptyList();
             classDoc = docs.get(split[0]);
         }
         for(int i=1; i < split.length - 1; i++) {
             if(!classDoc.subClasses.containsKey(split[i]))
-                return new ArrayList<>(0);
+                return Collections.emptyList();
             classDoc = classDoc.subClasses.get(split[i]);
         }
 
@@ -69,25 +67,29 @@ public class JDoc {
                 fixedSearchObj += "()";
                 fuzzy = true;
             }
-            String[] methodParts = fixedSearchObj.split("[\\(\\)]");
+            String[] methodParts = fixedSearchObj.split("[()]");
             String methodName = methodParts[0];
             if(classDoc.methodDocs.containsKey(methodName.toLowerCase())) {
                 return getMethodDocs(classDoc, methodName, fixedSearchObj, fuzzy);
             } else if(classDoc.inheritedMethods.containsKey(methodName.toLowerCase())) {
                 return get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
             }
-            return new ArrayList<>(0);
+            return Collections.emptyList();
         }
     }
 
     public static List<Documentation> getJava(final String name) {
-        final String[] split = name.toLowerCase().split("[#\\.]");
+        final String[] noArgNames = name.toLowerCase().split("\\(")[0].split("[#.]");
+        String className = String.join(".", Arrays.copyOf(noArgNames, noArgNames.length - 1));
         String urlPath;
         synchronized(javaJavaDocs) {
-            urlPath = javaJavaDocs.get(split[0]);
+            urlPath = javaJavaDocs.get(name);
+            if(urlPath == null)
+                urlPath = javaJavaDocs.get(className);
+            else
+                className = name;
             if (urlPath == null)
                 return Collections.emptyList();
-
         }
 
         Map<String, JDocParser.ClassDocumentation> resultMap = new HashMap<>();
@@ -100,11 +102,6 @@ public class JDoc {
             }
             is = res.body().byteStream();
             JDocParser.parse(JDocUtil.JAVA_JDOCS_PREFIX, urlPath, is, resultMap);
-            if(resultMap.size() != 1) {
-                JDocUtil.LOG.warn("Parser returned amount of results != 1");
-                return Collections.emptyList();
-            }
-
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
@@ -112,12 +109,17 @@ public class JDoc {
                 try { is.close(); } catch(Exception ignored) {}
         }
 
-        JDocParser.ClassDocumentation doc = resultMap.values().iterator().next();
+        if(!resultMap.containsKey(className)) {
+            JDocUtil.LOG.warn("Parser didn't return wanted docs");
+            return Collections.emptyList();
+        }
 
-        if(split.length == 1)
+        JDocParser.ClassDocumentation doc = resultMap.get(className);
+
+        if(noArgNames.length == 1 || className.equals(name))
             return Collections.singletonList(doc);
 
-        String searchObj = split[split.length - 1];
+        String searchObj = name.substring(className.length() + 1);//class name + seperator dot
         if(doc.classValues.containsKey(searchObj)) {
             return Collections.singletonList(doc.classValues.get(searchObj));
         } else {
@@ -127,7 +129,7 @@ public class JDoc {
                 fixedSearchObj += "()";
                 fuzzy = true;
             }
-            String[] methodParts = fixedSearchObj.split("[\\(\\)]");
+            String[] methodParts = fixedSearchObj.split("[()]");
             String methodName = methodParts[0];
             if(doc.methodDocs.containsKey(methodName.toLowerCase())) {
                 return getMethodDocs(doc, methodName, fixedSearchObj, fuzzy);
