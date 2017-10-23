@@ -47,7 +47,7 @@ public class JDocParser {
         try (final JarFile file = new JarFile(JDocUtil.LOCAL_DOC_PATH.toFile())) {
             file.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(JDocUtil.JDA_CODE_BASE) && entry.getName().endsWith(".html")).forEach(entry -> {
                 try {
-                    parse(entry.getName(), file.getInputStream(entry), docs);
+                    parse(JDocUtil.JDOCBASE, entry.getName(), file.getInputStream(entry), docs);
                 } catch (final IOException e) {
                     JDocUtil.LOG.fatal(e);
                 }
@@ -79,7 +79,7 @@ public class JDocParser {
         return elementsByQuery.first();
     }
 
-    private static void parse(final String name, final InputStream inputStream, Map<String, ClassDocumentation> docs) {
+    static void parse(final String jdocBase, final String name, final InputStream inputStream, Map<String, ClassDocumentation> docs) {
         final String[] pathSplits = name.split("/");
         final String fileName = pathSplits[pathSplits.length - 1];
         if(!Character.isUpperCase(fileName.charAt(0))) {
@@ -94,8 +94,12 @@ public class JDocParser {
             Document document = Jsoup.parse(content);
             Element titleElem = getSingleElementByClass(document, "title");
             final String classSig = JDocUtil.fixSpaces(titleElem.text());
-            final String pack = JDocUtil.fixSpaces(titleElem.previousElementSibling().children().last().text());
-            final String link = JDocUtil.getLink(pack, fullName);
+            Element packageElem = titleElem.previousElementSibling();
+            if(packageElem.children().size() > 1) {
+                packageElem = packageElem.children().last();
+            }
+            final String pack = JDocUtil.fixSpaces(packageElem.text());
+            final String link = JDocUtil.getLink(jdocBase, pack, fullName);
             Element descriptionElement = getSingleElementByQuery(document, ".description .block");
             final String description = descriptionElement == null ? "" : JDocUtil.formatText(descriptionElement.html(), link);
             final ClassDocumentation classDoc = new ClassDocumentation(pack, fullName, classSig, description, classSig.startsWith("Enum"));
@@ -103,7 +107,7 @@ public class JDocParser {
             if(details != null) {
                 //methods
                 Element tmp = getSingleElementByQuery(details, "a[name=\"method.detail\"]");
-                List<DocBlock> docBlock = getDocBlock(tmp, classDoc);
+                List<DocBlock> docBlock = getDocBlock(jdocBase, tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
                         if(!classDoc.methodDocs.containsKey(block.title.toLowerCase()))
@@ -113,7 +117,7 @@ public class JDocParser {
                 }
                 //vars
                 tmp = getSingleElementByQuery(details, "a[name=\"field.detail\"]");
-                docBlock = getDocBlock(tmp, classDoc);
+                docBlock = getDocBlock(jdocBase, tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
                         classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(classDoc, block.title, block.hashLink, block.signature, block.description));
@@ -121,7 +125,7 @@ public class JDocParser {
                 }
                 //enum-values
                 tmp = getSingleElementByQuery(details, "a[name=\"enum.constant.detail\"]");
-                docBlock = getDocBlock(tmp, classDoc);
+                docBlock = getDocBlock(jdocBase, tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
                         classDoc.classValues.put(block.title.toLowerCase(), new ValueDocumentation(classDoc, block.title, block.hashLink, block.signature, block.description));
@@ -191,7 +195,7 @@ public class JDocParser {
         return inherited;
     }
 
-    private static List<DocBlock> getDocBlock(Element elem, ClassDocumentation reference) {
+    private static List<DocBlock> getDocBlock(String jdocBase, Element elem, ClassDocumentation reference) {
         if(elem != null) {
             List<DocBlock> blocks = new ArrayList<>(10);
             String hashLink = null;
@@ -207,7 +211,7 @@ public class JDocParser {
                         if(tmp.tagName().equals("pre")) {
                             signature = JDocUtil.fixSpaces(tmp.text().trim());
                         } else if(tmp.tagName().equals("div") && tmp.className().equals("block")) {
-                            description = JDocUtil.formatText(tmp.html(), JDocUtil.getLink(reference));
+                            description = JDocUtil.formatText(tmp.html(), JDocUtil.getLink(jdocBase, reference));
                         } else if(tmp.tagName().equals("dl")) {
                             String fieldName = null;
                             List<String> fieldValues = new ArrayList<>();
@@ -219,7 +223,7 @@ public class JDocParser {
                                     }
                                     fieldName = JDocUtil.fixSpaces(element.text().trim());
                                 } else if(element.tagName().equals("dd")) {
-                                    fieldValues.add(JDocUtil.formatText(element.html(), JDocUtil.getLink(reference)));
+                                    fieldValues.add(JDocUtil.formatText(element.html(), JDocUtil.getLink(jdocBase, reference)));
                                 }
                             }
                             if(fieldName != null) {
@@ -276,8 +280,8 @@ public class JDocParser {
         }
 
         @Override
-        public String getUrl() {
-            return JDocUtil.getLink(this);
+        public String getUrl(String jdocBase) {
+            return JDocUtil.getLink(jdocBase, this);
         }
 
         @Override
@@ -357,8 +361,8 @@ public class JDocParser {
         }
 
         @Override
-        public String getUrl() {
-            return JDocUtil.getLink(parent) + hashLink;
+        public String getUrl(String jdocBase) {
+            return JDocUtil.getLink(jdocBase, parent) + hashLink;
         }
 
         @Override
@@ -393,8 +397,8 @@ public class JDocParser {
         }
 
         @Override
-        public String getUrl() {
-            return JDocUtil.getLink(parent) + hashLink;
+        public String getUrl(String jDocBase) {
+            return JDocUtil.getLink(jDocBase, parent) + hashLink;
         }
 
         @Override

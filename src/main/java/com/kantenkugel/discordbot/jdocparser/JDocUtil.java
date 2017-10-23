@@ -32,6 +32,9 @@ public class JDocUtil {
 
     static final Path LOCAL_DOC_PATH = Paths.get("jda-docs.jar");
 
+    public static final String JAVA_JDOCS_PREFIX = "https://docs.oracle.com/javase/8/docs/api/";
+    static final String JAVA_JDOCS_CLASS_INDEX = JAVA_JDOCS_PREFIX + "allclasses-noframe.html";
+
     public static final String JDOCBASE = JenkinsApi.LAST_BUILD_URL + "javadoc/";
 
     static final String JDA_CODE_BASE = "net/dv8tion/jda";
@@ -99,12 +102,12 @@ public class JDocUtil {
         return input == null ? null : input.replaceAll("\\h", " ");
     }
 
-    static String getLink(JDocParser.ClassDocumentation doc) {
-        return getLink(doc.pack, doc.className);
+    static String getLink(String jdocBase, JDocParser.ClassDocumentation doc) {
+        return getLink(jdocBase, doc.pack, doc.className);
     }
 
-    static String getLink(String classPackage, String className) {
-        return JDOCBASE + classPackage.replace(".", "/") + '/' + className + ".html";
+    static String getLink(String jdocBase, String classPackage, String className) {
+        return jdocBase + classPackage.replace(".", "/") + '/' + className + ".html";
     }
 
     static String resolveLink(String href, String relativeTo) {

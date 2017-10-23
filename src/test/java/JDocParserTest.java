@@ -1,6 +1,7 @@
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jdocparser.Documentation;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
+import com.kantenkugel.discordbot.jdocparser.JDocUtil;
 import okhttp3.OkHttpClient;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -82,7 +83,7 @@ public class JDocParserTest {
         assertEquals("Message should be found as single result", 1, message.size());
         assertEquals("URL of Message docs mismatches",
                 "http://home.dv8tion.net:8080/job/JDA/lastSuccessfulBuild/javadoc/net/dv8tion/jda/core/entities/Message.html",
-                message.get(0).getUrl()
+                message.get(0).getUrl(JDocUtil.JDOCBASE)
         );
     }
 }
