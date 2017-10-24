@@ -20,16 +20,6 @@
         </encoder>
     </appender>
 
-    <appender name="ERR_WH" class="com.almightyalpaca.discord.jdabutler.util.WebhookAppender">
-        <webhookUrl>WEBHOOK_URL_GOES_HERE</webhookUrl>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>WARN</level>
-        </filter>
-        <encoder>
-            <pattern>[%d{HH:mm:ss}] [%level] %logger{0}: %msg</pattern>
-        </encoder>
-    </appender>
-
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/current.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -50,7 +40,6 @@
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="STDERR"/>
-        <appender-ref ref="ERR_WH"/>
         <appender-ref ref="FILE"/>
     </root>
 </configuration>
