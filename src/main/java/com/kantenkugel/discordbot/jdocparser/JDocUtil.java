@@ -32,6 +32,9 @@ public class JDocUtil {
 
     static final Path LOCAL_DOC_PATH = Paths.get("jda-docs.jar");
 
+    public static final String JAVA_JDOCS_PREFIX = "https://docs.oracle.com/javase/8/docs/api/";
+    static final String JAVA_JDOCS_CLASS_INDEX = JAVA_JDOCS_PREFIX + "allclasses-noframe.html";
+
     public static final String JDOCBASE = JenkinsApi.LAST_BUILD_URL + "javadoc/";
 
     static final String JDA_CODE_BASE = "net/dv8tion/jda";
@@ -62,7 +65,20 @@ public class JDocUtil {
         }
         matcher.appendTail(sb);
         docs = sb.toString();
-        docs = CODE_PATTERN.matcher(docs).replaceAll("`$1`");
+        sb = new StringBuffer();
+        matcher = CODE_PATTERN.matcher(docs);
+        while(matcher.find()) {
+            StringBuffer sb2 = new StringBuffer("`");
+            Matcher codeLinkMatcher = LINK_PATTERN.matcher(matcher.group(1));
+            while(codeLinkMatcher.find()) {
+                codeLinkMatcher.appendReplacement(sb2, codeLinkMatcher.group(4));
+            }
+            codeLinkMatcher.appendTail(sb2);
+            sb2.append('`');
+            matcher.appendReplacement(sb, sb2.toString().replace("$", "\\$"));
+        }
+        matcher.appendTail(sb);
+        docs = sb.toString();
 
         //links
         matcher = LINK_PATTERN.matcher(docs);
@@ -83,6 +99,7 @@ public class JDocUtil {
         //cut remaining html tags
         docs = docs.replaceAll("<[^>]+>", "");
         docs = docs.replace("&lt;", "<").replace("&gt;", ">");
+        docs = docs.replace("&nbsp;", " ");
 
         //space and newline trimming cleanup
         docs = docs.replaceAll("[ ]{2,}", " ");
@@ -99,12 +116,12 @@ public class JDocUtil {
         return input == null ? null : input.replaceAll("\\h", " ");
     }
 
-    static String getLink(JDocParser.ClassDocumentation doc) {
-        return getLink(doc.pack, doc.className);
+    static String getLink(String jdocBase, JDocParser.ClassDocumentation doc) {
+        return getLink(jdocBase, doc.pack, doc.className);
     }
 
-    static String getLink(String classPackage, String className) {
-        return JDOCBASE + classPackage.replace(".", "/") + '/' + className + ".html";
+    static String getLink(String jdocBase, String classPackage, String className) {
+        return jdocBase + classPackage.replace(".", "/") + '/' + className + ".html";
     }
 
     static String resolveLink(String href, String relativeTo) {
