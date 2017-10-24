@@ -83,11 +83,11 @@ public class JDoc {
         String className = String.join(".", Arrays.copyOf(noArgNames, noArgNames.length - 1));
         String urlPath;
         synchronized(javaJavaDocs) {
-            urlPath = javaJavaDocs.get(name);
+            urlPath = javaJavaDocs.get(name.toLowerCase());
             if(urlPath == null)
                 urlPath = javaJavaDocs.get(className);
             else
-                className = name;
+                className = name.toLowerCase();
             if (urlPath == null)
                 return Collections.emptyList();
         }
@@ -116,10 +116,10 @@ public class JDoc {
 
         JDocParser.ClassDocumentation doc = resultMap.get(className);
 
-        if(noArgNames.length == 1 || className.equals(name))
+        if(noArgNames.length == 1 || className.equalsIgnoreCase(name))
             return Collections.singletonList(doc);
 
-        String searchObj = name.substring(className.length() + 1);//class name + seperator dot
+        String searchObj = name.toLowerCase().substring(className.length() + 1);//class name + seperator dot
         if(doc.classValues.containsKey(searchObj)) {
             return Collections.singletonList(doc.classValues.get(searchObj));
         } else {
