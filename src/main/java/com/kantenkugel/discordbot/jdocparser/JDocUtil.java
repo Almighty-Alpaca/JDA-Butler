@@ -65,7 +65,20 @@ public class JDocUtil {
         }
         matcher.appendTail(sb);
         docs = sb.toString();
-        docs = CODE_PATTERN.matcher(docs).replaceAll("`$1`");
+        sb = new StringBuffer();
+        matcher = CODE_PATTERN.matcher(docs);
+        while(matcher.find()) {
+            StringBuffer sb2 = new StringBuffer("`");
+            Matcher codeLinkMatcher = LINK_PATTERN.matcher(matcher.group(1));
+            while(codeLinkMatcher.find()) {
+                codeLinkMatcher.appendReplacement(sb2, codeLinkMatcher.group(4));
+            }
+            codeLinkMatcher.appendTail(sb2);
+            sb2.append('`');
+            matcher.appendReplacement(sb, sb2.toString().replace("$", "\\$"));
+        }
+        matcher.appendTail(sb);
+        docs = sb.toString();
 
         //links
         matcher = LINK_PATTERN.matcher(docs);
