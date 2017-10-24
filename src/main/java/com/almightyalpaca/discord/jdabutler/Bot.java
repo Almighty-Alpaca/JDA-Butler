@@ -1,10 +1,15 @@
 package com.almightyalpaca.discord.jdabutler;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.filter.ThresholdFilter;
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
+import com.almightyalpaca.discord.jdabutler.util.WebhookAppender;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
@@ -17,6 +22,7 @@ import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.utils.SimpleLog;
 import okhttp3.OkHttpClient;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -37,8 +43,7 @@ public class Bot
 
     public static final SimpleLog LOG = SimpleLog.getLog("Bot");
 
-//    private static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat("HH:mm:ss");
-//    private static final String LOGFORMAT = "[%time%] [%level%] [%name%]: %text%";
+    private static WebhookAppender APPENDER;
 
     public static TextChannel getChannelAnnouncements()
     {
@@ -153,37 +158,30 @@ public class Bot
 
         Bot.jda = (JDAImpl) builder.buildBlocking();
 
-//        SimpleLog.addListener(new LogListener()
-//        {
-//
-//            @Override
-//            public void onError(final SimpleLog log, final Throwable t)
-//            {
-//                log.log(Level.FATAL, ExceptionUtils.getStackTrace(t));
-//            }
-//
-//            @Override
-//            public void onLog(final SimpleLog log, final Level level, final Object message)
-//            {
-//                try
-//                {
-//                    if (level.getPriority() >= Level.INFO.getPriority())
-//                    {
-//                        String format = "`" + Bot.LOGFORMAT.replace("%time%", Bot.DATEFORMAT.format(new Date())).replace("%level%", level.getTag()).replace("%name%", log.name).replace("%text%", String.valueOf(message)) + "`";
-//                        if (format.length() >= 2000)
-//                            format = format.substring(0, 1999);
-//                        final TextChannel channel = Bot.getChannelLogs();
-//                        if (channel != null)
-//                            for (final Message m : new MessageBuilder().append(format).buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE))
-//                                channel.sendMessage(m).queue();
-//                    }
-//                }
-//                catch (final Exception e)
-//                {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+        if(Bot.config.getBoolean("webhook.enabled", false)) {
+            LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+            ThresholdFilter filter = new ThresholdFilter();
+            filter.setLevel(Bot.config.getString("webhook.level"));
+            filter.setContext(lc);
+            filter.start();
+
+            PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+            encoder.setPattern(Bot.config.getString("webhook.pattern"));
+            encoder.setContext(lc);
+            encoder.start();
+
+            WebhookAppender appender = new WebhookAppender();
+            appender.setEncoder(encoder);
+            appender.addFilter(filter);
+            appender.setWebhookUrl(Bot.config.getString("webhook.webhookurl"));
+            appender.setName("ERROR_WH");
+            appender.setContext(lc);
+            appender.start();
+
+            Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+            root.addAppender(appender);
+        }
 
         EventListener.start();
     }
