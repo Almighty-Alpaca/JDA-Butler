@@ -176,6 +176,7 @@ public class Bot
             appender.addFilter(filter);
             appender.setWebhookUrl(Bot.config.getString("webhook.webhookurl"));
             appender.setName("ERROR_WH");
+            appender.setContext(lc);
             appender.start();
 
             Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
