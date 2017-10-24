@@ -12,6 +12,12 @@
       "gradle-example-link": "https://www.dropbox.com/s/0n4l6zdrw0zt8nz/jda%20gradle%20setup%20example.zip?dl=1"
     }
   },
+  "webhook": {
+    "enabled": false,
+    "webhookurl": "",
+    "level": "warn",
+    "pattern": "[%d{HH:mm:ss}] [%level] %logger{0}: %msg"
+  },
   "testing": true,
   "prefix": "|"
 }

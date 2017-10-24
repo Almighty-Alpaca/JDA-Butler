@@ -24,6 +24,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -34,18 +37,19 @@ import java.util.stream.Collectors;
 
 public class JDoc {
     private static final Map<String, JDocParser.ClassDocumentation> docs = new HashMap<>();
+    private static final Map<String, String> javaJavaDocs = new HashMap<>();
 
     public static List<Documentation> get(final String name) {
-        final String[] split = name.toLowerCase().split("[#\\.]");
+        final String[] split = name.toLowerCase().split("[#.]");
         JDocParser.ClassDocumentation classDoc;
         synchronized(docs) {
             if (!docs.containsKey(split[0]))
-                return new ArrayList<>(0);
+                return Collections.emptyList();
             classDoc = docs.get(split[0]);
         }
         for(int i=1; i < split.length - 1; i++) {
             if(!classDoc.subClasses.containsKey(split[i]))
-                return new ArrayList<>(0);
+                return Collections.emptyList();
             classDoc = classDoc.subClasses.get(split[i]);
         }
 
@@ -63,14 +67,76 @@ public class JDoc {
                 fixedSearchObj += "()";
                 fuzzy = true;
             }
-            String[] methodParts = fixedSearchObj.split("[\\(\\)]");
+            String[] methodParts = fixedSearchObj.split("[()]");
             String methodName = methodParts[0];
             if(classDoc.methodDocs.containsKey(methodName.toLowerCase())) {
                 return getMethodDocs(classDoc, methodName, fixedSearchObj, fuzzy);
             } else if(classDoc.inheritedMethods.containsKey(methodName.toLowerCase())) {
                 return get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
             }
-            return new ArrayList<>(0);
+            return Collections.emptyList();
+        }
+    }
+
+    public static List<Documentation> getJava(final String name) {
+        final String[] noArgNames = name.toLowerCase().split("\\(")[0].split("[#.]");
+        String className = String.join(".", Arrays.copyOf(noArgNames, noArgNames.length - 1));
+        String urlPath;
+        synchronized(javaJavaDocs) {
+            urlPath = javaJavaDocs.get(name);
+            if(urlPath == null)
+                urlPath = javaJavaDocs.get(className);
+            else
+                className = name;
+            if (urlPath == null)
+                return Collections.emptyList();
+        }
+
+        Map<String, JDocParser.ClassDocumentation> resultMap = new HashMap<>();
+        InputStream is = null;
+        try {
+            Response res = Bot.httpClient.newCall(new Request.Builder().url(JDocUtil.JAVA_JDOCS_PREFIX+urlPath).get().build()).execute();
+            if(!res.isSuccessful()) {
+                JDocUtil.LOG.warn("OkHttp returned failure for java8 index: "+res.code());
+                return Collections.emptyList();
+            }
+            is = res.body().byteStream();
+            JDocParser.parse(JDocUtil.JAVA_JDOCS_PREFIX, urlPath, is, resultMap);
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            if(is != null)
+                try { is.close(); } catch(Exception ignored) {}
+        }
+
+        if(!resultMap.containsKey(className)) {
+            JDocUtil.LOG.warn("Parser didn't return wanted docs");
+            return Collections.emptyList();
+        }
+
+        JDocParser.ClassDocumentation doc = resultMap.get(className);
+
+        if(noArgNames.length == 1 || className.equals(name))
+            return Collections.singletonList(doc);
+
+        String searchObj = name.substring(className.length() + 1);//class name + seperator dot
+        if(doc.classValues.containsKey(searchObj)) {
+            return Collections.singletonList(doc.classValues.get(searchObj));
+        } else {
+            boolean fuzzy = false;
+            String fixedSearchObj = searchObj;
+            if(fixedSearchObj.charAt(fixedSearchObj.length() - 1) != ')') {
+                fixedSearchObj += "()";
+                fuzzy = true;
+            }
+            String[] methodParts = fixedSearchObj.split("[()]");
+            String methodName = methodParts[0];
+            if(doc.methodDocs.containsKey(methodName.toLowerCase())) {
+                return getMethodDocs(doc, methodName, fixedSearchObj, fuzzy);
+            } else if(doc.inheritedMethods.containsKey(methodName.toLowerCase())) {
+                return getJava(doc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
+            }
+            return Collections.emptyList();
         }
     }
 
@@ -161,6 +227,9 @@ public class JDoc {
         download();
         fetch();
         JDocUtil.LOG.info("JDA-Docs initialized");
+        JDocUtil.LOG.info("Fetching Java8 class indexes");
+        fetchJavaClassIndexes();
+        JDocUtil.LOG.info("Done fetching Java8 class indexes");
     }
 
     public static void reFetch() {
@@ -211,6 +280,26 @@ public class JDoc {
                 if(body != null)
                     body.close();
             }
+        }
+    }
+
+    private static void fetchJavaClassIndexes() {
+        try {
+            Response res = Bot.httpClient.newCall(new Request.Builder().url(JDocUtil.JAVA_JDOCS_CLASS_INDEX).get().build()).execute();
+            if(!res.isSuccessful()) {
+                JDocUtil.LOG.warn("OkHttp returned failure for java8 index: "+res.code());
+                return;
+            }
+            String body = res.body().string();
+            Document docBody = Jsoup.parse(body);
+            docBody.getElementsByClass("indexContainer").first().child(0).children().forEach(child -> {
+                Element link = child.child(0);
+                if(link.tagName().equals("a") && link.attr("href").startsWith("java/")) {
+                    javaJavaDocs.put(link.text().toLowerCase(), link.attr("href"));
+                }
+            });
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 }
