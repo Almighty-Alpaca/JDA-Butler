@@ -86,6 +86,7 @@ public class JDocUtil {
         //cut remaining html tags
         docs = docs.replaceAll("<[^>]+>", "");
         docs = docs.replace("&lt;", "<").replace("&gt;", ">");
+        docs = docs.replace("&nbsp;", " ");
 
         //space and newline trimming cleanup
         docs = docs.replaceAll("[ ]{2,}", " ");
