@@ -131,7 +131,7 @@ public class Dispatcher extends ListenerAdapter
             catch (final Exception e)
             {
                 event.getChannel().sendMessage("**There was an error processing your command!**").queue();
-                Bot.LOG.fatal(e);
+                Bot.LOG.error("Error processing command {}", c.getName(), e);
             }
         });
     }

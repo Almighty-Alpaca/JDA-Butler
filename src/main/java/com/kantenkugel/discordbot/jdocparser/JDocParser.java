@@ -49,12 +49,12 @@ public class JDocParser {
                 try {
                     parse(JDocUtil.JDOCBASE, entry.getName(), file.getInputStream(entry), docs);
                 } catch (final IOException e) {
-                    JDocUtil.LOG.fatal(e);
+                    JDocUtil.LOG.error("Error while parsing doc file {}", entry.getName(), e);
                 }
             });
             JDocUtil.LOG.info("Done parsing docs-files");
         } catch (final Exception e) {
-            JDocUtil.LOG.fatal(e);
+            JDocUtil.LOG.error("Error reading the jdoc jarfile", e);
         }
         return docs;
     }
@@ -63,7 +63,7 @@ public class JDocParser {
         Elements elementsByClass = root.getElementsByClass(className);
         if(elementsByClass.size() != 1) {
             String error = "Found " + elementsByClass.size() + " elements with class " + className + " inside of " + root.tagName() + "-" + root.className();
-            JDocUtil.LOG.fatal(error);
+            JDocUtil.LOG.warn(error);
             throw new RuntimeException(error + root.html());
         }
         return elementsByClass.first();
@@ -73,7 +73,7 @@ public class JDocParser {
         Elements elementsByQuery = root.select(query);
         if(elementsByQuery.size() > 1) {
             String error = "Found " + elementsByQuery.size() + " elements matching query \"" + query + "\" inside of " + root.tagName() + "-" + root.className();
-            JDocUtil.LOG.fatal(error);
+            JDocUtil.LOG.warn(error);
             throw new RuntimeException(error + root.html());
         }
         return elementsByQuery.first();
@@ -157,13 +157,12 @@ public class JDocParser {
             }
             docs.put(fullName.toLowerCase(), classDoc);
         } catch (final IOException | NullPointerException ex) {
-            JDocUtil.LOG.fatal("Got excaption for element " + fullName);
-            JDocUtil.LOG.fatal(ex);
+            JDocUtil.LOG.error("Got excaption for element {}", fullName, ex);
         }
         try {
             inputStream.close();
         } catch (final IOException e) {
-            JDocUtil.LOG.fatal(e);
+            JDocUtil.LOG.error("Error closing inputstream", e);
         }
     }
 

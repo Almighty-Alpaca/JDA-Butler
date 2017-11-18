@@ -1,10 +1,9 @@
-package com.almightyalpaca.discord.jdabutler.util;
+package com.almightyalpaca.discord.jdabutler.util.logging;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.status.ErrorStatus;
-import net.dv8tion.jda.core.utils.SimpleLog;
 import net.dv8tion.jda.webhook.WebhookClient;
 import net.dv8tion.jda.webhook.WebhookClientBuilder;
 
@@ -52,6 +51,8 @@ public class WebhookAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent eventObject) {
         if(!isStarted())
+            return;
+        if(eventObject.getLoggerName().equals("net.dv8tion.jda.webhook.WebhookClient"))
             return;
         byte[] encode = encoder.encode(eventObject);
         String log = new String(encode);

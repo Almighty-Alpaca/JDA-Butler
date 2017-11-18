@@ -9,7 +9,7 @@ import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
-import com.almightyalpaca.discord.jdabutler.util.WebhookAppender;
+import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.fakebutler.FakeButlerListener;
@@ -21,7 +21,6 @@ import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
-import net.dv8tion.jda.core.utils.SimpleLog;
 import okhttp3.OkHttpClient;
 import org.slf4j.LoggerFactory;
 
@@ -43,9 +42,7 @@ public class Bot
 
     public static EventListener listener;
 
-    public static final SimpleLog LOG = SimpleLog.getLog("Bot");
-
-    private static WebhookAppender APPENDER;
+    public static final Logger LOG = (Logger) LoggerFactory.getLogger(Bot.class);
 
     public static TextChannel getChannelAnnouncements()
     {
@@ -120,7 +117,7 @@ public class Bot
         }
         catch (final UnirestException e)
         {
-            Bot.LOG.fatal(e);
+            Bot.LOG.error("Error while creating hastebin link", e);
             return null;
         }
     }

@@ -2,7 +2,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- because logback is to stupid to add a proper filter for that -->
-        <filter class="com.almightyalpaca.discord.jdabutler.util.InverseThresholdFilter">
+        <filter class="com.almightyalpaca.discord.jdabutler.util.logging.InverseThresholdFilter">
             <level>WARN</level>
         </filter>
         <encoder>

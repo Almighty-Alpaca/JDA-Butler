@@ -4,7 +4,7 @@ import com.almightyalpaca.discord.jdabutler.config.exception.ConfigSaveException
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 import com.google.gson.*;
-import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
+import org.apache.commons.text.translate.UnicodeUnescaper;
 
 import java.io.*;
 

@@ -2,10 +2,11 @@ package com.kantenkugel.discordbot.versioncheck;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
-import net.dv8tion.jda.core.utils.SimpleLog;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -15,7 +16,7 @@ import java.util.*;
 
 public class VersionChecker
 {
-    static final SimpleLog LOG = SimpleLog.getLog("VersionChecker");
+    static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
     private static Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
 

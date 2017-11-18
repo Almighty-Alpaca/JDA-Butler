@@ -1,4 +1,4 @@
-package com.almightyalpaca.discord.jdabutler.util;
+package com.almightyalpaca.discord.jdabutler.util.logging;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;

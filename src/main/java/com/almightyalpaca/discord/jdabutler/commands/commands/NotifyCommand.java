@@ -40,12 +40,13 @@ public class NotifyCommand implements Command
                 {
                     logRoleRemoval(sender, Bot.getRoleJdaUpdates());
                     logRoleRemoval(sender, Bot.getRoleLavaplayerUpdates());
-                }, Bot.LOG::fatal);
+                }, e -> Bot.LOG.error("Could not remove role(s) from member {}", member.getUser().getName(), e));
             }
             else
             {
                 guild.getController().addRolesToMember(member, roles)
-                        .queue(v -> roles.forEach( r -> logRoleAddition(sender, r)), Bot.LOG::fatal);
+                        .queue(v -> roles.forEach( r -> logRoleAddition(sender, r)),
+                                e -> Bot.LOG.error("Could not add role(s) from member {}", member.getUser().getName(), e));
             }
 
         }
@@ -63,12 +64,14 @@ public class NotifyCommand implements Command
             if (member.getRoles().contains(role))
             {
                 guild.getController().removeSingleRoleFromMember(member, role)
-                        .queue(v -> logRoleRemoval(sender, role), Bot.LOG::fatal);
+                        .queue(v -> logRoleRemoval(sender, role),
+                                e -> Bot.LOG.error("Could not remove role from member {}", member.getUser().getName(), e));
             }
             else
             {
                 guild.getController().addSingleRoleToMember(member, role)
-                        .queue(v -> logRoleAddition(sender, role), Bot.LOG::fatal);
+                        .queue(v -> logRoleAddition(sender, role),
+                                e -> Bot.LOG.error("Could not add role from member {}", member.getUser().getName(), e));
             }
         }
 
@@ -78,13 +81,13 @@ public class NotifyCommand implements Command
     private void logRoleRemoval(final User sender, final Role role)
     {
         final String msg = String.format("Removed %#s (%d) from %s", sender, sender.getIdLong(), role.getName());
-        Bot.LOG.warn(msg);
+        Bot.LOG.info(msg);
     }
 
     private void logRoleAddition(final User sender, final Role role)
     {
         final String msg = String.format("Added %#s (%d) to %s", sender, sender.getIdLong(), role.getName());
-        Bot.LOG.warn(msg);
+        Bot.LOG.info(msg);
     }
 
     @Override

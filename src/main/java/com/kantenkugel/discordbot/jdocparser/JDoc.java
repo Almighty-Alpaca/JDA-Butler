@@ -242,7 +242,7 @@ public class JDoc {
             fetch();
             JDocUtil.LOG.info("Done");
         } catch (final Exception e) {
-            JDocUtil.LOG.fatal(e);
+            JDocUtil.LOG.error("Error re-fetching jdocs", e);
         }
     }
 
@@ -273,7 +273,7 @@ public class JDoc {
                 is.close();
                 JDocUtil.LOG.info("Done downloading JDA docs");
             } catch(Exception e) {
-                JDocUtil.LOG.fatal(e);
+                JDocUtil.LOG.error("Error downloading jdoc jar", e);
             }
             finally
             {
