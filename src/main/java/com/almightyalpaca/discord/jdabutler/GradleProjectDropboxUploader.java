@@ -98,7 +98,7 @@ public class GradleProjectDropboxUploader
         }
         catch (final IOException | InterruptedException | ZipException e)
         {
-            Bot.LOG.fatal(e);
+            Bot.LOG.error("Error creating gradle example zip", e);
         }
     }
 
@@ -127,7 +127,7 @@ public class GradleProjectDropboxUploader
         }
         catch (DbxException | IOException e)
         {
-            Bot.LOG.fatal(e);
+            Bot.LOG.error("Error uploading gradle project to dropbox", e);
         }
 
     }

@@ -143,8 +143,7 @@ public class EventListener extends ListenerAdapter
                 }
                 catch (final Exception e)
                 {
-                    Bot.LOG.fatal("Checking updates errored");
-                    Bot.LOG.fatal(e);
+                    Bot.LOG.error("Checking updates errored", e);
                 }
             }, 0, 30, TimeUnit.SECONDS);
         }
@@ -166,7 +165,7 @@ public class EventListener extends ListenerAdapter
 
             final AuditableRestAction<Void> action = guild.getController().addSingleRoleToMember(member, role).reason("Auto Role");
             final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), role.getName());
-            action.queue(v -> Bot.LOG.warn(message), Bot.LOG::fatal);
+            action.queue(v -> Bot.LOG.info(message), ex -> Bot.LOG.error("Could not add User {} to role {}", user.getName(), role.getName(), ex));
         }
     }
 

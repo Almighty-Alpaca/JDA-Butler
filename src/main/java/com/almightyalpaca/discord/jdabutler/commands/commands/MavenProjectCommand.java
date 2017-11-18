@@ -28,7 +28,7 @@ public class MavenProjectCommand implements Command
         }
         catch (final Exception e)
         {
-            Bot.LOG.fatal(e);
+            Bot.LOG.error("Error getting template pom", e);
             MavenProjectCommand.POM = "Load failed.";
         }
     }

@@ -18,7 +18,8 @@
 package com.kantenkugel.discordbot.jdocparser;
 
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
-import net.dv8tion.jda.core.utils.SimpleLog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -28,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JDocUtil {
-    static final SimpleLog LOG = SimpleLog.getLog("JDoc");
+    static final Logger LOG = LoggerFactory.getLogger("JDoc");
 
     static final Path LOCAL_DOC_PATH = Paths.get("jda-docs.jar");
 
@@ -130,7 +131,7 @@ public class JDocUtil {
             URL result = new URL(base, href);
             return result.toString();
         } catch(MalformedURLException e) {
-            LOG.fatal(e);
+            LOG.error("Could not resolve relative link of jdoc", e);
         }
         return null;
     }

@@ -2,15 +2,13 @@ package com.kantenkugel.discordbot.jenkinsutil;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.util.FixedSizeCache;
-import net.dv8tion.jda.core.utils.SimpleLog;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 
 public class JenkinsApi
 {
@@ -18,7 +16,7 @@ public class JenkinsApi
     public static final String CHANGE_URL = JENKINS_BASE + "changes";
     public static final String LAST_BUILD_URL = JENKINS_BASE + "lastSuccessfulBuild/";
 
-    static final SimpleLog LOG = SimpleLog.getLog("Jenkins");
+    static final Logger LOG = LoggerFactory.getLogger(JenkinsApi.class);
 
     private static final String API_SUFFIX = "api/json?";
 
@@ -61,7 +59,7 @@ public class JenkinsApi
             return build;
         } catch (IOException e)
         {
-            LOG.fatal("Error while Fetching Jenkins build " + identifier);
+            LOG.error("Error while Fetching Jenkins build {}", identifier);
             //LOG.log(e);
         }
         return null;
