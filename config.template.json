@@ -16,7 +16,7 @@
     "enabled": false,
     "webhookurl": "",
     "level": "warn",
-    "pattern": "[%d{HH:mm:ss}] [%level] %logger{0}: %msg"
+    "pattern": "[%d{HH:mm:ss}] [%level] %logger{0}: %msg%n"
   },
   "testing": true,
   "prefix": "|"
