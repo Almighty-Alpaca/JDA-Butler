@@ -63,7 +63,7 @@ public class Dispatcher extends ListenerAdapter
         final TextChannel channel = event.getChannel();
 
         // In DAPI only listen to messages in #java_jda
-        if (channel.getGuild().getIdLong() == 81384788765712384L && channel.getIdLong() != 129750718931271681L)
+        if (channel.getGuild().getIdLong() == 81384788765712384L && channel.getIdLong() != 381889648827301889L)
             return;
 
         if (message.toLowerCase().startsWith(prefix.toLowerCase()))
