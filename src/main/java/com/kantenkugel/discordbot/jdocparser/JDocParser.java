@@ -63,7 +63,6 @@ public class JDocParser {
         Elements elementsByClass = root.getElementsByClass(className);
         if(elementsByClass.size() != 1) {
             String error = "Found " + elementsByClass.size() + " elements with class " + className + " inside of " + root.tagName() + "-" + root.className();
-            JDocUtil.LOG.warn(error);
             throw new RuntimeException(error + root.html());
         }
         return elementsByClass.first();
@@ -73,7 +72,6 @@ public class JDocParser {
         Elements elementsByQuery = root.select(query);
         if(elementsByQuery.size() > 1) {
             String error = "Found " + elementsByQuery.size() + " elements matching query \"" + query + "\" inside of " + root.tagName() + "-" + root.className();
-            JDocUtil.LOG.warn(error);
             throw new RuntimeException(error + root.html());
         }
         return elementsByQuery.first();
@@ -100,7 +98,19 @@ public class JDocParser {
             }
             final String pack = JDocUtil.fixSpaces(packageElem.text());
             final String link = JDocUtil.getLink(jdocBase, pack, fullName);
-            Element descriptionElement = getSingleElementByQuery(document, ".description .block");
+            Element descriptionElement = null;
+            Elements descriptionCandidates = document.select(".description .block");
+            if(descriptionCandidates.size() > 1) {
+                List<Element> removed = descriptionCandidates
+                        .stream().map(elem -> elem.child(0))
+                        .filter(child -> child != null && !child.className().startsWith("deprecat"))
+                        .map(Element::parent).collect(Collectors.toList());
+                if(removed.size() != 1)
+                    throw new RuntimeException("Found too many description candidates");
+                descriptionElement = removed.get(0);
+            } else if(descriptionCandidates.size() == 1) {
+                descriptionElement = descriptionCandidates.get(0);
+            }
             final String description = descriptionElement == null ? "" : JDocUtil.formatText(descriptionElement.html(), link);
             final ClassDocumentation classDoc = new ClassDocumentation(pack, fullName, classSig, description, classSig.startsWith("Enum"));
             final Element details = document.getElementsByClass("details").first();
