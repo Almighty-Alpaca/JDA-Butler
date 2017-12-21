@@ -59,7 +59,7 @@ public class Dispatcher extends ListenerAdapter
             return;
 
         final String prefix = Bot.config.getString("prefix");
-        final String message = event.getMessage().getRawContent();
+        final String message = event.getMessage().getContentRaw();
         final TextChannel channel = event.getChannel();
 
         // In DAPI only listen to messages in #java_jda
@@ -124,7 +124,7 @@ public class Dispatcher extends ListenerAdapter
 
     private String removePrefix(final String c, final String prefix, final GuildMessageReceivedEvent event)
     {
-        String content = event.getMessage().getRawContent();
+        String content = event.getMessage().getContentRaw();
         content = content.substring(c.length() + prefix.length());
         if (content.startsWith(" "))
             content = content.substring(1);

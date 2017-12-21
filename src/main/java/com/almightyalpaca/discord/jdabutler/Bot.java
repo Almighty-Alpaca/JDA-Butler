@@ -151,7 +151,7 @@ public class Bot
         builder.addEventListener(Bot.listener);
         builder.addEventListener(Bot.dispatcher = new Dispatcher());
 
-        builder.setGame(Game.of("JDA"));
+        builder.setGame(Game.playing("JDA"));
 
         Bot.jda = (JDAImpl) builder.buildBlocking();
 
