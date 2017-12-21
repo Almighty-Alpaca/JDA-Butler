@@ -59,7 +59,7 @@ public class Dispatcher extends ListenerAdapter
             return;
 
         final String prefix = Bot.config.getString("prefix");
-        String message = event.getMessage().getRawContent();
+        String message = event.getMessage().getContentRaw();
 
         if (Bot.isStealth)
         {

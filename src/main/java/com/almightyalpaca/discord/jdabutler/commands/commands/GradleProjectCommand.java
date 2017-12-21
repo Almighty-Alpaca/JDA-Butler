@@ -16,7 +16,7 @@ public class GradleProjectCommand implements Command
             channel.sendTyping().queue();
         GradleProjectDropboxUploader.createZip();
 
-        channel.sendFile(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP, null).queue();
+        channel.sendFile(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP).queue();
     }
 
     @Override
