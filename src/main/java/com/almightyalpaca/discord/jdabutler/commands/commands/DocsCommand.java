@@ -120,6 +120,7 @@ public class DocsCommand extends ReactionCommand
             switch (split[0].toLowerCase())
             {
                 case "search":
+                {
                     String[] options = split.length == 3 ? split[1].toLowerCase().split("\\s*,\\s*") : new String[0];
                     Set<Pair<String, ? extends Documentation>> search = JDoc.search(split[split.length - 1], options);
                     if (search.size() == 0)
@@ -153,7 +154,9 @@ public class DocsCommand extends ReactionCommand
                         channel.sendMessage(embedB.build()).queue();
                     }
                     break;
+                }
                 case "java":
+                {
                     if (split.length != 2)
                     {
                         channel.sendMessage("Invalid syntax!").queue();
@@ -191,6 +194,7 @@ public class DocsCommand extends ReactionCommand
                         }));
                     }
                     break;
+                }
                 default:
                     channel.sendMessage("Unsupported operation " + split[0]).queue();
                     break;
