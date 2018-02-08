@@ -44,7 +44,7 @@ public class MavenCommand implements Command
 
         for (VersionedItem dep : deps)
         {
-            field.append(MavenUtil.getDependencyString(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), null)).append("\n");
+            field.append(MavenUtil.getDependencyString(dep, null)).append("\n");
         }
 
         field.append("\n");

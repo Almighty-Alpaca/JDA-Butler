@@ -1,20 +1,23 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import org.apache.commons.lang3.tuple.Triple;
+import com.kantenkugel.discordbot.versioncheck.DependencyType;
+import com.kantenkugel.discordbot.versioncheck.VersionedItem;
 
 public class MavenUtil
 {
-    public static String getDependencyString(final String group, final String name, final String version, String indentation)
+    public static String getDependencyString(final VersionedItem item, String indentation)
     {
         if (indentation == null)
             indentation = "";
-
-        return indentation + "<dependency>\n" + indentation + "    <groupId>" + group + "</groupId>\n" + indentation + "    <artifactId>" + name + "</artifactId>\n" + indentation + "    <version>" + version + "</version>\n" + indentation + "</dependency>\n";
-    }
-
-    public static String getDependencyString(final Triple<String, String, String> dependency, final String indentation)
-    {
-        return MavenUtil.getDependencyString(dependency.getLeft(), dependency.getMiddle(), dependency.getRight(), indentation);
+        String typeString = item.getDependencyType() == DependencyType.DEFAULT
+                ? ""
+                : indentation + "    <type>" + item.getDependencyType().getTypeString() + "</type>\n";
+        return indentation + "<dependency>\n"
+                + indentation + "    <groupId>" + item.getGroupId() + "</groupId>\n"
+                + indentation + "    <artifactId>" + item.getArtifactId() + "</artifactId>\n"
+                + indentation + "    <version>" + item.getVersion() + "</version>\n"
+                + typeString
+                + indentation + "</dependency>\n";
     }
 
     public static String getRepositoryString(final String id, final String name, final String url, String indentation)
