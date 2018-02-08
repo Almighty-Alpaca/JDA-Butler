@@ -25,7 +25,7 @@ public class VersionChecker
                 JenkinsApi.LAST_BUILD_URL));
         addItem(new VersionedItem("Lavaplayer", RepoType.JCENTER, "com.sedmelluq", "lavaplayer",
                 "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord"));
-        addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, "com.jagrosh", "JDA-Utilities",
+        addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, "com.jagrosh", "jda-utilities",
                 "https://github.com/JDA-Applications/JDA-Utilities"));
     }
 
