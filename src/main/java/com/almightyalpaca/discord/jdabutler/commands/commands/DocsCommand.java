@@ -117,132 +117,116 @@ public class DocsCommand extends ReactionCommand
                 channel.sendMessage("Invalid syntax!").queue();
                 return;
             }
-            if (split[0].toLowerCase().equals("search"))
+            switch (split[0].toLowerCase())
             {
-                String[] options = split.length == 3 ? split[1].toLowerCase().split("\\s*,\\s*") : new String[0];
-                Set<Pair<String, ? extends Documentation>> search = JDoc.search(split[split.length - 1], options);
-                if (search.size() == 0)
-                {
-                    channel.sendMessage("Did not find anything matching query!").queue();
-                    return;
-                }
-                if (search.size() > RESULTS_PER_PAGE)
-                {
-                    AtomicInteger page = new AtomicInteger(0);
-                    List<Pair<String, ? extends Documentation>> sorted = search.stream().sorted(Comparator.comparing(Pair::getKey)).collect(Collectors.toList());
-                    channel.sendMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, page.get())).queue(m -> this.addReactions(
-                            m,
-                            Arrays.asList(ReactionCommand.LEFT_ARROW, ReactionCommand.RIGHT_ARROW, ReactionCommand.CANCEL),
-                            Collections.singleton(sender),
-                            3, TimeUnit.MINUTES,
-                            index -> {
-                                if (index >= 2)
-                                {                //cancel button or other error
-                                    stopReactions(m, false);
-                                    m.delete().queue();
-                                    return;
-                                }
-                                int nextPage = page.updateAndGet(current ->
-                                        index == 1
-                                                ? Math.min(current + 1, (sorted.size() - 1) / RESULTS_PER_PAGE)
-                                                : Math.max(current - 1, 0));
-                                m.editMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, nextPage)).queue();
-                            }
-                    ));
-                }
-                else
-                {
-                    EmbedBuilder embedB = getDefaultEmbed().setTitle("Found following:");
-                    for (Pair<String, ? extends Documentation> pair : search)
+                case "search":
+                    String[] options = split.length == 3 ? split[1].toLowerCase().split("\\s*,\\s*") : new String[0];
+                    Set<Pair<String, ? extends Documentation>> search = JDoc.search(split[split.length - 1], options);
+                    if (search.size() == 0)
                     {
-                        embedB.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl(JDocUtil.JDOCBASE) + ")\n");
+                        channel.sendMessage("Did not find anything matching query!").queue();
+                        return;
                     }
-                    embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
-                    channel.sendMessage(embedB.build()).queue();
-                }
-            } else if(split[0].toLowerCase().equals("java")) {
-                if(split.length != 2) {
-                    channel.sendMessage("Invalid syntax!").queue();
-                    return;
-                }
-                List<Documentation> javadocs = JDoc.getJava(split[1]);
-                if (javadocs.size() == 0)
-                {
-                    channel.sendMessage("No Result found!").queue();
-                }
-                else if (javadocs.size() == 1)
-                {
-                    channel.sendMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(0))).queue();
-                }
-                else
-                {
-                    EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
-                    for (int i = 0; i < javadocs.size(); i++)
+                    if (search.size() > RESULTS_PER_PAGE)
                     {
-                        Documentation doc = javadocs.get(i);
-                        embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl(JDocUtil.JAVA_JDOCS_PREFIX) + ")\n");
-                    }
-                    embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
-                    List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, javadocs.size())));
-                    options.add(ReactionCommand.CANCEL);
-                    channel.sendMessage(embedB.build()).queue(m -> this.addReactions(
-                            m,
-                            options,
-                            Collections.singleton(sender),
-                            30, TimeUnit.SECONDS,
-                            index -> {
-                                if (index >= javadocs.size())
-                                {                //cancel button or other error
-                                    stopReactions(m, false);
-                                    m.delete().queue();
-                                    return;
-                                }
-                                stopReactions(m);
-                                m.editMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(index))).queue();
+                        AtomicInteger page = new AtomicInteger(0);
+                        List<Pair<String, ? extends Documentation>> sorted = search.stream().sorted(Comparator.comparing(Pair::getKey)).collect(Collectors.toList());
+                        channel.sendMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, page.get())).queue(m -> this.addReactions(m, Arrays.asList(ReactionCommand.LEFT_ARROW, ReactionCommand.RIGHT_ARROW, ReactionCommand.CANCEL), Collections.singleton(sender), 3, TimeUnit.MINUTES, index -> {
+                            if (index >= 2)
+                            {                //cancel button or other error
+                                stopReactions(m, false);
+                                m.delete().queue();
+                                return;
                             }
-                    ));
-                }
-            } else {
-                channel.sendMessage("Unsupported operation " + split[0]).queue();
+                            int nextPage = page.updateAndGet(current -> index == 1 ? Math.min(current + 1, (sorted.size() - 1) / RESULTS_PER_PAGE) : Math.max(current - 1, 0));
+                            m.editMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, nextPage)).queue();
+                        }));
+                    }
+                    else
+                    {
+                        EmbedBuilder embedB = getDefaultEmbed().setTitle("Found following:");
+                        for (Pair<String, ? extends Documentation> pair : search)
+                        {
+                            embedB.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl(JDocUtil.JDOCBASE) + ")\n");
+                        }
+                        embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
+                        channel.sendMessage(embedB.build()).queue();
+                    }
+                    break;
+                case "java":
+                    if (split.length != 2)
+                    {
+                        channel.sendMessage("Invalid syntax!").queue();
+                        return;
+                    }
+                    List<Documentation> javadocs = JDoc.getJava(split[1]);
+                    if (javadocs.size() == 0)
+                    {
+                        channel.sendMessage("No Result found!").queue();
+                    }
+                    else if (javadocs.size() == 1)
+                    {
+                        channel.sendMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(0))).queue();
+                    }
+                    else
+                    {
+                        EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
+                        for (int i = 0; i < javadocs.size(); i++)
+                        {
+                            Documentation doc = javadocs.get(i);
+                            embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl(JDocUtil.JAVA_JDOCS_PREFIX) + ")\n");
+                        }
+                        embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
+                        List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, javadocs.size())));
+                        options.add(ReactionCommand.CANCEL);
+                        channel.sendMessage(embedB.build()).queue(m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
+                            if (index >= javadocs.size())
+                            {                //cancel button or other error
+                                stopReactions(m, false);
+                                m.delete().queue();
+                                return;
+                            }
+                            stopReactions(m);
+                            m.editMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(index))).queue();
+                        }));
+                    }
+                    break;
+                default:
+                    channel.sendMessage("Unsupported operation " + split[0]).queue();
+                    break;
             }
             return;
         }
         final List<Documentation> docs = JDoc.get(content);
-        if (docs.size() == 0)
+        switch (docs.size())
         {
-            channel.sendMessage("No Result found!").queue();
-        }
-        else if (docs.size() == 1)
-        {
-            channel.sendMessage(getDocMessage(JDocUtil.JDOCBASE, docs.get(0))).queue();
-        }
-        else
-        {
-            EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
-            for (int i = 0; i < docs.size(); i++)
-            {
-                Documentation doc = docs.get(i);
-                embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl(JDocUtil.JDOCBASE) + ")\n");
-            }
-            embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
-            List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, docs.size())));
-            options.add(ReactionCommand.CANCEL);
-            channel.sendMessage(embedB.build()).queue(m -> this.addReactions(
-                    m,
-                    options,
-                    Collections.singleton(sender),
-                    30, TimeUnit.SECONDS,
-                    index -> {
-                        if (index >= docs.size())
-                        {                //cancel button or other error
-                            stopReactions(m, false);
-                            m.delete().queue();
-                            return;
-                        }
-                        stopReactions(m);
-                        m.editMessage(getDocMessage(JDocUtil.JDOCBASE, docs.get(index))).queue();
+            case 0:
+                channel.sendMessage("No Result found!").queue();
+                break;
+            case 1:
+                channel.sendMessage(getDocMessage(JDocUtil.JDOCBASE, docs.get(0))).queue();
+                break;
+            default:
+                EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
+                for (int i = 0; i < docs.size(); i++)
+                {
+                    Documentation doc = docs.get(i);
+                    embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl(JDocUtil.JDOCBASE) + ")\n");
+                }
+                embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
+                List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, docs.size())));
+                options.add(ReactionCommand.CANCEL);
+                channel.sendMessage(embedB.build()).queue(m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
+                    if (index >= docs.size())
+                    {                //cancel button or other error
+                        stopReactions(m, false);
+                        m.delete().queue();
+                        return;
                     }
-            ));
+                    stopReactions(m);
+                    m.editMessage(getDocMessage(JDocUtil.JDOCBASE, docs.get(index))).queue();
+                }));
+                break;
         }
     }
 

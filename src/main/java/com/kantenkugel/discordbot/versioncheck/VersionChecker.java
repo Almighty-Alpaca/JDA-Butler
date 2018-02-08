@@ -18,7 +18,7 @@ public class VersionChecker
 {
     static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
-    private static Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
+    private static final Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
 
     static {
         addItem(new VersionedItem("JDA", RepoType.JCENTER, "net.dv8tion", "JDA",

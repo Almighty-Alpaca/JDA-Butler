@@ -27,7 +27,7 @@ public class HelpCommand implements Command
 
         final String prefix = Bot.config.getString("prefix");
 
-        final int size = Bot.dispatcher.getCommands().stream().filter(c -> c.getHelp() != null).map(c -> c.getName().length()).max((i1, i2) -> i1.compareTo(i2)).get() + 1 + prefix.length();
+        final int size = Bot.dispatcher.getCommands().stream().filter(c -> c.getHelp() != null).mapToInt(c -> c.getName().length()).max().orElse(0) + 1 + prefix.length();
 
         final String help = Bot.dispatcher.getCommands().stream().sorted(Comparator.comparing(Command::getName)).filter(c -> c.getHelp() != null).map(c -> String.format("`%s` - %s", StringUtils.rightPad(prefix + c.getName().toLowerCase() + "", size, "."), c.getHelp())).collect(Collectors.joining("\n"));
         builder.setAuthor(channel.getGuild().getMember(sender).getEffectiveName(), null, sender.getEffectiveAvatarUrl());

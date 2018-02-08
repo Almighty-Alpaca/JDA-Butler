@@ -426,6 +426,7 @@ public class Config
         return this.getString(key);
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasKey(final String key)
     {
         try
@@ -518,10 +519,7 @@ public class Config
         {
             throw new WrongTypeException(e);
         }
-        catch (final IndexOutOfBoundsException e)
-        {
-            throw e;
-        }
+
         current.add(finalKey, value);
     }
 

@@ -62,10 +62,10 @@ public class StringUtils
 
     public static String toPrettyString(final Iterable<?> collection)
     {
-        String string = "";
+        StringBuilder string = new StringBuilder();
 
         for (final Object object : collection)
-            string += Objects.toString(object) + ", ";
-        return StringUtils.replaceLast(string, ", ", "");
+            string.append(Objects.toString(object)).append(", ");
+        return StringUtils.replaceLast(string.toString(), ", ", "");
     }
 }

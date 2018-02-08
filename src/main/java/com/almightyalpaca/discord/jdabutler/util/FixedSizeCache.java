@@ -8,6 +8,7 @@ public class FixedSizeCache<K, V> {
     private final K[] keys;
     private int currIndex = 0;
 
+    @SuppressWarnings("unchecked")
     public FixedSizeCache(int size) {
         if(size < 1)
             throw new IllegalArgumentException("Cache size must be at least 1!");

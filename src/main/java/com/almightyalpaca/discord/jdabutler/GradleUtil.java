@@ -37,11 +37,11 @@ public class GradleUtil
 
     public static String getDependencyBlock(final Collection<Triple<String, String, String>> dependencies, final boolean pretty)
     {
-        String text = "dependencies {\n";
+        StringBuilder text = new StringBuilder("dependencies {\n");
         for (final Triple<String, String, String> dependency : dependencies)
-            text += "    " + GradleUtil.getDependencyString(dependency.getLeft(), dependency.getMiddle(), dependency.getRight(), pretty) + "\n";
-        text += "}";
-        return text;
+            text.append("    ").append(GradleUtil.getDependencyString(dependency.getLeft(), dependency.getMiddle(), dependency.getRight(), pretty)).append("\n");
+        text.append("}");
+        return text.toString();
     }
 
     public static String getDependencyString(final String group, final String name, final String version, final boolean pretty)
@@ -54,25 +54,25 @@ public class GradleUtil
 
     public static String getPluginsBlock(final Collection<Pair<String, String>> plugins)
     {
-        String text = "plugins {\n";
+        StringBuilder text = new StringBuilder("plugins {\n");
         for (final Pair<String, String> plugin : plugins)
         {
-            text += "    id'" + plugin.getLeft() + "'";
+            text.append("    id'").append(plugin.getLeft()).append("'");
             if (plugin.getRight() != null)
-                text += " version '" + plugin.getRight() + "'";
-            text += "\n";
+                text.append(" version '").append(plugin.getRight()).append("'");
+            text.append("\n");
         }
-        text += "}";
-        return text;
+        text.append("}");
+        return text.toString();
     }
 
     public static String getRepositoryBlock(final Collection<Pair<String, String>> repositories)
     {
-        String text = "repositories {\n";
+        StringBuilder text = new StringBuilder("repositories {\n");
         for (final Pair<String, String> repository : repositories)
-            text += GradleUtil.getRepositoryString(repository.getLeft(), repository.getRight(), "    ") + "\n";
-        text += "}";
-        return text;
+            text.append(GradleUtil.getRepositoryString(repository.getLeft(), repository.getRight(), "    ")).append("\n");
+        text.append("}");
+        return text.toString();
     }
 
     public static String getRepositoryString(final String name, final String url, String indentation)
