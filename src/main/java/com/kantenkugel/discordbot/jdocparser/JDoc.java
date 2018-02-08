@@ -211,12 +211,14 @@ public class JDoc {
         List<JDocParser.MethodDocumentation> filteredDocs = docs.parallelStream()
                 .filter(doc -> doc.matches(methodSig, isFuzzy))
                 .collect(Collectors.toList());
-        if(filteredDocs.size() == 1) {
-            return Collections.singletonList(filteredDocs.get(0));
-        } else if(filteredDocs.size() == 0) {
-            return Collections.unmodifiableList(docs);
-        } else {
-            return Collections.unmodifiableList(filteredDocs);
+        switch (filteredDocs.size())
+        {
+            case 1:
+                return Collections.singletonList(filteredDocs.get(0));
+            case 0:
+                return Collections.unmodifiableList(docs);
+            default:
+                return Collections.unmodifiableList(filteredDocs);
         }
     }
 

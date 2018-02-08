@@ -23,11 +23,11 @@ public enum Engine
         @Override
         public Triple<Object, String, String> eval(final Map<String, Object> fields, final Collection<String> classImports, final Collection<String> packageImports, final int timeout, final String script)
         {
-            String importString = "";
+            StringBuilder importString = new StringBuilder();
             for (final String s : classImports)
-                importString += "import " + s + ";";
+                importString.append("import ").append(s).append(";");
             for (final String s : packageImports)
-                importString += "import " + s + ".*;";
+                importString.append("import ").append(s).append(".*;");
             return this.eval(fields, timeout, importString + script, new GroovyScriptEngineImpl());
         }
 
@@ -40,10 +40,10 @@ public enum Engine
         @Override
         public Triple<Object, String, String> eval(final Map<String, Object> fields, final Collection<String> classImports, final Collection<String> packageImports, final int timeout, String script)
         {
-            String importString = "";
+            StringBuilder importString = new StringBuilder();
             for (final String s : packageImports)
-                importString += s + ", ";
-            importString = StringUtils.replaceLast(importString, ", ", "");
+                importString.append(s).append(", ");
+            importString = new StringBuilder(StringUtils.replaceLast(importString.toString(), ", ", ""));
 
             script = " (function() { with (new JavaImporter(" + importString + ")) {" + script + "} })();";
             return this.eval(fields, timeout, script, this.engineManager.getEngineByName("nashorn"));

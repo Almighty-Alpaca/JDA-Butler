@@ -27,16 +27,14 @@ public class FormattingUtil
 
         StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i < changeSet.size(); i++)
+        for (final JenkinsChange item : changeSet)
         {
-            final JenkinsChange item = changeSet.get(i);
-
             final String[] lines = item.commitMsg.split("\n");
 
             for (int j = 0; j < lines.length; j++)
             {
                 final StringBuilder line = new StringBuilder();
-                line.append("[`").append(j == 0 ? item.getShortId() : "`.......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/" + item.commitId + ")").append(" ").append(lines[j]).append("\n");
+                line.append("[`").append(j == 0 ? item.getShortId() : "`.......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/").append(item.commitId).append(")").append(" ").append(lines[j]).append("\n");
 
                 if (builder.length() + line.length() > 1021)
                 {

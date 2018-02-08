@@ -25,14 +25,11 @@ public class EventListener extends ListenerAdapter
 
     private static boolean started;
 
-    static ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1, (r) ->
+    static final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1, (r) ->
     {
         final Thread t = new Thread(r);
         t.setDaemon(true);
-        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) ->
-        {
-            throwable.printStackTrace();
-        });
+        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) -> throwable.printStackTrace());
         t.setPriority(Thread.NORM_PRIORITY);
         return t;
     });

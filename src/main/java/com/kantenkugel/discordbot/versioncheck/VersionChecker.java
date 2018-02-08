@@ -18,14 +18,14 @@ public class VersionChecker
 {
     static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
-    private static Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
+    private static final Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
 
     static {
         addItem(new VersionedItem("JDA", RepoType.JCENTER, "net.dv8tion", "JDA",
                 JenkinsApi.LAST_BUILD_URL));
         addItem(new VersionedItem("Lavaplayer", RepoType.JCENTER, "com.sedmelluq", "lavaplayer",
                 "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord"));
-        addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, "com.jagrosh", "JDA-Utilities",
+        addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, "com.jagrosh", "jda-utilities",
                 "https://github.com/JDA-Applications/JDA-Utilities"));
     }
 
