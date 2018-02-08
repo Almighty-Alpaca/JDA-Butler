@@ -48,7 +48,7 @@ public class MavenProjectCommand implements Command
         //dependency-string:
         for (VersionedItem dep : deps)
         {
-            builder.append(MavenUtil.getDependencyString(dep.getGroupId(), dep.getArtifactId(), dep.getVersion(), "        "));
+            builder.append(MavenUtil.getDependencyString(dep, "        "));
         }
         String dependencyString = builder.toString();
 

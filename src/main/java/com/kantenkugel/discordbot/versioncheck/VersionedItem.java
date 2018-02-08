@@ -7,6 +7,7 @@ public class VersionedItem
     private final String name;
 
     private final RepoType repoType;
+    private final DependencyType depType;
     private final String groupId;
     private final String artifactId;
 
@@ -14,23 +15,24 @@ public class VersionedItem
 
     private String url;
 
-    public VersionedItem(String name, RepoType repoType, String groupId, String artifactId)
+    public VersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId)
     {
         this.name = name;
         this.repoType = repoType;
+        this.depType = depType;
         this.groupId = groupId;
         this.artifactId = artifactId;
     }
 
-    public VersionedItem(String name, RepoType repoType, String groupId, String artifactId, String url)
+    public VersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId, String url)
     {
-        this(name, repoType, groupId, artifactId);
+        this(name, repoType, depType, groupId, artifactId);
         this.url = url;
     }
 
-    public VersionedItem(String name, RepoType repoType, String groupId, String artifactId, String url, String version)
+    public VersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId, String url, String version)
     {
-        this(name, repoType, groupId, artifactId, url);
+        this(name, repoType, depType, groupId, artifactId, url);
         this.version = version;
     }
 
@@ -47,6 +49,11 @@ public class VersionedItem
     public RepoType getRepoType()
     {
         return repoType;
+    }
+
+    public DependencyType getDependencyType()
+    {
+        return depType;
     }
 
     public String getGroupId()
