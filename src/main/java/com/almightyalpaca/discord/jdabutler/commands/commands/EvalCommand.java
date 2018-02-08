@@ -18,6 +18,7 @@ import java.util.Map;
 
 public class EvalCommand implements Command
 {
+    private static final int TIMEOUT_S = 10;
 
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
@@ -48,9 +49,7 @@ public class EvalCommand implements Command
 
         shortcuts.put("config", Bot.config);
 
-        final int timeout = 10;
-
-        final Triple<Object, String, String> result = Engine.GROOVY.eval(shortcuts, Collections.emptyList(), Engine.DEFAULT_IMPORTS, timeout, content);
+        final Triple<Object, String, String> result = Engine.GROOVY.eval(shortcuts, Collections.emptyList(), Engine.DEFAULT_IMPORTS, TIMEOUT_S, content);
 
         if (result.getLeft() instanceof RestAction<?>)
             ((RestAction<?>) result.getLeft()).queue();

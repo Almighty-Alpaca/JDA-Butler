@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
 	// JDA
-	compile group: 'net.dv8tion', name: 'JDA', version: '3.4.0_317'
+	compile group: 'net.dv8tion', name: 'JDA', version: '3.5.0_335'
 
 	// Apache commons Lang 3
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
