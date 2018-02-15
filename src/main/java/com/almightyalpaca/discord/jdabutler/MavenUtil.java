@@ -1,7 +1,7 @@
 package com.almightyalpaca.discord.jdabutler;
 
 import com.kantenkugel.discordbot.versioncheck.DependencyType;
-import com.kantenkugel.discordbot.versioncheck.VersionedItem;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 
 public class MavenUtil
 {

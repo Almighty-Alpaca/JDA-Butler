@@ -1,6 +1,7 @@
 package com.kantenkugel.discordbot.versioncheck;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -27,12 +28,10 @@ public class VersionChecker
     });
     static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
-    private static final Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
-
     public static Set<VersionedItem> checkVersions()
     {
         Set<VersionedItem> changedItems = new HashSet<>();
-        checkedItems.values().forEach(item -> {
+        VersionCheckerRegistry.getVersionedItems().forEach(item -> {
             String version = getVersion(item);
             if (version != null && (item.getVersion() == null || !item.getVersion().equals(version)))
             {
@@ -43,44 +42,7 @@ public class VersionChecker
         return changedItems;
     }
 
-    public static void addItem(String name, String repoType, String groupId, String artifactId, String url)
-    {
-        addItem(new VersionedItem(name, RepoType.fromString(repoType), DependencyType.DEFAULT, groupId, artifactId, url));
-    }
-
-    public static boolean addItem(VersionedItem item)
-    {
-        String version = getVersion(item);
-        if (version != null)
-        {
-            item.setVersion(version);
-            checkedItems.put(item.getName().toLowerCase(), item);
-            return true;
-        }
-        return false;
-    }
-
-    public static void removeItem(VersionedItem item)
-    {
-        removeItem(item.getName());
-    }
-
-    public static void removeItem(String name)
-    {
-        checkedItems.remove(name.toLowerCase());
-    }
-
-    public static VersionedItem getItem(String name)
-    {
-        return checkedItems.get(name.toLowerCase());
-    }
-
-    public static Collection<VersionedItem> getVersionedItems()
-    {
-        return checkedItems.values();
-    }
-
-    private static String getVersion(VersionedItem item)
+    static String getVersion(VersionedItem item)
     {
         ResponseBody body = null;
         try

@@ -1,10 +1,61 @@
 package com.kantenkugel.discordbot.versioncheck;
 
-import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
-import com.kantenkugel.discordbot.versioncheck.updatehandle.JDAUpdateHandler;
+import com.kantenkugel.discordbot.versioncheck.items.JDAItem;
+import com.kantenkugel.discordbot.versioncheck.items.SimpleVersionedItem;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
+
+import java.util.*;
 
 public class VersionCheckerRegistry
 {
+    private static final Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
+
+    public static void addItem(String name, String repoType, String groupId, String artifactId, String url)
+    {
+        addItem(new SimpleVersionedItem(name, RepoType.fromString(repoType), DependencyType.DEFAULT,
+                groupId, artifactId, url, null));
+    }
+
+    public static boolean addItem(VersionedItem item)
+    {
+        String version = VersionChecker.getVersion(item);
+        if (version != null)
+        {
+            item.setVersion(version);
+            checkedItems.put(item.getName().toLowerCase(), item);
+            return true;
+        }
+        return false;
+    }
+
+    public static void removeItem(VersionedItem item)
+    {
+        removeItem(item.getName());
+    }
+
+    public static void removeItem(String name)
+    {
+        checkedItems.remove(name.toLowerCase());
+    }
+
+    public static VersionedItem getItem(String name)
+    {
+        String lowerName = name.toLowerCase();
+        VersionedItem item = checkedItems.get(lowerName);
+        if(item == null)
+        {
+            item = getVersionedItems().stream()
+                    .filter(i -> i.getAliases() != null && i.getAliases().contains(lowerName))
+                    .findAny().orElse(null);
+        }
+        return item;
+    }
+
+    public static Collection<VersionedItem> getVersionedItems()
+    {
+        return checkedItems.values();
+    }
+
     private static boolean initialized = false;
     public synchronized static void init()
     {
@@ -17,11 +68,14 @@ public class VersionCheckerRegistry
 
     private static void register()
     {
-        VersionChecker.addItem(new VersionedItem("JDA", RepoType.JCENTER, DependencyType.DEFAULT,
-                "net.dv8tion", "JDA", JenkinsApi.LAST_BUILD_URL, new JDAUpdateHandler()));
-        VersionChecker.addItem(new VersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT,
-                "com.sedmelluq", "lavaplayer", "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord"));
-        VersionChecker.addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM,
-                "com.jagrosh", "jda-utilities", "https://github.com/JDA-Applications/JDA-Utilities"));
+        addItem(new JDAItem());
+        addItem(new SimpleVersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT,
+                "com.sedmelluq", "lavaplayer",
+                "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord",
+                Arrays.asList("lava", "player")));
+        addItem(new SimpleVersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM,
+                "com.jagrosh", "jda-utilities",
+                "https://github.com/JDA-Applications/JDA-Utilities",
+                Collections.singletonList("utils")));
     }
 }

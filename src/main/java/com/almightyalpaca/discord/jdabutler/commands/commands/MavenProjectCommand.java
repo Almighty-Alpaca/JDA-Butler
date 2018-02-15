@@ -3,8 +3,8 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.MavenUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-import com.kantenkugel.discordbot.versioncheck.VersionChecker;
-import com.kantenkugel.discordbot.versioncheck.VersionedItem;
+import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
@@ -37,11 +37,11 @@ public class MavenProjectCommand implements Command
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception
     {
         List<VersionedItem> deps = new ArrayList<>(3);
-        deps.add(VersionChecker.getItem("jda"));
+        deps.add(VersionCheckerRegistry.getItem("jda"));
         if (content.contains("player"))
-            deps.add(VersionChecker.getItem("lavaplayer"));
+            deps.add(VersionCheckerRegistry.getItem("lavaplayer"));
         if (content.toLowerCase().contains("util"))
-            deps.add(VersionChecker.getItem("jda-utilities"));
+            deps.add(VersionCheckerRegistry.getItem("jda-utilities"));
 
         final StringBuilder builder = new StringBuilder();
 

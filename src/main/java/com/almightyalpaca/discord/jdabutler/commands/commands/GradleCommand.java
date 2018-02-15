@@ -3,8 +3,8 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.GradleUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-import com.kantenkugel.discordbot.versioncheck.VersionChecker;
-import com.kantenkugel.discordbot.versioncheck.VersionedItem;
+import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
@@ -30,17 +30,17 @@ public class GradleCommand implements Command
         final boolean pretty = content.contains("pretty");
 
         List<VersionedItem> deps = new ArrayList<>(3);
-        deps.add(VersionChecker.getItem("jda"));
+        deps.add(VersionCheckerRegistry.getItem("jda"));
 
         String author = "Gradle dependencies for JDA";
         if (content.contains("player"))
         {
-            deps.add(VersionChecker.getItem("lavaplayer"));
+            deps.add(VersionCheckerRegistry.getItem("lavaplayer"));
             author += " and Lavaplayer";
         }
         if (content.toLowerCase().contains("util"))
         {
-            deps.add(VersionChecker.getItem("jda-utilities"));
+            deps.add(VersionCheckerRegistry.getItem("jda-utilities"));
             author += " and JDA-Utilities";
         }
 

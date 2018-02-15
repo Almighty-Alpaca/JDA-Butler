@@ -5,7 +5,7 @@ import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
 import com.kantenkugel.discordbot.versioncheck.VersionChecker;
-import com.kantenkugel.discordbot.versioncheck.VersionedItem;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.MessageEmbed;

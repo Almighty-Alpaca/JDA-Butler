@@ -2,8 +2,8 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.GradleUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-import com.kantenkugel.discordbot.versioncheck.VersionChecker;
-import com.kantenkugel.discordbot.versioncheck.VersionedItem;
+import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -26,11 +26,11 @@ public class BuildGradleCommand implements Command
 
         List<VersionedItem> deps = new ArrayList<>(3);
 
-        deps.add(VersionChecker.getItem("jda"));
+        deps.add(VersionCheckerRegistry.getItem("jda"));
         if(content.contains("player"))
-            deps.add(VersionChecker.getItem("lavaplayer"));
+            deps.add(VersionCheckerRegistry.getItem("lavaplayer"));
         if(content.toLowerCase().contains("util"))
-            deps.add(VersionChecker.getItem("jda-utilities"));
+            deps.add(VersionCheckerRegistry.getItem("jda-utilities"));
 
         final boolean pretty = content.contains("pretty");
 
