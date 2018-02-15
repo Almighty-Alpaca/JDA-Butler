@@ -1,7 +1,6 @@
 package com.kantenkugel.discordbot.versioncheck;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -13,21 +12,22 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class VersionChecker
 {
+    public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(run ->
+    {
+        Thread t = new Thread(run);
+        t.setDaemon(true);
+        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) -> throwable.printStackTrace());
+        return t;
+    });
     static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
     private static final Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
-
-    static {
-        addItem(new VersionedItem("JDA", RepoType.JCENTER, DependencyType.DEFAULT,
-                "net.dv8tion", "JDA", JenkinsApi.LAST_BUILD_URL));
-        addItem(new VersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT,
-                "com.sedmelluq", "lavaplayer", "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord"));
-        addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM,
-                "com.jagrosh", "jda-utilities", "https://github.com/JDA-Applications/JDA-Utilities"));
-    }
 
     public static Set<VersionedItem> checkVersions()
     {
@@ -131,5 +131,35 @@ public class VersionChecker
                 body.close();
         }
         return null;
+    }
+
+    static void initUpdateLoop()
+    {
+        EXECUTOR.scheduleAtFixedRate(() ->
+        {
+            Bot.LOG.debug("Checking for updates...");
+
+            Set<VersionedItem> changedItems = VersionChecker.checkVersions();
+
+            if (Bot.config.getBoolean("testing", true))
+            {
+                Bot.LOG.debug("Skipping version update handlers!");
+                return;
+            }
+
+            for (VersionedItem changedItem : changedItems)
+            {
+                if(changedItem.getUpdateHandler() == null)
+                    continue;
+                try
+                {
+                    changedItem.getUpdateHandler().onUpdate(changedItem);
+                }
+                catch(Exception ex)
+                {
+                    Bot.LOG.warn("UpdateHandler for {} failed", changedItem.getName());
+                }
+            }
+        }, 0, 30, TimeUnit.SECONDS);
     }
 }

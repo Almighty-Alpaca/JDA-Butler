@@ -1,6 +1,10 @@
 package com.kantenkugel.discordbot.versioncheck;
 
+import com.kantenkugel.discordbot.versioncheck.updatehandle.UpdateHandler;
+
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class VersionedItem
 {
@@ -14,6 +18,7 @@ public class VersionedItem
     private String version;
 
     private String url;
+    private UpdateHandler updateHandler;
 
     public VersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId)
     {
@@ -30,10 +35,16 @@ public class VersionedItem
         this.url = url;
     }
 
-    public VersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId, String url, String version)
+    public VersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId, UpdateHandler updateHandler)
+    {
+        this(name, repoType, depType, groupId, artifactId);
+        this.updateHandler = updateHandler;
+    }
+
+    public VersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId, String url, UpdateHandler updateHandler)
     {
         this(name, repoType, depType, groupId, artifactId, url);
-        this.version = version;
+        this.updateHandler = updateHandler;
     }
 
     public String getRepoUrl()
@@ -84,6 +95,57 @@ public class VersionedItem
     public void setUrl(String url)
     {
         this.url = url;
+    }
+
+    public UpdateHandler getUpdateHandler()
+    {
+        return updateHandler;
+    }
+
+    public VersionSplits parseVersion()
+    {
+        String version = getVersion();
+        if(version == null)
+            throw new IllegalStateException("No version fetched so far");
+        return VersionSplits.parse(version);
+    }
+
+    public static class VersionSplits
+    {
+        //major is mandatory, others default to 0
+        public final int major, minor, patch, build;
+        //default to null if not present
+        public final String preReleaseInfo, metaData;
+
+        private VersionSplits(int major, int minor, int patch, int build, String preReleaseInfo, String metaData)
+        {
+            this.major = major;
+            this.minor = minor;
+            this.patch = patch;
+            this.build = build;
+            this.preReleaseInfo = preReleaseInfo;
+            this.metaData = metaData;
+        }
+
+        //major(mandatory), minor, patch, build, preRelease, metaData
+        private static final Pattern EXTENDED_SEMVER_PATTERN =
+                Pattern.compile("(\\d+)(?:\\.(\\d+)(?:\\.(\\d+))?)?(?:_(\\d+))?" +
+                        "(?:-([A-Za-z0-9-.]+))?(?:\\+([A-Za-z0-9-.]+))?");
+
+        private static VersionSplits parse(String versionString)
+        {
+            Matcher matcher = EXTENDED_SEMVER_PATTERN.matcher(versionString);
+            if(!matcher.matches())
+                throw new IllegalArgumentException("Given version string is not extended semver");
+            int major = Integer.parseInt(matcher.group(1));
+            int minor = matcher.group(2).isEmpty() ? 0 : Integer.parseInt(matcher.group(2));
+            int patch = matcher.group(3).isEmpty() ? 0 : Integer.parseInt(matcher.group(3));
+            int build = matcher.group(4).isEmpty() ? 0 : Integer.parseInt(matcher.group(4));
+            String preReleaseInfo = matcher.group(5).isEmpty() ? null : matcher.group(5);
+            String metaData = matcher.group(6).isEmpty() ? null : matcher.group(6);
+
+            return new VersionSplits(major, minor, patch, build, preReleaseInfo, metaData);
+        }
     }
 
     @Override

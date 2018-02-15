@@ -13,6 +13,7 @@ import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
+import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.core.AccountType;
@@ -180,7 +181,7 @@ public class Bot
             root.addAppender(appender);
         }
 
-        EventListener.start();
+        VersionCheckerRegistry.init();
     }
 
     public static void shutdown()
