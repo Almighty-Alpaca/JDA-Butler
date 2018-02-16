@@ -256,7 +256,7 @@ public class JDoc {
     }
 
     private static void download() {
-        JenkinsBuild lastBuild = JenkinsApi.getLastSuccessfulBuild();
+        JenkinsBuild lastBuild = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuild();
         if(lastBuild != null)
         {
             JDocUtil.LOG.info("Downloading JDA docs...");

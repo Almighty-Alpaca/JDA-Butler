@@ -36,7 +36,7 @@ public class ChangelogCommand implements Command
         final int end;
 
         if (content.isEmpty())
-            start = end = JenkinsApi.getLastSuccessfulBuild().buildNum;
+            start = end = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuild().buildNum;
         else if(buildNums.size() == 0)
         {
             channel.sendMessage("Invalid build number(s)").queue();
@@ -58,7 +58,7 @@ public class ChangelogCommand implements Command
 
         for (int i = start; i <= end; i++)
         {
-            JenkinsBuild build = JenkinsApi.getBuild(i);
+            JenkinsBuild build = JenkinsApi.JDA_JENKINS.getBuild(i);
             if(build == null)
                 continue;
 
@@ -111,9 +111,9 @@ public class ChangelogCommand implements Command
         }
 
         if (last != null)
-            eb.setAuthor("Changelog between builds " + first + " and " + last, JenkinsApi.CHANGE_URL, EmbedUtil.JDA_ICON);
+            eb.setAuthor("Changelog between builds " + first + " and " + last, JenkinsApi.JDA_JENKINS.getChangesetUrl(), EmbedUtil.JDA_ICON);
         else
-            eb.setAuthor("Changelog for build " + first, JenkinsApi.CHANGE_URL, EmbedUtil.JDA_ICON);
+            eb.setAuthor("Changelog for build " + first, JenkinsApi.JDA_JENKINS.getChangesetUrl(), EmbedUtil.JDA_ICON);
 
         EmbedUtil.setColor(eb);
 

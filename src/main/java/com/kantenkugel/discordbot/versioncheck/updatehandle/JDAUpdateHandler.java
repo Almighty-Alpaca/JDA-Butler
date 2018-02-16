@@ -29,7 +29,7 @@ public class JDAUpdateHandler implements UpdateHandler
 
             Bot.config.save();
 
-            JenkinsBuild jenkinsBuild = JenkinsApi.fetchLastSuccessfulBuild();
+            JenkinsBuild jenkinsBuild = JenkinsApi.JDA_JENKINS.fetchLastSuccessfulBuild();
 
             if(jenkinsBuild == null)
             {
@@ -51,7 +51,7 @@ public class JDAUpdateHandler implements UpdateHandler
 
             mb.append(Bot.getRoleJdaUpdates());
 
-            eb.setAuthor("JDA 3 version " + item.getVersion() + " has been released\n", JenkinsApi.JENKINS_BASE + versionSplits.build, EmbedUtil.JDA_ICON);
+            eb.setAuthor("JDA 3 version " + item.getVersion() + " has been released\n", JenkinsApi.JDA_JENKINS.jenkinsBase + versionSplits.build, EmbedUtil.JDA_ICON);
 
             EmbedUtil.setColor(eb);
 

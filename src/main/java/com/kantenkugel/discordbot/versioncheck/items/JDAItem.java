@@ -36,7 +36,7 @@ public class JDAItem extends VersionedItem
     @Override
     public String getUrl()
     {
-        return JenkinsApi.LAST_BUILD_URL;
+        return JenkinsApi.JDA_JENKINS.getLastSuccessfulBuildUrl();
     }
 
     @Override
