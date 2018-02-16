@@ -80,6 +80,8 @@ public class JenkinsApi
         try
         {
             Response res = Bot.httpClient.newCall(req).execute();
+            if(!res.isSuccessful())
+                return null;
             JenkinsBuild build = JenkinsBuild.fromJson(new JSONObject(res.body().string()), this);
             if(build.status != JenkinsBuild.Status.BUILDING)
                 resultCache.add(build.buildNum, build);

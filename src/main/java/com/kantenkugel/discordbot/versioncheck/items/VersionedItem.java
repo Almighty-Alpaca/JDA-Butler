@@ -1,8 +1,9 @@
 package com.kantenkugel.discordbot.versioncheck.items;
 
+import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
 import com.kantenkugel.discordbot.versioncheck.DependencyType;
 import com.kantenkugel.discordbot.versioncheck.RepoType;
-import com.kantenkugel.discordbot.versioncheck.updatehandle.UpdateHandler;
+import com.kantenkugel.discordbot.versioncheck.UpdateHandler;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +36,11 @@ public abstract class VersionedItem
     }
 
     public UpdateHandler getUpdateHandler()
+    {
+        return null;
+    }
+
+    public ChangelogProvider getChangelogProvider()
     {
         return null;
     }

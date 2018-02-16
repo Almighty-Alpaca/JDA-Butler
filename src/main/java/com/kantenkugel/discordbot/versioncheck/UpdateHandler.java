@@ -1,4 +1,4 @@
-package com.kantenkugel.discordbot.versioncheck.updatehandle;
+package com.kantenkugel.discordbot.versioncheck;
 
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 
