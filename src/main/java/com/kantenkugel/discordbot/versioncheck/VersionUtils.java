@@ -6,6 +6,9 @@ import java.util.regex.Pattern;
 
 public class VersionUtils
 {
+    /**
+     * Comparator for comparing VersionSplits (older < newer)
+     */
     public static final Comparator<VersionSplits> VERSION_COMP = Comparator
             .comparingInt((VersionSplits s) -> s.major)
             .thenComparingInt((VersionSplits s) -> s.minor)
@@ -15,11 +18,20 @@ public class VersionUtils
                     s1.preReleaseInfo == null && s2.preReleaseInfo == null ? 0
                             : s1.preReleaseInfo != null ? -1 : 1
             );
+    /**
+     * First parses Strings to {@link VersionSplits} via {@link #parseVersion(String)},
+     * then compares those via {@link #VERSION_COMP} (older < newer).
+     * <br/><b>Note:</b> This only works on versions in extended SemVer format (optional minor/patch and build)
+     */
     public static final Comparator<String> VERSION_STRING_COMP = Comparator.comparing(VersionUtils::parseVersion, VERSION_COMP);
 
+    /**
+     * Tries to parse given String to {@link VersionSplits}.
+     * <br/><b>Note:</b> This only works on versions in extended SemVer format (optional minor/patch and build)
+     */
     public static VersionSplits parseVersion(String version)
     {
-        return VersionSplits.parse(version);
+        return VersionSplits.parseExtendedSemver(version);
     }
 
     public static class VersionSplits
@@ -29,7 +41,7 @@ public class VersionUtils
         //default to null if not present
         public final String preReleaseInfo, metaData;
 
-        protected VersionSplits(int major, int minor, int patch, int build, String preReleaseInfo, String metaData)
+        public VersionSplits(int major, int minor, int patch, int build, String preReleaseInfo, String metaData)
         {
             this.major = major;
             this.minor = minor;
@@ -39,12 +51,24 @@ public class VersionUtils
             this.metaData = metaData;
         }
 
-        //major(mandatory), minor, patch, build, preRelease, metaData
+        /**
+         * Regex Pattern for parsing extended SemVer.
+         *
+         * <p>Capture groups:
+         * <ul>
+         *     <li>Group 1: major version (number, mandatory)</li>
+         *     <li>Group 2: minor version (number, optional)</li>
+         *     <li>Group 3: patch version (number, optional)</li>
+         *     <li>Group 4: build number (number, optional)</li>
+         *     <li>Group 5: pre-release tags (String, optional)</li>
+         *     <li>Group 6: meta information (String, optional)</li>
+         * </ul>
+         */
         public static final Pattern EXTENDED_SEMVER_PATTERN =
                 Pattern.compile("(\\d+)(?:\\.(\\d+)(?:\\.(\\d+))?)?(?:_(\\d+))?" +
                         "(?:-([A-Za-z0-9-.]+))?(?:\\+([A-Za-z0-9-.]+))?");
 
-        public static VersionSplits parse(String versionString)
+        private static VersionSplits parseExtendedSemver(String versionString)
         {
             Matcher matcher = EXTENDED_SEMVER_PATTERN.matcher(versionString);
             if(!matcher.matches())

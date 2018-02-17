@@ -106,11 +106,7 @@ public class VersionChecker
 
             Set<VersionedItem> changedItems = VersionChecker.checkVersions();
 
-            if (Bot.config.getBoolean("testing", true))
-            {
-                Bot.LOG.debug("Skipping version update handlers!");
-                return;
-            }
+            boolean shouldAnnounce = !Bot.config.getBoolean("testing", true);
 
             for (VersionedItem changedItem : changedItems)
             {
@@ -118,7 +114,7 @@ public class VersionChecker
                     continue;
                 try
                 {
-                    changedItem.getUpdateHandler().accept(changedItem);
+                    changedItem.getUpdateHandler().accept(changedItem, shouldAnnounce);
                 }
                 catch(Exception ex)
                 {

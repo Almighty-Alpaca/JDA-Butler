@@ -17,7 +17,7 @@ import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class JDAItem extends VersionedItem
 {
@@ -54,7 +54,7 @@ public class JDAItem extends VersionedItem
     }
 
     @Override
-    public Consumer<VersionedItem> getUpdateHandler()
+    public BiConsumer<VersionedItem, Boolean> getUpdateHandler()
     {
         return this::onUpdate;
     }
@@ -65,7 +65,7 @@ public class JDAItem extends VersionedItem
         return changelogProvider;
     }
 
-    private void onUpdate(VersionedItem item)
+    private void onUpdate(VersionedItem item, boolean shouldAnnounce)
     {
         VersionUtils.VersionSplits versionSplits = item.parseVersion();
         if (versionSplits.build != Bot.config.getInt("jda.version.build", -1))
@@ -90,6 +90,9 @@ public class JDAItem extends VersionedItem
                 JDoc.reFetch();
                 GradleProjectDropboxUploader.uploadProject();
             });
+
+            if(!shouldAnnounce)
+                return;
 
             final EmbedBuilder eb = new EmbedBuilder();
 

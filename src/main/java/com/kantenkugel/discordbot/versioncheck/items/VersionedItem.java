@@ -7,49 +7,133 @@ import com.kantenkugel.discordbot.versioncheck.RepoType;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public abstract class VersionedItem
 {
+    /**
+     * The name of this item. Used to display this item in various command callbacks.
+     * <br/> Should be human readable and capitalized as needed. Will be cast to lowercase for the registry
+     *
+     * @return  The name of the item
+     */
     public abstract String getName();
 
+    /**
+     * If available, this is used in the registry lookup methods to get this item via alternative names.
+     * Should be collision free with other items.
+     *
+     * @return  Null-able list of aliases of this item.
+     */
     public List<String> getAliases()
     {
         return null;
     }
 
+    /**
+     * The maven repository type of this item (maven artifact).
+     * <br/>Used for automated version retrieval from maven repository.
+     *
+     * <p><b>Note:</b> This may only be {@code null}, if {@link #getCustomVersionSupplier()} is used.
+     *
+     * @return  The repository type of this maven artifact
+     */
     public abstract RepoType getRepoType();
 
+    /**
+     * The group id of this item (maven artifact).
+     * <br/>Used for automated version retrieval from maven repository.
+     *
+     * <p><b>Note:</b> This may only be {@code null}, if {@link #getCustomVersionSupplier()} is used.
+     *
+     * @return  The group id of this maven artifact
+     */
     public abstract String getGroupId();
 
+    /**
+     * The artifact id of this item (maven artifact).
+     * <br/>Used for automated version retrieval from maven repository.
+     *
+     * <p><b>Note:</b> This may only be {@code null}, if {@link #getCustomVersionSupplier()} is used.
+     *
+     * @return  The artifact id of this maven artifact
+     */
     public abstract String getArtifactId();
 
+    /**
+     * The (maven) dependency type of this artifact.
+     * This is used in the maven commands to set the {@literal <type>} tag (if not DEFAULT)
+     * as maven can't properly use the type given via pom.
+     *
+     * @return  The artifact dependency type
+     */
     public DependencyType getDependencyType()
     {
         return DependencyType.DEFAULT;
     }
 
+    /**
+     * This url, if provided is used in embeds to link to this items main website.
+     * <br>Best values for this are personal websites, github repo or build servers for example.
+     *
+     * @return  Null-able main url of this item
+     */
     public String getUrl()
     {
         return null;
     }
 
-    public Consumer<VersionedItem> getUpdateHandler()
+    /**
+     * Hook to run custom code once a new version of this item is detected by JDA-Butler.
+     *
+     * <p>Arguments of BiConsumer:
+     * <ul>
+     *     <li><b>VersionedItem:</b> Instance of this VersionedItem</li>
+     *     <li><b>Boolean:</b> Boolean indicating whether or not this should trigger any visible notifications.
+     *     This is {@code false}, if the bot is running in testing mode</li>
+     * </ul>
+     *
+     * @return  Null-able custom update handler
+     */
+    public BiConsumer<VersionedItem, Boolean> getUpdateHandler()
     {
         return null;
     }
 
+    /**
+     * Hook to run custom code to retrieve the latest version. This is periodically called by the update-checker code.
+     * <br/>If this is provided, all maven related methods are ignored
+     * and this item will not be available for maven/gradle commands.
+     *
+     * <p><b>Return type of Supplier:</b>
+     * <br/>Null-able version String indicating current version or failure if {@code null}
+     *
+     * @return  Null-able custom version supplier
+     */
     public Supplier<String> getCustomVersionSupplier()
     {
         return null;
     }
 
+    /**
+     * Hook to enable changelogs for this item. This is used in the !changelog command
+     *
+     * @return  Null-able ChangelogProvider to use
+     */
     public ChangelogProvider getChangelogProvider()
     {
         return null;
     }
 
+    /**
+     * Parses this item's version to {@link com.kantenkugel.discordbot.versioncheck.VersionUtils.VersionSplits}.
+     * <br/>The default implementation uses {@link VersionUtils#parseVersion(String)} to parse this version.
+     * This does not work for versions that are not in the extended SemVer format (as described in {@link VersionUtils#parseVersion(String)})
+     * <br/>This is currently not used anywhere but should still be correctly implemented if not extended SemVer is available.
+     *
+     * @return  VersionSplits object reflecting this items version
+     */
     public VersionUtils.VersionSplits parseVersion()
     {
         String version = getVersion();
@@ -58,6 +142,12 @@ public abstract class VersionedItem
         return VersionUtils.parseVersion(version);
     }
 
+    /**
+     * The url to this item's {@code maven-metadata.xml} document. This is used in the version-check routine.
+     * <br/>The default implementation should already work for every standard maven repository and should not be changed.
+     *
+     * @return  The url to this items maven-metadata.xml file
+     */
     public String getRepoUrl()
     {
         return String.format("%s%s/%s/maven-metadata.xml", getRepoType().getRepoBase(),

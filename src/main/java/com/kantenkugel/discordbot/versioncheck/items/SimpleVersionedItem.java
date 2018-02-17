@@ -5,6 +5,11 @@ import com.kantenkugel.discordbot.versioncheck.RepoType;
 
 import java.util.List;
 
+/**
+ * Simple wrapper class for {@link VersionedItem}.
+ * <br/>This only supports maven artifacts and doesn't support advanced features like update handler, changelogs or custom versions.
+ * For these, please directly extend {@link VersionedItem}.
+ */
 public class SimpleVersionedItem extends VersionedItem
 {
     private final String name;

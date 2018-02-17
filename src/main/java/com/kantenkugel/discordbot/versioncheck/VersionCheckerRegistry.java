@@ -75,9 +75,10 @@ public class VersionCheckerRegistry
         addItem(new SimpleVersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM,
                 "com.jagrosh", "jda-utilities",
                 "https://github.com/JDA-Applications/JDA-Utilities",
-                Collections.singletonList("utils")));
+                Arrays.asList("utils", "jda-utils")));
         //featured
         addItem(new YuiItem());
         addItem(new JDActionItem());
+        //other
     }
 }

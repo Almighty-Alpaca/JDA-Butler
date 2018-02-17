@@ -14,6 +14,38 @@ public class JenkinsApi
 {
     public static final JenkinsApi JDA_JENKINS = JenkinsApi.forConfig("http://home.dv8tion.net:8080", "JDA");
 
+    /**
+     * Returns a new JenkinsApi instance for given configuration
+     *
+     * @param baseUrl
+     *          The base url of a Jenkins server (jenkins' base page)
+     * @param jobName
+     *          The name of the Jenkins job to bind to
+     *
+     * @return  A new JenkinsApi instance bound to given Jenkins server and job
+     */
+    public static JenkinsApi forConfig(String baseUrl, String jobName)
+    {
+        if(!baseUrl.endsWith("/"))
+            baseUrl += '/';
+        return forConfig(baseUrl + "job/" + jobName);
+    }
+
+    /**
+     * Returns a new JenkinsApi instance for given configuration
+     *
+     * @param fullJobPath
+     *          The full url of a Jenkins job
+     *
+     * @return  A new JenkinsApi instance Jenkins job (via full url)
+     */
+    public static JenkinsApi forConfig(String fullJobPath)
+    {
+        if(!fullJobPath.endsWith("/"))
+            fullJobPath += '/';
+        return new JenkinsApi(fullJobPath);
+    }
+
     static final Logger LOG = LoggerFactory.getLogger(JenkinsApi.class);
 
     private static final String API_SUFFIX = "api/json?";
@@ -24,20 +56,6 @@ public class JenkinsApi
 
     private static final String LATEST_SUCC_SUFFIX = "lastSuccessfulBuild/";
     private static final String CHANGE_SUFFIX = "changes";
-
-    public static JenkinsApi forConfig(String baseUrl, String jobName)
-    {
-        if(!baseUrl.endsWith("/"))
-            baseUrl += '/';
-        return forConfig(baseUrl + "job/" + jobName);
-    }
-
-    public static JenkinsApi forConfig(String fullJobPath)
-    {
-        if(!fullJobPath.endsWith("/"))
-            fullJobPath += '/';
-        return new JenkinsApi(fullJobPath);
-    }
 
     public final String jenkinsBase;
 
