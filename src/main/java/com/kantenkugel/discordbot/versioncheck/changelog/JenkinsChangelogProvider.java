@@ -58,7 +58,7 @@ public class JenkinsChangelogProvider implements ChangelogProvider
                 continue;
 
             String title = build.status == JenkinsBuild.Status.SUCCESS
-                    ? build.artifacts.get("JDA").fileNameParts.get(1)
+                    ? build.artifacts.values().iterator().next().fileNameParts.get(1)
                     : "Build " + build.buildNum + " (failed)";
 
             final List<JenkinsChange> changeSet = build.changes;

@@ -17,8 +17,9 @@ import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.List;
+import java.util.function.Consumer;
 
-public class JDAItem extends VersionedItem implements UpdateHandler
+public class JDAItem extends VersionedItem
 {
     private final ChangelogProvider changelogProvider = new JenkinsChangelogProvider(JenkinsApi.JDA_JENKINS);
 
@@ -53,9 +54,9 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     }
 
     @Override
-    public UpdateHandler getUpdateHandler()
+    public Consumer<VersionedItem> getUpdateHandler()
     {
-        return this;
+        return this::onUpdate;
     }
 
     @Override
@@ -64,10 +65,9 @@ public class JDAItem extends VersionedItem implements UpdateHandler
         return changelogProvider;
     }
 
-    @Override
-    public void onUpdate(VersionedItem item)
+    private void onUpdate(VersionedItem item)
     {
-        VersionedItem.VersionSplits versionSplits = item.parseVersion();
+        VersionUtils.VersionSplits versionSplits = item.parseVersion();
         if (versionSplits.build != Bot.config.getInt("jda.version.build", -1))
         {
             Bot.LOG.debug("Update found!");

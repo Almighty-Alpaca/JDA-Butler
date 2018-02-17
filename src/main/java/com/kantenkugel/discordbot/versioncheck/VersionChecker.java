@@ -47,6 +47,9 @@ public class VersionChecker
         ResponseBody body = null;
         try
         {
+            if(item.getCustomVersionSupplier() != null)
+                return item.getCustomVersionSupplier().get();
+
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
@@ -115,13 +118,13 @@ public class VersionChecker
                     continue;
                 try
                 {
-                    changedItem.getUpdateHandler().onUpdate(changedItem);
+                    changedItem.getUpdateHandler().accept(changedItem);
                 }
                 catch(Exception ex)
                 {
                     Bot.LOG.warn("UpdateHandler for {} failed", changedItem.getName());
                 }
             }
-        }, 0, 30, TimeUnit.SECONDS);
+        }, 0, 1, TimeUnit.MINUTES);
     }
 }

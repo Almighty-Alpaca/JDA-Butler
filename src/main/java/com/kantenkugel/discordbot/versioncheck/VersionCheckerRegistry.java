@@ -1,8 +1,6 @@
 package com.kantenkugel.discordbot.versioncheck;
 
-import com.kantenkugel.discordbot.versioncheck.items.JDAItem;
-import com.kantenkugel.discordbot.versioncheck.items.SimpleVersionedItem;
-import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
+import com.kantenkugel.discordbot.versioncheck.items.*;
 
 import java.util.*;
 
@@ -68,6 +66,7 @@ public class VersionCheckerRegistry
 
     private static void register()
     {
+        //Core
         addItem(new JDAItem());
         addItem(new SimpleVersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT,
                 "com.sedmelluq", "lavaplayer",
@@ -77,5 +76,8 @@ public class VersionCheckerRegistry
                 "com.jagrosh", "jda-utilities",
                 "https://github.com/JDA-Applications/JDA-Utilities",
                 Collections.singletonList("utils")));
+        //featured
+        addItem(new YuiItem());
+        addItem(new JDActionItem());
     }
 }
