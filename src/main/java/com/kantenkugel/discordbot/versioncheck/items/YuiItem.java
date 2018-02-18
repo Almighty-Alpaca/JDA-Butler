@@ -10,9 +10,9 @@ import java.util.function.Supplier;
 
 public class YuiItem extends VersionedItem
 {
-    private JenkinsApi jenkins = JenkinsApi.forConfig("http://home.dv8tion.net:8080", "Yui");
-    private Supplier<String> versionSupplier = new JenkinsVersionSupplier(jenkins);
-    private ChangelogProvider clProvider = new JenkinsChangelogProvider(jenkins);
+    private final JenkinsApi jenkins = JenkinsApi.forConfig("http://home.dv8tion.net:8080", "Yui");
+    private final Supplier<String> versionSupplier = new JenkinsVersionSupplier(jenkins);
+    private final ChangelogProvider clProvider = new JenkinsChangelogProvider(jenkins);
 
     @Override
     public String getName()

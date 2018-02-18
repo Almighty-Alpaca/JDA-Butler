@@ -9,15 +9,16 @@ public class VersionUtils
     /**
      * Comparator for comparing VersionSplits (older < newer)
      */
-    public static final Comparator<VersionSplits> VERSION_COMP = Comparator
-            .comparingInt((VersionSplits s) -> s.major)
-            .thenComparingInt((VersionSplits s) -> s.minor)
-            .thenComparingInt((VersionSplits s) -> s.patch)
-            .thenComparingInt((VersionSplits s) -> s.build)
-            .thenComparing((VersionSplits s1, VersionSplits s2) ->
+    public static final Comparator<VersionSplits> VERSION_COMP = Comparator.<VersionSplits>
+             comparingInt(s -> s.major)
+            .thenComparingInt(s -> s.minor)
+            .thenComparingInt(s -> s.patch)
+            .thenComparingInt(s -> s.build)
+            .thenComparing((s1, s2)->
                     s1.preReleaseInfo == null && s2.preReleaseInfo == null ? 0
                             : s1.preReleaseInfo != null ? -1 : 1
             );
+
     /**
      * First parses Strings to {@link VersionSplits} via {@link #parseVersion(String)},
      * then compares those via {@link #VERSION_COMP} (older < newer).

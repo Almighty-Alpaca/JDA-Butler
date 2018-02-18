@@ -292,8 +292,8 @@ public class JDoc {
                 JDocUtil.LOG.warn("OkHttp returned failure for java8 index: "+res.code());
                 return;
             }
-            String body = res.body().string();
-            Document docBody = Jsoup.parse(body);
+            ResponseBody body = res.body();
+            Document docBody = Jsoup.parse(body.byteStream(), "UTF-8", JDocUtil.JAVA_JDOCS_PREFIX);
             docBody.getElementsByClass("indexContainer").first().child(0).children().forEach(child -> {
                 Element link = child.child(0);
                 if(link.tagName().equals("a") && link.attr("href").startsWith("java/")) {

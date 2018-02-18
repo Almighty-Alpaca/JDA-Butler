@@ -58,7 +58,7 @@ public class JDActionItem extends VersionedItem
         try
         {
             Response res = Bot.httpClient.newCall(req).execute();
-            Document htmlDoc = Jsoup.parse(res.body().string());
+            Document htmlDoc = Jsoup.parse(res.body().byteStream(), "UTF-8", versionDir);
             Elements links = htmlDoc.getElementsByTag("a");
             return links.stream()
                     .map(e ->
@@ -66,8 +66,8 @@ public class JDActionItem extends VersionedItem
                         String text = e.text();
                         return text.substring(0, text.length() - 1);
                     })
-                    .sorted(VersionUtils.VERSION_STRING_COMP.reversed())
-                    .findFirst().orElse(null);
+                    .max(VersionUtils.VERSION_STRING_COMP)
+                    .orElse(null);
         }
         catch(Exception e)
         {
