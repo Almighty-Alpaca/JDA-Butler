@@ -20,7 +20,7 @@ import java.util.List;
 
 public class JDAItem extends VersionedItem implements UpdateHandler
 {
-    private final ChangelogProvider changelogProvider = new JenkinsChangelogProvider(JenkinsApi.JDA_JENKINS);
+    private final ChangelogProvider changelogProvider = new JenkinsChangelogProvider(JenkinsApi.JDA_JENKINS, "https://github.com/DV8FromTheWorld/JDA/");
 
     @Override
     public String getName()

@@ -12,7 +12,7 @@ public class YuiItem extends VersionedItem
 {
     private final JenkinsApi jenkins = JenkinsApi.forConfig("http://home.dv8tion.net:8080", "Yui");
     private final Supplier<String> versionSupplier = new JenkinsVersionSupplier(jenkins);
-    private final ChangelogProvider clProvider = new JenkinsChangelogProvider(jenkins);
+    private final ChangelogProvider clProvider = new JenkinsChangelogProvider(jenkins, "https://github.com/DV8FromTheWorld/Yui/");
 
     @Override
     public String getName()

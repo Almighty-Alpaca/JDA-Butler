@@ -11,10 +11,12 @@ import java.util.List;
 public class JenkinsChangelogProvider implements ChangelogProvider
 {
     private final JenkinsApi jenkins;
+    private final String githubUrl;
 
-    public JenkinsChangelogProvider(JenkinsApi jenkins)
+    public JenkinsChangelogProvider(JenkinsApi jenkins, String githubUrl)
     {
         this.jenkins = jenkins;
+        this.githubUrl = githubUrl.endsWith("/") ? githubUrl : githubUrl + '/';
     }
 
     @Override
@@ -78,20 +80,7 @@ public class JenkinsChangelogProvider implements ChangelogProvider
         return changelogs;
     }
 
-    private static int extractBuild(String version)
-    {
-        int i = version.lastIndexOf('_');
-        try
-        {
-            return Math.max(0, Integer.parseInt(version.substring(i + 1)));
-        }
-        catch(NumberFormatException ex)
-        {
-            return 0;
-        }
-    }
-
-    private static List<String> getChangelog(List<JenkinsChange> changeSet)
+    private List<String> getChangelog(List<JenkinsChange> changeSet)
     {
         final List<String> fields = new ArrayList<>();
 
@@ -104,7 +93,7 @@ public class JenkinsChangelogProvider implements ChangelogProvider
             for (int j = 0; j < lines.length; j++)
             {
                 final StringBuilder line = new StringBuilder();
-                line.append("[`").append(j == 0 ? item.getShortId() : "`.......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/").append(item.commitId).append(")").append(" ").append(lines[j]).append("\n");
+                line.append("[`").append(j == 0 ? item.getShortId() : "`.......`").append("`](").append(githubUrl).append("commit/").append(item.commitId).append(")").append(" ").append(lines[j]).append("\n");
 
                 if (builder.length() + line.length() > 1021)
                 {
@@ -120,6 +109,18 @@ public class JenkinsChangelogProvider implements ChangelogProvider
             fields.add(builder.toString());
 
         return fields;
+    }
 
+    private static int extractBuild(String version)
+    {
+        int i = version.lastIndexOf('_');
+        try
+        {
+            return Math.max(0, Integer.parseInt(version.substring(i + 1)));
+        }
+        catch(NumberFormatException ex)
+        {
+            return 0;
+        }
     }
 }
