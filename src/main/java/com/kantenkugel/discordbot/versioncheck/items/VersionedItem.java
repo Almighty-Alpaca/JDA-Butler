@@ -1,5 +1,6 @@
 package com.kantenkugel.discordbot.versioncheck.items;
 
+import com.kantenkugel.discordbot.versioncheck.UpdateHandler;
 import com.kantenkugel.discordbot.versioncheck.VersionUtils;
 import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
 import com.kantenkugel.discordbot.versioncheck.DependencyType;
@@ -7,7 +8,6 @@ import com.kantenkugel.discordbot.versioncheck.RepoType;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public abstract class VersionedItem
@@ -87,16 +87,9 @@ public abstract class VersionedItem
     /**
      * Hook to run custom code once a new version of this item is detected by JDA-Butler.
      *
-     * <p>Arguments of BiConsumer:
-     * <ul>
-     *     <li><b>VersionedItem:</b> Instance of this VersionedItem</li>
-     *     <li><b>Boolean:</b> Boolean indicating whether or not this should trigger any visible notifications.
-     *     This is {@code false}, if the bot is running in testing mode</li>
-     * </ul>
-     *
      * @return  Null-able custom update handler
      */
-    public BiConsumer<VersionedItem, Boolean> getUpdateHandler()
+    public UpdateHandler getUpdateHandler()
     {
         return null;
     }
@@ -153,7 +146,6 @@ public abstract class VersionedItem
         return String.format("%s%s/%s/maven-metadata.xml", getRepoType().getRepoBase(),
                 getGroupId().replace('.', '/'), getArtifactId());
     }
-
 
     private String version = null;
 

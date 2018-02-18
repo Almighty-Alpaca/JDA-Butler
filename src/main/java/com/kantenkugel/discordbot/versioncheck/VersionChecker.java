@@ -2,6 +2,7 @@ package com.kantenkugel.discordbot.versioncheck;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
+import net.dv8tion.jda.core.utils.tuple.Pair;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -28,15 +29,15 @@ public class VersionChecker
     });
     static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
-    public static Set<VersionedItem> checkVersions()
+    public static Set<Pair<VersionedItem, String>> checkVersions()
     {
-        Set<VersionedItem> changedItems = new HashSet<>();
+        Set<Pair<VersionedItem, String>> changedItems = new HashSet<>();
         VersionCheckerRegistry.getVersionedItems().forEach(item -> {
             String version = getVersion(item);
             if (version != null && (item.getVersion() == null || !item.getVersion().equals(version)))
             {
+                changedItems.add(Pair.of(item, item.getVersion()));
                 item.setVersion(version);
-                changedItems.add(item);
             }
         });
         return changedItems;
@@ -104,17 +105,18 @@ public class VersionChecker
         {
             Bot.LOG.debug("Checking for updates...");
 
-            Set<VersionedItem> changedItems = VersionChecker.checkVersions();
+            Set<Pair<VersionedItem, String>> changedItems = VersionChecker.checkVersions();
 
             boolean shouldAnnounce = !Bot.config.getBoolean("testing", true);
 
-            for (VersionedItem changedItem : changedItems)
+            for (Pair<VersionedItem, String> changedItemPair : changedItems)
             {
+                VersionedItem changedItem = changedItemPair.getLeft();
                 if(changedItem.getUpdateHandler() == null)
                     continue;
                 try
                 {
-                    changedItem.getUpdateHandler().accept(changedItem, shouldAnnounce);
+                    changedItem.getUpdateHandler().onUpdate(changedItem, changedItemPair.getRight(), shouldAnnounce);
                 }
                 catch(Exception ex)
                 {

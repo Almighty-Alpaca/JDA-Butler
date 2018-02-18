@@ -67,12 +67,12 @@ public class JDActionItem extends VersionedItem
                         return text.substring(0, text.length() - 1);
                     })
                     .sorted(VersionUtils.VERSION_STRING_COMP.reversed())
-                    .findFirst().orElse("Error");
+                    .findFirst().orElse(null);
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
-        return "Error";
+        return null;
     }
 }

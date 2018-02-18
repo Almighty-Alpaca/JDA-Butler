@@ -17,9 +17,8 @@ import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 
-public class JDAItem extends VersionedItem
+public class JDAItem extends VersionedItem implements UpdateHandler
 {
     private final ChangelogProvider changelogProvider = new JenkinsChangelogProvider(JenkinsApi.JDA_JENKINS);
 
@@ -54,9 +53,9 @@ public class JDAItem extends VersionedItem
     }
 
     @Override
-    public BiConsumer<VersionedItem, Boolean> getUpdateHandler()
+    public UpdateHandler getUpdateHandler()
     {
-        return this::onUpdate;
+        return this;
     }
 
     @Override
@@ -65,7 +64,8 @@ public class JDAItem extends VersionedItem
         return changelogProvider;
     }
 
-    private void onUpdate(VersionedItem item, boolean shouldAnnounce)
+    @Override
+    public void onUpdate(VersionedItem item, String previousVersion, boolean shouldAnnounce)
     {
         VersionUtils.VersionSplits versionSplits = item.parseVersion();
         if (versionSplits.build != Bot.config.getInt("jda.version.build", -1))
@@ -110,7 +110,6 @@ public class JDAItem extends VersionedItem
             {
 
                 eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
-                //todo: use changelogprovider?
                 ChangelogProvider.Changelog changelog = getChangelogProvider().getChangelog(Integer.toString(jenkinsBuild.buildNum));
                 List<String> changeset = changelog.getChangeset();
 
