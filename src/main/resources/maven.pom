@@ -8,11 +8,9 @@
     <artifactId>example-bot</artifactId>
     <version>1.0</version>
 
-    <repositories>
-%s    </repositories>
+%s
 
-    <dependencies>
-%s    </dependencies>
+%s
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>

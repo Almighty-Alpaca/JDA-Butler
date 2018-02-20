@@ -10,16 +10,13 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class VersionsCommand implements Command
 {
 
     private static final String[] ALIASES = { "version", "latest" };
-    private static final String[] DEFAULT_SET = { "jda", "lavaplayer", "jda-utilities" };
+    private static final String DEFAULT_ITEMS = "jda, lavaplayer, jda-utilities";
 
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
@@ -31,12 +28,11 @@ public class VersionsCommand implements Command
         List<VersionedItem> items;
         if(content.trim().isEmpty())
         {
-            items = Arrays.stream(DEFAULT_SET).map(VersionCheckerRegistry::getItem).collect(Collectors.toList());
+            items = VersionCheckerRegistry.getItemsFromString(DEFAULT_ITEMS);
         }
         else
         {
-            String[] split = content.trim().split("\\s+");
-            items = Arrays.stream(split).map(VersionCheckerRegistry::getItem).filter(Objects::nonNull).collect(Collectors.toList());
+            items = VersionCheckerRegistry.getItemsFromString(content);
         }
 
         if(items.isEmpty())

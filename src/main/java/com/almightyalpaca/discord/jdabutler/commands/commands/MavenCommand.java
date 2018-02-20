@@ -6,60 +6,44 @@ import com.almightyalpaca.discord.jdabutler.commands.Command;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 public class MavenCommand implements Command
 {
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        final MessageBuilder mb = new MessageBuilder();
-        final EmbedBuilder eb = new EmbedBuilder();
+        final EmbedBuilder eb = new EmbedBuilder().setAuthor("Maven dependencies", null, EmbedUtil.JDA_ICON);
 
-        List<VersionedItem> deps = new ArrayList<>(3);
-        deps.add(VersionCheckerRegistry.getItem("jda"));
+        VersionedItem jdaItem = VersionCheckerRegistry.getItem("jda");
+        LinkedList<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content).stream()
+                //only allow items which use maven for versioning
+                .filter(item -> item.getCustomVersionSupplier() == null)
+                .collect(Collectors.toCollection(LinkedList::new));
+        //force jda to be at first position
+        items.remove(jdaItem);
+        items.addFirst(jdaItem);
 
-        String author = "Maven dependencies for JDA";
-        if (content.contains("player"))
-        {
-            deps.add(VersionCheckerRegistry.getItem("lavaplayer"));
-            author += " and Lavaplayer";
-        }
-        if (content.toLowerCase().contains("util"))
-        {
-            deps.add(VersionCheckerRegistry.getItem("jda-utilities"));
-            author += " and JDA-Utilities";
-        }
+        StringBuilder descBuilder = new StringBuilder("If you don't know maven type `!pom.xml` for a complete maven build file\n\n```xml\n");
 
-        eb.setAuthor(author, null, EmbedUtil.JDA_ICON);
+        descBuilder.append(MavenUtil.getDependencyBlock(items, null));
 
-        StringBuilder field = new StringBuilder("If you don't know maven type `!pom.xml` for a complete maven build file\n\n```xml\n");
+        descBuilder.append("\n\n");
 
-        for (VersionedItem dep : deps)
-        {
-            field.append(MavenUtil.getDependencyString(dep, null)).append("\n");
-        }
+        descBuilder.append(MavenUtil.getRepositoryBlock(items, null));
 
-        field.append("\n");
+        descBuilder.append("\n```");
 
-        deps.stream().map(VersionedItem::getRepoType).distinct().forEachOrdered(repoType -> {
-            field.append(MavenUtil.getRepositoryString(repoType.toString(), repoType.toString(), repoType.getRepoBase(), null)).append("\n");
-        });
-
-        field.append("```");
-
-        eb.addField("", field.toString(), false);
+        eb.setDescription(descBuilder.toString());
 
         EmbedUtil.setColor(eb);
-        mb.setEmbed(eb.build());
-        channel.sendMessage(mb.build()).queue();
+        channel.sendMessage(eb.build()).queue();
     }
 
     @Override

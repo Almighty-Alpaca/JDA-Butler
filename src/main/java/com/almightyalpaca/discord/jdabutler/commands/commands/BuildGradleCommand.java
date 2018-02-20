@@ -9,12 +9,8 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 public class BuildGradleCommand implements Command
@@ -24,25 +20,18 @@ public class BuildGradleCommand implements Command
     {
         final MessageBuilder mb = new MessageBuilder();
 
-        List<VersionedItem> deps = new ArrayList<>(3);
-
-        deps.add(VersionCheckerRegistry.getItem("jda"));
-        if(content.contains("player"))
-            deps.add(VersionCheckerRegistry.getItem("lavaplayer"));
-        if(content.toLowerCase().contains("util"))
-            deps.add(VersionCheckerRegistry.getItem("jda-utilities"));
+        VersionedItem jdaItem = VersionCheckerRegistry.getItem("jda");
+        LinkedList<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content).stream()
+                //only allow items which use maven for versioning
+                .filter(item -> item.getCustomVersionSupplier() == null)
+                .collect(Collectors.toCollection(LinkedList::new));
+        //force jda to be at first position
+        items.remove(jdaItem);
+        items.addFirst(jdaItem);
 
         final boolean pretty = content.contains("pretty");
 
-        final Collection<Triple<String, String, String>> dependencies = deps.stream()
-                .map(item -> Triple.of(item.getGroupId(), item.getArtifactId(), item.getVersion()))
-                .collect(Collectors.toList());
-        final Collection<Pair<String, String>> repositories = deps.stream()
-                .map(item -> item.getRepoType().getGradleImport())
-                .distinct()
-                .collect(Collectors.toList());
-
-        mb.appendCodeBlock(GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "com.example.jda.Bot", "1.0", "1.8", dependencies, repositories, pretty), "gradle");
+        mb.appendCodeBlock(GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "com.example.jda.Bot", "1.0", "1.8", items, pretty), "gradle");
         channel.sendMessage(mb.build()).queue();
     }
 

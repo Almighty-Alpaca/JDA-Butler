@@ -12,8 +12,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 public class MavenProjectCommand implements Command
@@ -36,29 +35,20 @@ public class MavenProjectCommand implements Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        List<VersionedItem> deps = new ArrayList<>(3);
-        deps.add(VersionCheckerRegistry.getItem("jda"));
-        if (content.contains("player"))
-            deps.add(VersionCheckerRegistry.getItem("lavaplayer"));
-        if (content.toLowerCase().contains("util"))
-            deps.add(VersionCheckerRegistry.getItem("jda-utilities"));
-
-        final StringBuilder builder = new StringBuilder();
+        VersionedItem jdaItem = VersionCheckerRegistry.getItem("jda");
+        LinkedList<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content).stream()
+                //only allow items which use maven for versioning
+                .filter(item -> item.getCustomVersionSupplier() == null)
+                .collect(Collectors.toCollection(LinkedList::new));
+        //force jda to be at first position
+        items.remove(jdaItem);
+        items.addFirst(jdaItem);
 
         //dependency-string:
-        for (VersionedItem dep : deps)
-        {
-            builder.append(MavenUtil.getDependencyString(dep, "        "));
-        }
-        String dependencyString = builder.toString();
-
-        builder.setLength(0);
+        String dependencyString = MavenUtil.getDependencyBlock(items, "    ");
 
         //repo-string
-        deps.stream().map(VersionedItem::getRepoType).distinct().forEachOrdered(repoType -> {
-            builder.append(MavenUtil.getRepositoryString(repoType.toString(), repoType.toString(), repoType.getRepoBase(), "        "));
-        });
-        String repoString = builder.toString();
+        String repoString = MavenUtil.getRepositoryBlock(items, "    ");
 
         final String pom = String.format(MavenProjectCommand.POM, repoString, dependencyString);
         channel.sendMessage("Here: " + Bot.hastebin(pom) + ".xml").queue();

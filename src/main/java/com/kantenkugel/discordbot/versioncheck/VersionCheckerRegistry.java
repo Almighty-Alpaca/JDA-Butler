@@ -3,6 +3,7 @@ package com.kantenkugel.discordbot.versioncheck;
 import com.kantenkugel.discordbot.versioncheck.items.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class VersionCheckerRegistry
 {
@@ -47,6 +48,24 @@ public class VersionCheckerRegistry
                     .findAny().orElse(null);
         }
         return item;
+    }
+
+    /**
+     * Accepts a space delimited string of item names or aliases and returns a List of all found VersionedItems.
+     * Duplicates are already removed.
+     *
+     * @param spaceDelimString
+     *          A String with space delimited VersionedItem names or aliases
+     * @return  All found VersionedItems
+     */
+    public static List<VersionedItem> getItemsFromString(String spaceDelimString)
+    {
+        String[] split = spaceDelimString.trim().toLowerCase().split("\\s+");
+        return Arrays.stream(split)
+                .map(VersionCheckerRegistry::getItem)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public static Collection<VersionedItem> getVersionedItems()
