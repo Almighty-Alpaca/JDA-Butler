@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class BuildGradleCommand implements Command
@@ -20,14 +20,10 @@ public class BuildGradleCommand implements Command
     {
         final MessageBuilder mb = new MessageBuilder();
 
-        VersionedItem jdaItem = VersionCheckerRegistry.getItem("jda");
-        LinkedList<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content).stream()
+        List<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content, true).stream()
                 //only allow items which use maven for versioning
                 .filter(item -> item.getCustomVersionSupplier() == null)
-                .collect(Collectors.toCollection(LinkedList::new));
-        //force jda to be at first position
-        items.remove(jdaItem);
-        items.addFirst(jdaItem);
+                .collect(Collectors.toList());
 
         final boolean pretty = content.contains("pretty");
 

@@ -12,7 +12,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class MavenProjectCommand implements Command
@@ -35,14 +35,10 @@ public class MavenProjectCommand implements Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        VersionedItem jdaItem = VersionCheckerRegistry.getItem("jda");
-        LinkedList<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content).stream()
+        List<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content, true).stream()
                 //only allow items which use maven for versioning
                 .filter(item -> item.getCustomVersionSupplier() == null)
-                .collect(Collectors.toCollection(LinkedList::new));
-        //force jda to be at first position
-        items.remove(jdaItem);
-        items.addFirst(jdaItem);
+                .collect(Collectors.toList());
 
         //dependency-string:
         String dependencyString = MavenUtil.getDependencyBlock(items, "    ");

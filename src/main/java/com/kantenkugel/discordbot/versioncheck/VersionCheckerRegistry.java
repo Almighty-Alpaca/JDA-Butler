@@ -56,10 +56,17 @@ public class VersionCheckerRegistry
      *
      * @param spaceDelimString
      *          A String with space delimited VersionedItem names or aliases
+     * @param prependJDA
+     *          If set to true, there will be a single JDA VersionedItem prepended to the returned list
      * @return  All found VersionedItems
      */
-    public static List<VersionedItem> getItemsFromString(String spaceDelimString)
+    public static List<VersionedItem> getItemsFromString(String spaceDelimString, boolean prependJDA)
     {
+        //since distinct() preserves first element by definition,
+        //this is best way of enforcing jda to be at first position
+        if(prependJDA)
+            spaceDelimString = "jda " + spaceDelimString;
+
         String[] split = spaceDelimString.trim().toLowerCase().split("\\s+");
         return Arrays.stream(split)
                 .map(VersionCheckerRegistry::getItem)

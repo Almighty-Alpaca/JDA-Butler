@@ -27,13 +27,9 @@ public class VersionsCommand implements Command
 
         List<VersionedItem> items;
         if(content.trim().isEmpty())
-        {
-            items = VersionCheckerRegistry.getItemsFromString(DEFAULT_ITEMS);
-        }
+            items = VersionCheckerRegistry.getItemsFromString(DEFAULT_ITEMS, false);
         else
-        {
-            items = VersionCheckerRegistry.getItemsFromString(content);
-        }
+            items = VersionCheckerRegistry.getItemsFromString(content, false);
 
         if(items.isEmpty())
         {
@@ -50,13 +46,9 @@ public class VersionsCommand implements Command
             for (VersionedItem versionedItem : items)
             {
                 if (versionedItem.getUrl() != null)
-                {
                     eb.addField(versionedItem.getName(), String.format("[%s](%s)", versionedItem.getVersion(), versionedItem.getUrl()), true);
-                }
                 else
-                {
                     eb.addField(versionedItem.getName(), versionedItem.getVersion(), true);
-                }
             }
         }
 
