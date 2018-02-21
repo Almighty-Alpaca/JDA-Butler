@@ -13,13 +13,13 @@ import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
+import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
-import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import okhttp3.OkHttpClient;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +131,7 @@ public class Bot
         return Bot.getGuildJda().isMember(sender) && (Bot.isAdmin(sender) || Bot.getGuildJda().getMember(sender).getRoles().contains(Bot.getRoleHelper()));
     }
 
-    public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, RateLimitedException, NoSuchFieldException, SecurityException, IllegalAccessException
+    public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, SecurityException
     {
         Bot.httpClient = new OkHttpClient.Builder().build();
 
@@ -180,7 +180,7 @@ public class Bot
             root.addAppender(appender);
         }
 
-        EventListener.start();
+        VersionCheckerRegistry.init();
     }
 
     public static void shutdown()

@@ -5,6 +5,7 @@ import com.almightyalpaca.discord.jdabutler.util.FixedSizeCache;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +13,39 @@ import java.io.IOException;
 
 public class JenkinsApi
 {
-    public static final String JENKINS_BASE = "http://home.dv8tion.net:8080/job/JDA/";
-    public static final String CHANGE_URL = JENKINS_BASE + "changes";
-    public static final String LAST_BUILD_URL = JENKINS_BASE + "lastSuccessfulBuild/";
+    public static final JenkinsApi JDA_JENKINS = JenkinsApi.forConfig("http://home.dv8tion.net:8080", "JDA");
+
+    /**
+     * Returns a new JenkinsApi instance for given configuration
+     *
+     * @param baseUrl
+     *          The base url of a Jenkins server (jenkins' base page)
+     * @param jobName
+     *          The name of the Jenkins job to bind to
+     *
+     * @return  A new JenkinsApi instance bound to given Jenkins server and job
+     */
+    public static JenkinsApi forConfig(String baseUrl, String jobName)
+    {
+        if(!baseUrl.endsWith("/"))
+            baseUrl += '/';
+        return forConfig(baseUrl + "job/" + jobName);
+    }
+
+    /**
+     * Returns a new JenkinsApi instance for given configuration
+     *
+     * @param fullJobPath
+     *          The full url of a Jenkins job
+     *
+     * @return  A new JenkinsApi instance Jenkins job (via full url)
+     */
+    public static JenkinsApi forConfig(String fullJobPath)
+    {
+        if(!fullJobPath.endsWith("/"))
+            fullJobPath += '/';
+        return new JenkinsApi(fullJobPath);
+    }
 
     static final Logger LOG = LoggerFactory.getLogger(JenkinsApi.class);
 
@@ -24,36 +55,53 @@ public class JenkinsApi
             "changeSet[items[commitId,date,comment,author[fullName,id,description],paths[*]]]," +
             "culprits[fullName,id,description]";
 
-    private static final FixedSizeCache<Integer, JenkinsBuild> resultCache = new FixedSizeCache<>(20);
+    private static final String LATEST_SUCC_SUFFIX = "lastSuccessfulBuild/";
+    private static final String CHANGE_SUFFIX = "changes";
 
-    private static JenkinsBuild lastSuccBuild = null;
+    public final String jenkinsBase;
 
-    public static JenkinsBuild getBuild(int buildNumber)
+    private final FixedSizeCache<Integer, JenkinsBuild> resultCache = new FixedSizeCache<>(20);
+
+    private JenkinsBuild lastSuccBuild = null;
+
+    public JenkinsBuild getBuild(int buildNumber)
     {
         return resultCache.contains(buildNumber)
                 ? resultCache.get(buildNumber)
                 : getBuild(buildNumber + "/");
     }
 
-    public static JenkinsBuild fetchLastSuccessfulBuild()
+    public JenkinsBuild fetchLastSuccessfulBuild()
     {
-        return lastSuccBuild = getBuild("lastSuccessfulBuild/");
+        return lastSuccBuild = getBuild(LATEST_SUCC_SUFFIX);
     }
 
-    public static JenkinsBuild getLastSuccessfulBuild()
+    public JenkinsBuild getLastSuccessfulBuild()
     {
         if(lastSuccBuild == null)
             return fetchLastSuccessfulBuild();
         return lastSuccBuild;
     }
 
-    private static JenkinsBuild getBuild(String identifier)
+    public String getChangesetUrl()
     {
-        Request req = new Request.Builder().url(JENKINS_BASE + identifier + API_SUFFIX + BUILD_OPTIONS).get().build();
+        return jenkinsBase + CHANGE_SUFFIX;
+    }
+
+    public String getLastSuccessfulBuildUrl()
+    {
+        return jenkinsBase + LATEST_SUCC_SUFFIX;
+    }
+
+    private JenkinsBuild getBuild(String identifier)
+    {
+        Request req = new Request.Builder().url(jenkinsBase + identifier + API_SUFFIX + BUILD_OPTIONS).get().build();
         try
         {
             Response res = Bot.httpClient.newCall(req).execute();
-            JenkinsBuild build = JenkinsBuild.fromJson(new JSONObject(res.body().string()));
+            if(!res.isSuccessful())
+                return null;
+            JenkinsBuild build = JenkinsBuild.fromJson(new JSONObject(new JSONTokener(res.body().charStream())), this);
             if(build.status != JenkinsBuild.Status.BUILDING)
                 resultCache.add(build.buildNum, build);
             return build;
@@ -63,5 +111,10 @@ public class JenkinsApi
             //LOG.log(e);
         }
         return null;
+    }
+
+    private JenkinsApi(String jenkinsurl)
+    {
+        this.jenkinsBase = jenkinsurl;
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 public class SoftbanCommand implements Command
 {
     @Override
-    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception
+    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
         final Member sendMem = event.getMember();
         if (!sendMem.hasPermission(Permission.KICK_MEMBERS))

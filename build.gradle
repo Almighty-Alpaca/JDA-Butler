@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
 	// JDA
-	compile group: 'net.dv8tion', name: 'JDA', version: '3.5.0_335'
+	compile group: 'net.dv8tion', name: 'JDA', version: '3.5.1_339'
 
 	// Apache commons Lang 3
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
@@ -61,4 +61,17 @@ dependencies {
 
 run {
 	systemProperties System.properties
+}
+
+dependencyUpdates.resolutionStrategy = {
+    componentSelection { rules ->
+        rules.all { ComponentSelection selection ->
+            boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
+                selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+            }
+            if (rejected) {
+                selection.reject('Release candidate')
+            }
+        }
+    }
 }

@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 public interface Command
 {
-    void dispatch(User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) throws Exception;
+    void dispatch(User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event);
 
     default String[] getAliases()
     {

@@ -1,12 +1,10 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
-import com.almightyalpaca.discord.jdabutler.FormattingUtil;
-import com.almightyalpaca.discord.jdabutler.JDAUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
-import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
-import com.kantenkugel.discordbot.jenkinsutil.JenkinsChange;
+import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
+import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
@@ -15,107 +13,99 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-import java.util.Collections;
 import java.util.List;
 
 public class ChangelogCommand implements Command
 {
 
-    private static final String[] ALIASES = new String[]
-    { "changes" };
+    private static final String[] ALIASES = { "changes" };
 
     @Override
-    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception
+    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        final EmbedBuilder eb = new EmbedBuilder().setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
-
-        final List<Integer> buildNums = JDAUtil.getBuildNumbers(content);
-        Collections.sort(buildNums);
-
-        final int start;
-        final int end;
-
-        if (content.isEmpty())
-            start = end = JenkinsApi.getLastSuccessfulBuild().buildNum;
-        else if(buildNums.size() == 0)
-        {
-            channel.sendMessage("Invalid build number(s)").queue();
-            return;
-        }
-        else if (buildNums.size() == 1)
-            start = end = buildNums.get(0);
-        else
-        {
-            start = buildNums.get(0);
-            end = buildNums.get(1);
-        }
-
-        String first = null;
-        String last = null;
-
-        int fields = 0;
-        StringBuilder sb;
-
-        for (int i = start; i <= end; i++)
-        {
-            JenkinsBuild build = JenkinsApi.getBuild(i);
-            if(build == null)
-                continue;
-
-            String version = build.status == JenkinsBuild.Status.SUCCESS
-                    ? build.artifacts.get("JDA").fileNameParts.get(1)
-                    : "Build " + build.buildNum + " (failed)";
-
-            if (first == null)
-                first = version;
-            else
-                last = version;
-
-            final List<JenkinsChange> changeSet = build.changes;
-
-            if (changeSet.size() > 0)
-            {
-                final List<String> changelog = FormattingUtil.getChangelog(changeSet);
-
-                sb = new StringBuilder();
-
-                for (String line : changelog)
-                {
-                    sb.append(line).append('\n');
-                }
-                sb.setLength(sb.length() - 1);
-
-                if(sb.length() > MessageEmbed.VALUE_MAX_LENGTH)
-                    eb.addField(version, "[`CI Link`](" + build.getUrl() + ") Too many changes to show", false);
-                else
-                    eb.addField(version, sb.toString(), false);
-
-            }
-            else
-            {
-                eb.addField(version, "No git commits assigned", false);
-            }
-
-            if(++fields == 24)
-            {
-                eb.addField("...", "Max Embed size reached", false);
-                break;
-            }
-
-        }
-
-        if(first == null)
-        {
-            channel.sendMessage("Could not find any build in specified range").queue();
-            return;
-        }
-
-        if (last != null)
-            eb.setAuthor("Changelog between builds " + first + " and " + last, JenkinsApi.CHANGE_URL, EmbedUtil.JDA_ICON);
-        else
-            eb.setAuthor("Changelog for build " + first, JenkinsApi.CHANGE_URL, EmbedUtil.JDA_ICON);
-
+        final EmbedBuilder eb = new EmbedBuilder();
         EmbedUtil.setColor(eb);
+
+        VersionedItem item = null;
+        int versionStart = 1;
+        String[] args = null;
+        if(!content.trim().isEmpty())
+        {
+            args = content.trim().split("[\\s-]", 4);
+            item = VersionCheckerRegistry.getItem(args[0]);
+        }
+        if(item == null)
+        {
+            versionStart = 0;
+            item = VersionCheckerRegistry.getItem("jda");
+        }
+
+        ChangelogProvider clProvider = item.getChangelogProvider();
+
+        if(clProvider == null)
+        {
+            channel.sendMessage("No Changelogs set up for " + item.getName()).queue();
+            return;
+        }
+
+        //no version parameters or no version lookup supported
+        if(!clProvider.supportsIndividualLogs() || args == null || args.length == versionStart)
+        {
+            channel.sendMessage(String.format("Changelogs for %s can be found here: %s",
+                    item.getName(), clProvider.getChangelogUrl())).queue();
+            return;
+        }
+
+        eb.setTitle("Changelog(s) for " + item.getName(), clProvider.getChangelogUrl());
+
+        //only one version parameter
+        if(args.length == versionStart + 1)
+        {
+            ChangelogProvider.Changelog changelog = clProvider.getChangelog(args[versionStart]);
+            if(changelog == null)
+            {
+                channel.sendMessage("The specified version does not exist").queue();
+                return;
+            }
+            if(changelog.getChangelogUrl() == null)
+                eb.appendDescription("**").appendDescription(changelog.getTitle()).appendDescription("**:\n");
+            else
+                eb.appendDescription("[").appendDescription(changelog.getTitle()).appendDescription("](")
+                        .appendDescription(changelog.getChangelogUrl()).appendDescription("):\n");
+            if(changelog.getChangeset().isEmpty())
+                eb.appendDescription("No changes available for this version");
+            else
+                eb.appendDescription(String.join("\n", changelog.getChangeset()));
+        }
+        //more than 1 version given
+        else
+        {
+            List<ChangelogProvider.Changelog> changelogs = clProvider.getChangelogs(args[versionStart], args[versionStart + 1]);
+            if(changelogs.size() == 0)
+            {
+                channel.sendMessage("No Changelogs found in given range").queue();
+                return;
+            }
+            int fields = 0;
+            for(ChangelogProvider.Changelog changelog : changelogs) {
+                String body = String.join("\n", changelog.getChangeset());
+                if(body.length() > MessageEmbed.VALUE_MAX_LENGTH)
+                {
+                    if(changelog.getChangelogUrl() == null)
+                        body = "Too large to show.";
+                    else
+                        body = "[Link]("+changelog.getChangelogUrl()+") Too large to show.";
+                }
+
+                eb.addField(changelog.getTitle(), body, false);
+
+                if(++fields == 19 && changelogs.size() > 20)
+                {
+                    eb.addField("...", "Embed limit reached. See [Online changelog]("
+                            + clProvider.getChangelogUrl() + ')', false);
+                }
+            }
+        }
 
         MessageEmbed embed = eb.build();
         if(embed.isSendable(AccountType.BOT))
@@ -126,7 +116,6 @@ public class ChangelogCommand implements Command
         {
             channel.sendMessage("Too much content. Please restrict your build range").queue();
         }
-
     }
 
     @Override

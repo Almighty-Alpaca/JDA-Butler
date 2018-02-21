@@ -24,7 +24,7 @@ public class JarsCommand implements Command
         eb.setAuthor("Latest JDA jars", null, EmbedUtil.JDA_ICON);
         eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
-        JenkinsBuild lastBuild = JenkinsApi.getLastSuccessfulBuild();
+        JenkinsBuild lastBuild = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuild();
         if(lastBuild == null)
         {
             channel.sendMessage("Could not get Artifact-data from CI!").queue();

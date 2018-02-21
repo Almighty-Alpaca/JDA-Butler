@@ -17,7 +17,7 @@ public class AnnouncementCommand implements Command
 {
 
     @Override
-    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event) throws Exception
+    public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
         if (!Bot.isHelper(sender))
         {
