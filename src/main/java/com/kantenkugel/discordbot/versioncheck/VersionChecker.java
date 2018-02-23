@@ -101,7 +101,7 @@ public class VersionChecker
 
     static void initUpdateLoop()
     {
-        EXECUTOR.scheduleAtFixedRate(() ->
+        EXECUTOR.scheduleWithFixedDelay(() ->
         {
             Bot.LOG.debug("Checking for updates...");
 

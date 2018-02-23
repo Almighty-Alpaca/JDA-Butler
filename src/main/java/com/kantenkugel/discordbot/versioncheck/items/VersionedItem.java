@@ -171,9 +171,7 @@ public abstract class VersionedItem
         if(obj == null || !(obj instanceof VersionedItem))
             return false;
         VersionedItem other = (VersionedItem) obj;
-        return other.getRepoType() == this.getRepoType()
-                && other.getGroupId().equals(this.getGroupId())
-                && other.getArtifactId().equals(this.getArtifactId());
+        return other.getName().equals(this.getName());
     }
 
     @Override
