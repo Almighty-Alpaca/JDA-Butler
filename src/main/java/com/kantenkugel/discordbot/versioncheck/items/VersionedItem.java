@@ -1,10 +1,13 @@
 package com.kantenkugel.discordbot.versioncheck.items;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.versioncheck.UpdateHandler;
 import com.kantenkugel.discordbot.versioncheck.VersionUtils;
 import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
 import com.kantenkugel.discordbot.versioncheck.DependencyType;
 import com.kantenkugel.discordbot.versioncheck.RepoType;
+import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.util.List;
 import java.util.Objects;
@@ -85,6 +88,31 @@ public abstract class VersionedItem
     }
 
     /**
+     * If this method returns a non-zero Role ID,
+     * this item integrates into the !notify command to toggle an announcement role.
+     *
+     * @return  Role ID of the announcement role, or {@code 0} (zero) if unused
+     */
+    public long getAnnouncementRoleId()
+    {
+        return 0;
+    }
+
+    /**
+     * If this method returns a non-zero TextChannel ID,
+     * this item integrates into the !announce command for custom announcements.
+     *
+     * <p>If {@link #getAnnouncementRoleId()} returns {@code 0}, then this is ignored,
+     * as announcements require a role.
+     *
+     * @return  TextChannel ID of the announcement channel, or {@code 0} (zero) if unused
+     */
+    public long getAnnouncementChannelId()
+    {
+        return 0;
+    }
+
+    /**
      * Hook to run custom code once a new version of this item is detected by JDA-Butler.
      *
      * @return  Null-able custom update handler
@@ -157,6 +185,18 @@ public abstract class VersionedItem
     public final void setVersion(String version)
     {
         this.version = version;
+    }
+
+    public final Role getAnnouncementRole()
+    {
+        long rid = getAnnouncementRoleId();
+        return rid == 0 ? null : Bot.getGuildJda().getRoleById(rid);
+    }
+
+    public final TextChannel getAnnouncementChannel()
+    {
+        long cid = getAnnouncementChannelId();
+        return cid == 0 ? null : Bot.getGuildJda().getTextChannelById(cid);
     }
 
     @Override

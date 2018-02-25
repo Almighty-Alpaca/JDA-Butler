@@ -11,8 +11,9 @@ public class VersionCheckerRegistry
 
     public static void addItem(String name, String repoType, String groupId, String artifactId, String url)
     {
-        addItem(new SimpleVersionedItem(name, RepoType.fromString(repoType), DependencyType.DEFAULT,
-                groupId, artifactId, url, null));
+        addItem(new SimpleVersionedItem(name, RepoType.fromString(repoType), DependencyType.DEFAULT, groupId, artifactId)
+                .setUrl(url)
+        );
     }
 
     public static boolean addItem(VersionedItem item)
@@ -94,14 +95,16 @@ public class VersionCheckerRegistry
     {
         //Core
         addItem(new JDAItem());
-        addItem(new SimpleVersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT,
-                "com.sedmelluq", "lavaplayer",
-                "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord",
-                Arrays.asList("lava", "player")));
-        addItem(new SimpleVersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM,
-                "com.jagrosh", "jda-utilities",
-                "https://github.com/JDA-Applications/JDA-Utilities",
-                Arrays.asList("utils", "jda-utils")));
+        addItem(new SimpleVersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT, "com.sedmelluq", "lavaplayer")
+                .setUrl("https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord")
+                .setAliases("lava", "player")
+                .setAnnouncmentRoleId(241948768113524762L)
+                .setAnnouncementChannelId(263484072389640193L)
+        );
+        addItem(new SimpleVersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM, "com.jagrosh", "jda-utilities")
+                .setUrl("https://github.com/JDA-Applications/JDA-Utilities")
+                .setAliases("utils", "jda-utils")
+        );
         //featured
         addItem(new YuiItem());
         addItem(new JDActionItem());

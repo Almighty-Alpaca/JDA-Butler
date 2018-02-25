@@ -53,6 +53,18 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     }
 
     @Override
+    public long getAnnouncementRoleId()
+    {
+        return 241948671325765632L;
+    }
+
+    @Override
+    public long getAnnouncementChannelId()
+    {
+        return 125227483518861312L;
+    }
+
+    @Override
     public UpdateHandler getUpdateHandler()
     {
         return this;
@@ -64,6 +76,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
         return changelogProvider;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onUpdate(VersionedItem item, String previousVersion, boolean shouldAnnounce)
     {
@@ -100,7 +113,9 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             FormattingUtil.setFooter(eb, jenkinsBuild.culprits, jenkinsBuild.buildTime);
 
-            mb.append(Bot.getRoleJdaUpdates());
+            Role announcementRole = getAnnouncementRole();
+
+            mb.append(announcementRole.getAsMention());
 
             eb.setAuthor("JDA 3 version " + item.getVersion() + " has been released\n", JenkinsApi.JDA_JENKINS.jenkinsBase + versionSplits.build, EmbedUtil.JDA_ICON);
 
@@ -137,10 +152,9 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             mb.build();
 
-            final Role role = Bot.getRoleJdaUpdates();
-            final TextChannel channel = Bot.getChannelAnnouncements();
+            final TextChannel channel = getAnnouncementChannel();
 
-            role.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> role.getManager().setMentionable(false).queue()));
+            announcementRole.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> announcementRole.getManager().setMentionable(false).queue()));
         }
     }
 }

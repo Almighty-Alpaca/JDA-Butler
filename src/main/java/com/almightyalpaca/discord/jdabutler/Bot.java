@@ -42,29 +42,9 @@ public class Bot
 
     public static final Logger LOG = (Logger) LoggerFactory.getLogger(Bot.class);
 
-    public static TextChannel getChannelAnnouncements()
-    {
-        return Bot.jda.getTextChannelById("125227483518861312");
-    }
-
     public static TextChannel getChannelExperimental()
     {
         return Bot.jda.getTextChannelById("289742061220134912");
-    }
-
-    public static TextChannel getChannelLavaplayer()
-    {
-        return Bot.jda.getTextChannelById("263484072389640193");
-    }
-
-    public static TextChannel getChannelLogs()
-    {
-        return Bot.jda.getTextChannelById("241926199666802690");
-    }
-
-    public static TextChannel getChannelTesting()
-    {
-        return Bot.jda.getTextChannelById("115567590495092740");
     }
 
     public static Guild getGuildJda()
@@ -90,16 +70,6 @@ public class Bot
     public static Role getRoleJdaFanclub()
     {
         return Bot.getGuildJda().getRoleById("169558668126322689");
-    }
-
-    public static Role getRoleJdaUpdates()
-    {
-        return Bot.getGuildJda().getRoleById("241948671325765632");
-    }
-
-    public static Role getRoleLavaplayerUpdates()
-    {
-        return Bot.getGuildJda().getRoleById("241948768113524762");
     }
 
     public static Role getRoleStaff()
