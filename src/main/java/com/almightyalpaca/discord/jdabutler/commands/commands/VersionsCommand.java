@@ -16,7 +16,7 @@ public class VersionsCommand implements Command
 {
 
     private static final String[] ALIASES = { "version", "latest" };
-    private static final String DEFAULT_ITEMS = "jda, lavaplayer, jda-utilities";
+    private static final String DEFAULT_ITEMS = "jda lavaplayer jda-utilities";
 
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
