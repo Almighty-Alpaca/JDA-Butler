@@ -46,7 +46,7 @@ public class SimpleVersionedItem extends VersionedItem
         return this;
     }
 
-    public SimpleVersionedItem setAnnouncmentRoleId(long roleId)
+    public SimpleVersionedItem setAnnouncementRoleId(long roleId)
     {
         this.roleId = roleId;
         return this;

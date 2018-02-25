@@ -98,12 +98,14 @@ public class VersionCheckerRegistry
         addItem(new SimpleVersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT, "com.sedmelluq", "lavaplayer")
                 .setUrl("https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord")
                 .setAliases("lava", "player")
-                .setAnnouncmentRoleId(241948768113524762L)
+                .setAnnouncementRoleId(241948768113524762L)
                 .setAnnouncementChannelId(263484072389640193L)
         );
         addItem(new SimpleVersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM, "com.jagrosh", "jda-utilities")
                 .setUrl("https://github.com/JDA-Applications/JDA-Utilities")
                 .setAliases("utils", "jda-utils")
+                .setAnnouncementRoleId(417331483091664896L)
+                .setAnnouncementChannelId(384483855475933184L)
         );
         //featured
         addItem(new YuiItem());
