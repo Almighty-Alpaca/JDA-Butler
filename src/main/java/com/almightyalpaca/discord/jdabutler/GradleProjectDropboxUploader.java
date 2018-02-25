@@ -28,8 +28,6 @@ public class GradleProjectDropboxUploader
 
     public static final String DROPBOX_FILE_NAME = "/JDA/jda gradle setup example.zip";
 
-    public static final File EXAMPLE_IMPL = new File(GradleProjectDropboxUploader.SRC_MAIN_JAVA, "MessageListenerExample.java");
-
     public static final String EXMAPLE_IMPL_URL = "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
     public static final File GRADLE_PROJECT_DIR = new File("/gradle project/");
     public static final File GRADLE_BUILD_FILE = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "build.gradle");
@@ -39,6 +37,8 @@ public class GradleProjectDropboxUploader
     public static final File GRADLE_TEMP_DIR = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, ".gradle/");
 
     public static final File SRC_MAIN_JAVA = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/java/");
+
+    public static final File EXAMPLE_IMPL = new File(GradleProjectDropboxUploader.SRC_MAIN_JAVA, "MessageListenerExample.java");
 
     public static final File SRC_MAIN_RESOURCES = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/resources/");
 
@@ -59,7 +59,7 @@ public class GradleProjectDropboxUploader
             if (GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.exists())
                 GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.delete();
 
-            final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getGradlePath().getAbsolutePath(), "init");
+            final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getExecutableGradleFile(), "init");
             builder.directory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
             builder.inheritIO();
 
@@ -139,5 +139,4 @@ public class GradleProjectDropboxUploader
             GradleProjectDropboxUploader.client = new DbxClientV2(config, ACCESS_TOKEN);
         }
     }
-
 }
