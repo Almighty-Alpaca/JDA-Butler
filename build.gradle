@@ -1,10 +1,10 @@
 plugins {
-	id 'java'
+    id 'java'
     id 'idea'
-	id 'application'
-	id 'com.github.johnrengelman.shadow' version '2.0.2'
-	id 'com.github.ben-manes.versions' version '0.17.0'
-	id 'com.sedmelluq.jdaction' version '1.0.2'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '2.0.2'
+    id 'com.github.ben-manes.versions' version '0.17.0'
+    id 'com.sedmelluq.jdaction' version '1.0.2'
 }
 
 sourceCompatibility = targetCompatibility = 1.8
@@ -14,62 +14,58 @@ compileJava.options.encoding = 'UTF-8'
 mainClassName = 'com.almightyalpaca.discord.jdabutler.Bot'
 
 repositories {
-	mavenCentral()
-	jcenter()
-	maven { url 'https://jitpack.io' }
+    mavenCentral()
+    jcenter()
+    maven {
+        url = 'https://jitpack.io'
+    }
 }
 
 dependencies {
-	// JDA
-	compile group: 'net.dv8tion', name: 'JDA', version: '3.5.1_339'
+    // JDA
+    compile group: 'net.dv8tion', name: 'JDA', version: '3.5.1_339'
 
-	// Apache commons Lang 3
-	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+    // Apache commons Lang 3
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
 
-	// Apache Commons Text
-	compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
+    // Apache Commons Text
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
 
-	// Apache Commons IO
-	compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    // Apache Commons IO
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
-	// Groovy JSR-223 / Script engine 
-	compile group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '2.4.13'
+    // Groovy JSR-223 / Script engine 
+    compile group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '2.4.13'
 
-	// Gson
-	compile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
+    // Gson
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
 
-	// Guava
-	compile group: 'com.google.guava', name: 'guava', version: '24.0-jre'
+    // Guava
+    compile group: 'com.google.guava', name: 'guava', version: '24.0-jre'
 
-	// Dropbox
-	compile group: 'com.dropbox.core', name: 'dropbox-core-sdk', version: '3.0.6'
+    // Dropbox
+    compile group: 'com.dropbox.core', name: 'dropbox-core-sdk', version: '3.0.6'
 
-	// Zip4J
-	compile group: 'net.lingala.zip4j', name: 'zip4j', version: '1.3.2'
+    // Zip4J
+    compile group: 'net.lingala.zip4j', name: 'zip4j', version: '1.3.2'
 
-	// jsoup HTML parser library @ http://jsoup.org/
-	compile group: 'org.jsoup', name: 'jsoup', version: '1.11.2'
+    // jsoup HTML parser library @ http://jsoup.org/
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.11.2'
 
-    // Unirest until I can get myself to remove it from the code
-    compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'
+    //Logback
+    compile 'ch.qos.logback:logback-classic:1.2.3'
 
-	//Logback
-	compile 'ch.qos.logback:logback-classic:1.2.3'
-
-	testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.12'
 }
 
 run {
-	systemProperties System.properties
+    systemProperties System.properties
 }
 
 dependencyUpdates.resolutionStrategy = {
     componentSelection { rules ->
         rules.all { ComponentSelection selection ->
-            boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
-                selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
-            }
-            if (rejected) {
+            if (['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier -> selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/ }) {
                 selection.reject('Release candidate')
             }
         }

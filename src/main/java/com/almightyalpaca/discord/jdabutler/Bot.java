@@ -14,13 +14,16 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
@@ -111,11 +114,17 @@ public class Bot
     {
         try
         {
-            return "https://hastebin.com/" + Unirest.post("https://hastebin.com/documents").header("User-Agent", "Mozilla/5.0 JDA-Butler").header("Content-Type", "text/plain").body(text).asJson().getBody().getObject().getString("key");
+            return "https://hastebin.com/" + new JSONObject(new JSONTokener(httpClient
+                    .newCall(new Request.Builder()
+                            .post(RequestBody.create(MediaType.parse("text/plain"), text))
+                            .url("https://hastebin.com/documents")
+                            .header("User-Agent", "Mozilla/5.0 JDA-Butler").build())
+                    .execute()
+                    .body()
+                    .charStream())).getString("key");
         }
-        catch (final UnirestException e)
+        catch (final Exception e)
         {
-            Bot.LOG.error("Error while creating hastebin link", e);
             return null;
         }
     }
