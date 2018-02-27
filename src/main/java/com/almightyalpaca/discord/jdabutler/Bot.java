@@ -42,11 +42,6 @@ public class Bot
 
     public static final Logger LOG = (Logger) LoggerFactory.getLogger(Bot.class);
 
-    public static TextChannel getChannelExperimental()
-    {
-        return Bot.jda.getTextChannelById("289742061220134912");
-    }
-
     public static Guild getGuildJda()
     {
         return Bot.jda.getGuildById("125227483518861312");
@@ -55,16 +50,6 @@ public class Bot
     public static Role getRoleBots()
     {
         return Bot.getGuildJda().getRoleById("125616720156033024");
-    }
-
-    public static Role getRoleExperimentalUpdates()
-    {
-        return Bot.getGuildJda().getRoleById("289744006433472513");
-    }
-
-    public static Role getRoleHelper()
-    {
-        return Bot.getGuildJda().getRoleById("183963327033114624");
     }
 
     public static Role getRoleJdaFanclub()
@@ -94,11 +79,6 @@ public class Bot
     {
         final Member member = Bot.getGuildJda().getMember(user);
         return member != null && member.getRoles().contains(Bot.getRoleStaff());
-    }
-
-    public static boolean isHelper(final User sender)
-    {
-        return Bot.getGuildJda().isMember(sender) && (Bot.isAdmin(sender) || Bot.getGuildJda().getMember(sender).getRoles().contains(Bot.getRoleHelper()));
     }
 
     public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, SecurityException

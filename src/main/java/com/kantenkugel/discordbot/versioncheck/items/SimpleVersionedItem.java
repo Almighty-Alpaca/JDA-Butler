@@ -2,6 +2,9 @@ package com.kantenkugel.discordbot.versioncheck.items;
 
 import com.kantenkugel.discordbot.versioncheck.DependencyType;
 import com.kantenkugel.discordbot.versioncheck.RepoType;
+import gnu.trove.set.TLongSet;
+import gnu.trove.set.hash.TLongHashSet;
+import net.dv8tion.jda.core.entities.User;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +27,7 @@ public class SimpleVersionedItem extends VersionedItem
     private String url;
     private long roleId = 0;
     private long channelId = 0;
+    private final TLongSet allowedAnnouncers = new TLongHashSet();
 
     public SimpleVersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId)
     {
@@ -55,6 +59,12 @@ public class SimpleVersionedItem extends VersionedItem
     public SimpleVersionedItem setAnnouncementChannelId(long channelId)
     {
         this.channelId = channelId;
+        return this;
+    }
+
+    public SimpleVersionedItem addAnnouncementWhitelist(long... userIds)
+    {
+        allowedAnnouncers.addAll(userIds);
         return this;
     }
 
@@ -110,5 +120,11 @@ public class SimpleVersionedItem extends VersionedItem
     public long getAnnouncementChannelId()
     {
         return channelId;
+    }
+
+    @Override
+    public boolean canAnnounce(User u)
+    {
+        return allowedAnnouncers.contains(u.getIdLong());
     }
 }

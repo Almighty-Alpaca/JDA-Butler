@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 public class VersionCheckerRegistry
 {
+    public static final VersionedItem EXPERIMENTAL_ITEM = new SimpleVersionedItem(null, null, null, null, null)
+            .setAnnouncementChannelId(289742061220134912L).setAnnouncementRoleId(289744006433472513L);
+
     private static final Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
 
     public static void addItem(String name, String repoType, String groupId, String artifactId, String url)
@@ -93,23 +96,36 @@ public class VersionCheckerRegistry
 
     private static void register()
     {
-        //Core
+        /*
+            CORE
+         */
+        //JDA
         addItem(new JDAItem());
+        //Lavaplayer
         addItem(new SimpleVersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT, "com.sedmelluq", "lavaplayer")
                 .setUrl("https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord")
                 .setAliases("lava", "player")
-                .setAnnouncementRoleId(241948768113524762L)
-                .setAnnouncementChannelId(263484072389640193L)
+                .setAnnouncementRoleId(241948768113524762L)     //Lavaplayer Updates
+                .setAnnouncementChannelId(263484072389640193L)  //#lavaplayer
+                .addAnnouncementWhitelist(138092389008015360L)  //sedmelluq
         );
+        //JDA-Utilities
         addItem(new SimpleVersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM, "com.jagrosh", "jda-utilities")
                 .setUrl("https://github.com/JDA-Applications/JDA-Utilities")
                 .setAliases("utils", "jda-utils")
-                .setAnnouncementRoleId(417331483091664896L)
-                .setAnnouncementChannelId(384483855475933184L)
+                .setAnnouncementRoleId(417331483091664896L)     //JDA-Utilities Updates
+                .setAnnouncementChannelId(384483855475933184L)  //#jda-utilities
+                .addAnnouncementWhitelist(113156185389092864L, 211393686628597761L) //Jagrosh, Shengaero (TheMonitorLizard)
         );
-        //featured
+        /*
+            FEATURED
+         */
+        //Yui
         addItem(new YuiItem());
+        //JDAction
         addItem(new JDActionItem());
-        //other
+        /*
+            OTHERS
+         */
     }
 }

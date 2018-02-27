@@ -17,18 +17,14 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry.EXPERIMENTAL_ITEM;
+
 public class AnnouncementCommand implements Command
 {
 
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        if (!Bot.isHelper(sender))
-        {
-            this.sendFailed(message);
-            return;
-        }
-
         final String[] args = content.split("\\s\\|\\s", 3);
 
         if (args.length < 2)
@@ -43,7 +39,12 @@ public class AnnouncementCommand implements Command
         {
             if(args[0].equals("experimental"))
             {
-                role = Bot.getRoleExperimentalUpdates();
+                if(!Bot.isAdmin(sender))
+                {
+                    this.sendFailed(message);
+                    return;
+                }
+                role = EXPERIMENTAL_ITEM.getAnnouncementRole();
                 image = EmbedUtil.JDA_ICON;
             }
             else
@@ -52,6 +53,11 @@ public class AnnouncementCommand implements Command
                 if(item == null)
                 {
                     channel.sendMessage("Item with name " + args[0] + " doesn't exist!").queue();
+                    return;
+                }
+                if(!item.canAnnounce(sender) && !Bot.isAdmin(sender))
+                {
+                    this.sendFailed(message);
                     return;
                 }
                 role = item.getAnnouncementRole();
@@ -67,12 +73,15 @@ public class AnnouncementCommand implements Command
         else
         {
             List<VersionedItem> items = VersionCheckerRegistry.getVersionedItems().stream()
-                    .filter(i -> i.getAnnouncementRoleId() != 0 && i.getAnnouncementChannelId() == channel.getIdLong())
+                    .filter(i -> i.getAnnouncementRoleId() != 0 && i.getAnnouncementChannelId() == channel.getIdLong()
+                            && (Bot.isAdmin(sender) || i.canAnnounce(sender)))
                     .collect(Collectors.toList());
+            if(channel.getIdLong() == EXPERIMENTAL_ITEM.getAnnouncementChannelId() && Bot.isAdmin(sender))
+                items.add(EXPERIMENTAL_ITEM);
             switch(items.size())
             {
                 case 0:
-                    channel.sendMessage("No roles set up for this channel. You can manually specify one via command").queue();
+                    channel.sendMessage("No roles set up for this channel or you do not have access to them").queue();
                     return;
                 case 1:
                     VersionedItem item = items.get(0);
@@ -82,7 +91,7 @@ public class AnnouncementCommand implements Command
                         channel.sendMessage("Item has invalid role id set up").queue();
                         return;
                     }
-                    if(item.getName().equalsIgnoreCase("jda"))
+                    if(item.getName().equalsIgnoreCase("jda") || item == EXPERIMENTAL_ITEM)
                         image = EmbedUtil.JDA_ICON;
                     break;
                 default:
@@ -93,6 +102,7 @@ public class AnnouncementCommand implements Command
 
         message.delete().queue();
 
+        @SuppressWarnings("ConstantConditions")
         final MessageBuilder mb = new MessageBuilder().append(role.getAsMention());
         final EmbedBuilder eb = new EmbedBuilder();
 

@@ -42,7 +42,7 @@ public class NotifyCommand implements Command
                     .distinct() //just in case 2 items use same announcement role
                     .collect(Collectors.toList());
             if(content.contains("experimental"))
-                roles.add(Bot.getRoleExperimentalUpdates());
+                roles.add(VersionCheckerRegistry.EXPERIMENTAL_ITEM.getAnnouncementRole());
         }
 
         if(roles.size() == 0)

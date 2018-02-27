@@ -8,6 +8,7 @@ import com.kantenkugel.discordbot.versioncheck.DependencyType;
 import com.kantenkugel.discordbot.versioncheck.RepoType;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.entities.User;
 
 import java.util.List;
 import java.util.Objects;
@@ -110,6 +111,21 @@ public abstract class VersionedItem
     public long getAnnouncementChannelId()
     {
         return 0;
+    }
+
+    /**
+     * This method is used to determine if some specific User can use announcements for this item (!announce command).
+     * Only used, when {@link #getAnnouncementRoleId()} and {@link #getAnnouncementChannelId()} are returning non-zero.
+     *
+     * <p>Note: JDA Staff can always use the announcement command and do therefore not require whitelisting through this method.
+     *
+     * @param u
+     *          The User which wants to make an announcement for this item
+     * @return  True, if the given User is allowed to make an announcement for this item
+     */
+    public boolean canAnnounce(User u)
+    {
+        return false;
     }
 
     /**
