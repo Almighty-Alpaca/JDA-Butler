@@ -96,7 +96,7 @@ public class NotifyCommand implements Command
 
     private static String getRoleListString(List<Role> roles)
     {
-        return roles.stream().map(Role::getName).collect(Collectors.joining(", "));
+        return roles.stream().map(r -> '`' + r.getName() + '`').collect(Collectors.joining(", "));
     }
 
     @Override
