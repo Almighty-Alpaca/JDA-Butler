@@ -25,6 +25,12 @@ public class AnnouncementCommand implements Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
+        if(!channel.getGuild().equals(Bot.getGuildJda()))
+        {
+            this.sendFailed(message);
+            return;
+        }
+
         final String[] args = content.split("\\s\\|\\s", 3);
 
         if (args.length < 2)
