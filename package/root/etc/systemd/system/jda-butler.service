@@ -1,0 +1,13 @@
+[Unit]
+Description=JDA-Butler
+After=network.target
+
+[Service]
+WorkingDirectory=@WORKING_DIR@
+SyslogIdentifier=JDA-Butler
+ExecStart=@INSTALL_DIR@/jda-butler
+User=jda-butler
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

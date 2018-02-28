@@ -28,8 +28,11 @@ import org.json.JSONTokener;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
-import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -105,11 +108,30 @@ public class Bot
     {
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
                 LOG.error("There was an uncaught exception in thread {}", thread.getName(), throwable));
+
+        Path workingDir = Paths.get("");
+
+        Files.createDirectories(workingDir);
+
+        if (Files.notExists(workingDir))
+            throw new IllegalStateException("could not create working dir");
+
         Bot.httpClient = new OkHttpClient.Builder().build();
 
         EXECUTOR.submit(JDoc::init);
 
-        Bot.config = ConfigFactory.getConfig(new File("config.json"));
+        Path configPath = workingDir.resolve("config.json");
+
+        if (Files.notExists(configPath))
+        {
+            String rawPath = Bot.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            String decodedPath = URLDecoder.decode(rawPath, "UTF-8");
+            Path path = Paths.get(decodedPath);
+
+            configPath = path.resolveSibling("config.json");
+        }
+
+        Bot.config = ConfigFactory.getConfig(configPath.toAbsolutePath().toFile());
 
         final JDABuilder builder = new JDABuilder(AccountType.BOT);
         builder.setAudioEnabled(false);

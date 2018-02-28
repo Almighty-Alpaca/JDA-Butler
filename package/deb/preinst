@@ -1,0 +1,3 @@
+#!/bin/sh
+
+useradd -s /usr/sbin/nologin -r -M -d @WORKING_DIR@ -c "JDA-Butler (daemon)" jda-butler

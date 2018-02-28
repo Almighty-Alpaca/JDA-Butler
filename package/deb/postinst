@@ -1,0 +1,23 @@
+#!/bin/sh
+
+chown jda-butler:jda-butler -R @INSTALL_DIR@
+
+systemctl daemon-reload
+
+echo -n "Do you want to enable autostart (y/n)? "
+read answer
+if echo "$answer" | grep -iq "^y" ;then
+    echo Enabling autostart...
+    systemctl enable jda-butler
+else
+    echo Skipping...
+fi
+
+echo -n "Do you want to start JDA-Butler now (y/n)? "
+read answer
+if echo "$answer" | grep -iq "^y" ;then
+    echo Starting...
+    systemctl start jda-butler
+else
+    echo Skipping...
+fi

@@ -1,10 +1,11 @@
 plugins {
     id 'java'
-    id 'idea'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '2.0.2'
     id 'com.github.ben-manes.versions' version '0.17.0'
     id 'com.sedmelluq.jdaction' version '1.0.2'
+    id 'nebula.ospackage' version '4.8.0'
+    id 'com.google.osdetector' version '1.4.0'
 }
 
 sourceCompatibility = targetCompatibility = 1.8
@@ -12,6 +13,13 @@ sourceCompatibility = targetCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
 
 mainClassName = 'com.almightyalpaca.discord.jdabutler.Bot'
+
+version = 1.0
+
+ext {
+    installDir = '/etc/jda-butler'
+    workingDir = '/var/jda-butler'
+}
 
 repositories {
     mavenCentral()
@@ -23,7 +31,7 @@ repositories {
 
 dependencies {
     // JDA
-    compile group: 'net.dv8tion', name: 'JDA', version: '3.5.1_339'
+    compile group: 'net.dv8tion', name: 'JDA', version: '3.5.1_351'
 
     // Apache commons Lang 3
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
@@ -35,13 +43,13 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
 
     // Groovy JSR-223 / Script engine 
-    compile group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '2.4.13'
+    compile group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '2.4.14'
 
     // Gson
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
 
     // Guava
-    compile group: 'com.google.guava', name: 'guava', version: '24.0-jre'
+    compile group: 'com.google.guava', name: 'guava', version: '24.1-jre'
 
     // Dropbox
     compile group: 'com.dropbox.core', name: 'dropbox-core-sdk', version: '3.0.6'
@@ -55,17 +63,143 @@ dependencies {
     //Logback
     compile 'ch.qos.logback:logback-classic:1.2.3'
 
+    // JUnit
     testCompile 'junit:junit:4.12'
 }
 
 run {
-    systemProperties System.properties
+    systemProperties System.properties as Map<String, ?>
+}
+
+task processControlFiles(type: Copy) { Copy task ->
+    task.metaClass.outputDir = file("$buildDir/tmp/processControlFiles/")
+
+    from('package/deb/') {
+        into 'package/deb/'
+    }
+
+    into task.outputDir
+
+    filter(ReplaceTokens, tokens: [
+            INSTALL_DIR: installDir,
+            WORKING_DIR: workingDir
+    ])
+}
+
+import com.netflix.gradle.plugins.deb.Deb
+import com.netflix.gradle.plugins.packaging.SystemPackagingTask
+import org.apache.tools.ant.filters.ReplaceTokens
+import org.redline_rpm.header.Flags
+import org.redline_rpm.payload.Directive
+
+ospackage {
+    packageName = project.name.toLowerCase()
+    maintainer = 'Almighty Alpaca'
+    license = 'Apache 2.0'
+    packageGroup = 'java'
+    packageDescription = 'Companion bot for the JDA discord guild'
+
+    requires('java-runtime-headless', '1.8', Flags.GREATER | Flags.EQUAL) | ('oracle-java8-jdk')
+
+    requires('systemd')
+
+    preInstall file("$processControlFiles.outputDir/package/deb/preinst")
+    postInstall file("$processControlFiles.outputDir/package/deb/postinst")
+    preUninstall file("$processControlFiles.outputDir/package/deb/prerm")
+    postUninstall file("$processControlFiles.outputDir/package/deb/postrm")
+
+    from('package/relative/') {
+        into installDir
+
+        fileMode = 0755
+    }
+
+    from('package/root/') {
+        into '/'
+    }
+
+    from(shadowJar.outputs) {
+        rename { name -> 'jda-butler.jar' }
+
+        into installDir
+
+        fileMode = 0755
+
+        user 'jda-butler'
+    }
+
+    from(file('config.template.json')) {
+        rename { name -> 'config.json' }
+
+        into installDir
+
+        fileType = Directive.CONFIG | Directive.NOREPLACE
+    }
+
+    filter(ReplaceTokens, tokens: [
+            INSTALL_DIR: installDir,
+            WORKING_DIR: workingDir
+    ])
+
+    user 'jda-butler'
+}
+
+//noinspection GroovyAssignabilityCheck
+tasks.withType(SystemPackagingTask) { task ->
+    group 'build'
+
+    task.dependsOn processControlFiles
+
+    build.dependsOn task
+}
+
+if (osdetector.os == 'linux' && osdetector.release.isLike('debian')) {
+    tasks.withType(Deb) { Deb task ->
+        def baseName = task.name.startsWith('build') ? task.name.substring(5) : task.name
+
+        tasks.create(name: "purge$baseName", type: Exec) {
+            group 'install'
+
+            dependsOn task
+
+            commandLine 'sudo', 'apt', 'purge', '--yes', 'jda-butler'
+
+            standardInput = System.in
+            standardOutput = System.out
+            errorOutput = System.err
+        }
+
+        def remove = tasks.create(name: "remove$baseName", type: Exec) {
+            group 'install'
+
+            dependsOn task
+
+            commandLine 'sudo', 'apt', 'remove', '--yes', 'jda-butler'
+
+            standardInput = System.in
+            standardOutput = System.out
+            errorOutput = System.err
+        }
+
+        tasks.create(name: "install$baseName", type: Exec) {
+            group 'install'
+
+            dependsOn task
+            dependsOn remove
+
+            commandLine 'sudo', 'apt', 'install', '--yes', 'jda-butler'
+
+            standardInput = System.in
+            standardOutput = System.out
+            errorOutput = System.err
+        }
+    }
 }
 
 dependencyUpdates.resolutionStrategy = {
     componentSelection { rules ->
         rules.all { ComponentSelection selection ->
-            if (['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier -> selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/ }) {
+            if (['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier -> selection.candidate.version ==~ /(?i).*[.-]$qualifier[.\d-]*/ }) {
                 selection.reject('Release candidate')
             }
         }
