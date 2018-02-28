@@ -7,7 +7,6 @@ import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,7 +31,13 @@ public class NotifyCommand implements Command
         final List<Role> roles;
         if(content.trim().isEmpty())
         {
-            roles = Collections.singletonList(VersionCheckerRegistry.getItem("jda").getAnnouncementRole());
+            roles = VersionCheckerRegistry.getVersionedItems().stream()
+                    .filter(item -> item.getAnnouncementRole() != null && item.getAnnouncementChannelId() == channel.getIdLong())
+                    .map(VersionedItem::getAnnouncementRole)
+                    .distinct() //just in case 2 items use same announcement role
+                    .collect(Collectors.toList());
+            if(roles.size() == 0)
+                channel.sendMessage("No role(s) set up for this channel").queue();
         }
         else
         {
@@ -43,13 +48,12 @@ public class NotifyCommand implements Command
                     .collect(Collectors.toList());
             if(content.contains("experimental"))
                 roles.add(VersionCheckerRegistry.EXPERIMENTAL_ITEM.getAnnouncementRole());
+            if(roles.size() == 0)
+                channel.sendMessage("No role(s) found for query").queue();
         }
 
         if(roles.size() == 0)
-        {
-            channel.sendMessage("No role(s) found for query").queue();
             return;
-        }
 
         List<Role> missingRoles = roles.stream().filter(r -> !member.getRoles().contains(r)).collect(Collectors.toList());
         if(missingRoles.size() > 0)
@@ -104,7 +108,7 @@ public class NotifyCommand implements Command
     @Override
     public String getHelp()
     {
-        return "Notifies you about updates";
+        return "Notifies you about updates. Usage: `!notify [item...]`";
     }
 
     @Override
