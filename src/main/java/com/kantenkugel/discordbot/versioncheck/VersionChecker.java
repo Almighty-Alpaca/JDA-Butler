@@ -1,7 +1,8 @@
 package com.kantenkugel.discordbot.versioncheck;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
+import net.dv8tion.jda.core.utils.tuple.Pair;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -13,78 +14,43 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class VersionChecker
 {
+    public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(run ->
+    {
+        Thread t = new Thread(run);
+        t.setDaemon(true);
+        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) -> throwable.printStackTrace());
+        return t;
+    });
     static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
-    private static final Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
-
-    static {
-        addItem(new VersionedItem("JDA", RepoType.JCENTER, DependencyType.DEFAULT,
-                "net.dv8tion", "JDA", JenkinsApi.LAST_BUILD_URL));
-        addItem(new VersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT,
-                "com.sedmelluq", "lavaplayer", "https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord"));
-        addItem(new VersionedItem("JDA-Utilities", RepoType.JCENTER, DependencyType.POM,
-                "com.jagrosh", "jda-utilities", "https://github.com/JDA-Applications/JDA-Utilities"));
-    }
-
-    public static Set<VersionedItem> checkVersions()
+    public static Set<Pair<VersionedItem, String>> checkVersions()
     {
-        Set<VersionedItem> changedItems = new HashSet<>();
-        checkedItems.values().forEach(item -> {
+        Set<Pair<VersionedItem, String>> changedItems = new HashSet<>();
+        VersionCheckerRegistry.getVersionedItems().forEach(item -> {
             String version = getVersion(item);
             if (version != null && (item.getVersion() == null || !item.getVersion().equals(version)))
             {
+                changedItems.add(Pair.of(item, item.getVersion()));
                 item.setVersion(version);
-                changedItems.add(item);
             }
         });
         return changedItems;
     }
 
-    public static void addItem(String name, String repoType, String groupId, String artifactId, String url)
-    {
-        addItem(new VersionedItem(name, RepoType.fromString(repoType), DependencyType.DEFAULT, groupId, artifactId, url));
-    }
-
-    public static boolean addItem(VersionedItem item)
-    {
-        String version = getVersion(item);
-        if (version != null)
-        {
-            item.setVersion(version);
-            checkedItems.put(item.getName().toLowerCase(), item);
-            return true;
-        }
-        return false;
-    }
-
-    public static void removeItem(VersionedItem item)
-    {
-        removeItem(item.getName());
-    }
-
-    public static void removeItem(String name)
-    {
-        checkedItems.remove(name.toLowerCase());
-    }
-
-    public static VersionedItem getItem(String name)
-    {
-        return checkedItems.get(name.toLowerCase());
-    }
-
-    public static Collection<VersionedItem> getVersionedItems()
-    {
-        return checkedItems.values();
-    }
-
-    private static String getVersion(VersionedItem item)
+    static String getVersion(VersionedItem item)
     {
         ResponseBody body = null;
         try
         {
+            if(item.getCustomVersionSupplier() != null)
+                return item.getCustomVersionSupplier().get();
+
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
@@ -131,5 +97,32 @@ public class VersionChecker
                 body.close();
         }
         return null;
+    }
+
+    static void initUpdateLoop()
+    {
+        EXECUTOR.scheduleWithFixedDelay(() ->
+        {
+            Bot.LOG.debug("Checking for updates...");
+
+            Set<Pair<VersionedItem, String>> changedItems = VersionChecker.checkVersions();
+
+            boolean shouldAnnounce = !Bot.config.getBoolean("testing", true);
+
+            for (Pair<VersionedItem, String> changedItemPair : changedItems)
+            {
+                VersionedItem changedItem = changedItemPair.getLeft();
+                if(changedItem.getUpdateHandler() == null)
+                    continue;
+                try
+                {
+                    changedItem.getUpdateHandler().onUpdate(changedItem, changedItemPair.getRight(), shouldAnnounce);
+                }
+                catch(Exception ex)
+                {
+                    Bot.LOG.warn("UpdateHandler for {} failed", changedItem.getName());
+                }
+            }
+        }, 0, 1, TimeUnit.MINUTES);
     }
 }

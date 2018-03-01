@@ -4,15 +4,13 @@ import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.WriteMode;
+import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,8 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,8 +27,6 @@ public class GradleProjectDropboxUploader
 {
 
     public static final String DROPBOX_FILE_NAME = "/JDA/jda gradle setup example.zip";
-
-    public static final File EXAMPLE_IMPL = new File(GradleProjectDropboxUploader.SRC_MAIN_JAVA, "MessageListenerExample.java");
 
     public static final String EXMAPLE_IMPL_URL = "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
     public static final File GRADLE_PROJECT_DIR = new File("/gradle project/");
@@ -41,6 +37,8 @@ public class GradleProjectDropboxUploader
     public static final File GRADLE_TEMP_DIR = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, ".gradle/");
 
     public static final File SRC_MAIN_JAVA = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/java/");
+
+    public static final File EXAMPLE_IMPL = new File(GradleProjectDropboxUploader.SRC_MAIN_JAVA, "MessageListenerExample.java");
 
     public static final File SRC_MAIN_RESOURCES = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/resources/");
 
@@ -61,7 +59,7 @@ public class GradleProjectDropboxUploader
             if (GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.exists())
                 GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.delete();
 
-            final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getGradlePath().getAbsolutePath(), "init");
+            final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getExecutableGradleFile(), "init");
             builder.directory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
             builder.inheritIO();
 
@@ -69,12 +67,10 @@ public class GradleProjectDropboxUploader
 
             process.waitFor(1L, TimeUnit.MINUTES);
 
-            final String jdaVersion = Bot.config.getString("jda.version.name");
 
-            final Collection<Pair<String, String>> repositories = Collections.singleton(new ImmutablePair<>("jcenter()", null));
-            final Collection<Triple<String, String, String>> dependencies = Collections.singleton(new ImmutableTriple<>("net.dv8tion", "JDA", jdaVersion));
+            List<VersionedItem> jdaSingleton = Collections.singletonList(VersionCheckerRegistry.getItem("jda"));
 
-            FileUtils.write(GradleProjectDropboxUploader.GRADLE_BUILD_FILE, GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "MessageListenerExample", "1.0", "1.8", dependencies, repositories, false), Charset.forName("UTF-8"));
+            FileUtils.write(GradleProjectDropboxUploader.GRADLE_BUILD_FILE, GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "MessageListenerExample", "1.0", "1.8", jdaSingleton, false), Charset.forName("UTF-8"));
 
             FileUtils.write(GradleProjectDropboxUploader.GRADLE_SETTINGS_FILE, "rootProject.name = 'Example gradle project for JDA'", Charset.forName("UTF-8"));
 
@@ -143,5 +139,4 @@ public class GradleProjectDropboxUploader
             GradleProjectDropboxUploader.client = new DbxClientV2(config, ACCESS_TOKEN);
         }
     }
-
 }

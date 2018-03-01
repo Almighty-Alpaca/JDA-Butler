@@ -18,7 +18,10 @@ public class JenkinsBuild
     public final List<JenkinsChange> changes;
     public final List<JenkinsUser> culprits;
 
-    private JenkinsBuild(int buildNum, Status status, OffsetDateTime buildTime, List<JenkinsChange> changes, List<JenkinsUser> culprits)
+    private final String jenkinsPath;
+
+    private JenkinsBuild(int buildNum, Status status, OffsetDateTime buildTime, List<JenkinsChange> changes,
+                         List<JenkinsUser> culprits, String jenkinsPath)
     {
         this.buildNum = buildNum;
         this.status = status;
@@ -26,11 +29,13 @@ public class JenkinsBuild
         this.artifacts = new HashMap<>();
         this.changes = changes;
         this.culprits = culprits;
+
+        this.jenkinsPath = jenkinsPath;
     }
 
     public String getUrl()
     {
-        return JenkinsApi.JENKINS_BASE + buildNum + "/";
+        return jenkinsPath + buildNum + "/";
     }
 
     private void addArtifact(String fileName, String relPath)
@@ -43,7 +48,7 @@ public class JenkinsBuild
         artifacts.put(artifact.descriptor, artifact);
     }
 
-    static JenkinsBuild fromJson(JSONObject json)
+    static JenkinsBuild fromJson(JSONObject json, JenkinsApi base)
     {
         int buildNum = json.getInt("id");
         Status status = json.getBoolean("building") ? Status.BUILDING : Status.valueOf(json.getString("result"));
@@ -67,7 +72,7 @@ public class JenkinsBuild
 
         JSONArray artifactArr = json.getJSONArray("artifacts");
 
-        JenkinsBuild build = new JenkinsBuild(buildNum, status, buildTime, changes, culprits);
+        JenkinsBuild build = new JenkinsBuild(buildNum, status, buildTime, changes, culprits, base.jenkinsBase);
 
         for (int i = 0; i < artifactArr.length(); i++)
         {

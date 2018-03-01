@@ -162,36 +162,41 @@ public class DocsCommand extends ReactionCommand
                         channel.sendMessage("Invalid syntax!").queue();
                         return;
                     }
+
                     List<Documentation> javadocs = JDoc.getJava(split[1]);
-                    if (javadocs.size() == 0)
+                    switch (javadocs.size())
                     {
-                        channel.sendMessage("No Result found!").queue();
-                    }
-                    else if (javadocs.size() == 1)
-                    {
-                        channel.sendMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(0))).queue();
-                    }
-                    else
-                    {
-                        EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
-                        for (int i = 0; i < javadocs.size(); i++)
-                        {
-                            Documentation doc = javadocs.get(i);
-                            embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl(JDocUtil.JAVA_JDOCS_PREFIX) + ")\n");
-                        }
-                        embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
-                        List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, javadocs.size())));
-                        options.add(ReactionCommand.CANCEL);
-                        channel.sendMessage(embedB.build()).queue(m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
-                            if (index >= javadocs.size())
-                            {                //cancel button or other error
-                                stopReactions(m, false);
-                                m.delete().queue();
-                                return;
+                        case 0:
+                            channel.sendMessage("No Result found!").queue();
+                            break;
+                        case 1:
+                            channel.sendMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(0))).queue();
+                            break;
+                        default:
+                            EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
+                            for (int i = 0; i < javadocs.size(); i++)
+                            {
+                                Documentation doc = javadocs.get(i);
+                                embedB.appendDescription(
+                                        ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl(JDocUtil.JAVA_JDOCS_PREFIX) +
+                                        ")\n");
                             }
-                            stopReactions(m);
-                            m.editMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(index))).queue();
-                        }));
+                            embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
+                            List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, javadocs.size())));
+                            options.add(ReactionCommand.CANCEL);
+                            channel
+                                    .sendMessage(embedB.build())
+                                    .queue(m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
+                                        if (index >= javadocs.size())
+                                        {                //cancel button or other error
+                                            stopReactions(m, false);
+                                            m.delete().queue();
+                                            return;
+                                        }
+                                        stopReactions(m);
+                                        m.editMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(index))).queue();
+                                    }));
+                            break;
                     }
                     break;
                 }

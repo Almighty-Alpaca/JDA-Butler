@@ -1,6 +1,5 @@
 package com.almightyalpaca.discord.jdabutler;
 
-import com.kantenkugel.discordbot.jenkinsutil.JenkinsChange;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsUser;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.User;
@@ -8,7 +7,6 @@ import net.dv8tion.jda.core.entities.User;
 import java.text.DateFormat;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -19,38 +17,6 @@ public class FormattingUtil
     public static String formatTimestap(final long timestap)
     {
         return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, Locale.ENGLISH).format(Date.from(Instant.ofEpochMilli(timestap)));
-    }
-
-    public static List<String> getChangelog(List<JenkinsChange> changeSet)
-    {
-        final List<String> fields = new ArrayList<>();
-
-        StringBuilder builder = new StringBuilder();
-
-        for (final JenkinsChange item : changeSet)
-        {
-            final String[] lines = item.commitMsg.split("\n");
-
-            for (int j = 0; j < lines.length; j++)
-            {
-                final StringBuilder line = new StringBuilder();
-                line.append("[`").append(j == 0 ? item.getShortId() : "`.......`").append("`](https://github.com/DV8FromTheWorld/JDA/commit/").append(item.commitId).append(")").append(" ").append(lines[j]).append("\n");
-
-                if (builder.length() + line.length() > 1021)
-                {
-                    fields.add(builder.toString());
-                    builder = new StringBuilder();
-                }
-
-                builder.append(line);
-            }
-        }
-
-        if (builder.length() > 0)
-            fields.add(builder.toString());
-
-        return fields;
-
     }
 
     public static void setFooter(final EmbedBuilder eb, final List<JenkinsUser> culprits, OffsetDateTime timestamp)
