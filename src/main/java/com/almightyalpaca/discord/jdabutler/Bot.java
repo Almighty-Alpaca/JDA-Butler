@@ -45,31 +45,6 @@ public class Bot
 
     public static final Logger LOG = (Logger) LoggerFactory.getLogger(Bot.class);
 
-    public static TextChannel getChannelAnnouncements()
-    {
-        return Bot.jda.getTextChannelById("125227483518861312");
-    }
-
-    public static TextChannel getChannelExperimental()
-    {
-        return Bot.jda.getTextChannelById("289742061220134912");
-    }
-
-    public static TextChannel getChannelLavaplayer()
-    {
-        return Bot.jda.getTextChannelById("263484072389640193");
-    }
-
-    public static TextChannel getChannelLogs()
-    {
-        return Bot.jda.getTextChannelById("241926199666802690");
-    }
-
-    public static TextChannel getChannelTesting()
-    {
-        return Bot.jda.getTextChannelById("115567590495092740");
-    }
-
     public static Guild getGuildJda()
     {
         return Bot.jda.getGuildById("125227483518861312");
@@ -80,29 +55,9 @@ public class Bot
         return Bot.getGuildJda().getRoleById("125616720156033024");
     }
 
-    public static Role getRoleExperimentalUpdates()
-    {
-        return Bot.getGuildJda().getRoleById("289744006433472513");
-    }
-
-    public static Role getRoleHelper()
-    {
-        return Bot.getGuildJda().getRoleById("183963327033114624");
-    }
-
     public static Role getRoleJdaFanclub()
     {
         return Bot.getGuildJda().getRoleById("169558668126322689");
-    }
-
-    public static Role getRoleJdaUpdates()
-    {
-        return Bot.getGuildJda().getRoleById("241948671325765632");
-    }
-
-    public static Role getRoleLavaplayerUpdates()
-    {
-        return Bot.getGuildJda().getRoleById("241948768113524762");
     }
 
     public static Role getRoleStaff()
@@ -133,11 +88,6 @@ public class Bot
     {
         final Member member = Bot.getGuildJda().getMember(user);
         return member != null && member.getRoles().contains(Bot.getRoleStaff());
-    }
-
-    public static boolean isHelper(final User sender)
-    {
-        return Bot.getGuildJda().isMember(sender) && (Bot.isAdmin(sender) || Bot.getGuildJda().getMember(sender).getRoles().contains(Bot.getRoleHelper()));
     }
 
     public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, SecurityException
