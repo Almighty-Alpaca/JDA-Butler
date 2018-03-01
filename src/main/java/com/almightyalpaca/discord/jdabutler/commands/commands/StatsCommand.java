@@ -17,7 +17,7 @@ public class StatsCommand implements Command
     }
 
     @Override
-    public void dispatch(User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event) throws Exception
+    public void dispatch(User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event)
     {
         channel.sendMessage(fakeListener.getStats(event.getJDA())).queue();
     }
