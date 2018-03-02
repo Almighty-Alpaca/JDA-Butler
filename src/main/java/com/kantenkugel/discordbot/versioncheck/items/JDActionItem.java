@@ -2,6 +2,8 @@ package com.kantenkugel.discordbot.versioncheck.items;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.versioncheck.RepoType;
+import com.kantenkugel.discordbot.versioncheck.VersionChecker;
+import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.VersionUtils;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -71,7 +73,7 @@ public class JDActionItem extends VersionedItem
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            VersionChecker.LOG.warn("There was an error fetching the newest version of JDAction", e);
         }
         return null;
     }

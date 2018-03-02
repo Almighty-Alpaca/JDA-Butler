@@ -20,14 +20,16 @@ import java.util.concurrent.TimeUnit;
 
 public class VersionChecker
 {
+    public static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
+
     public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(run ->
     {
         Thread t = new Thread(run);
         t.setDaemon(true);
-        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) -> throwable.printStackTrace());
+        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) ->
+                LOG.error("There was a uncaught exception in the threadpool", throwable));
         return t;
     });
-    static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
     public static Set<Pair<VersionedItem, String>> checkVersions()
     {
