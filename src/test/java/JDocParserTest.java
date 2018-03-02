@@ -86,4 +86,25 @@ public class JDocParserTest {
                 message.get(0).getUrl(JDocUtil.JDOCBASE)
         );
     }
+
+    @Test
+    public void javaJDocsWork() {
+        List<Documentation> stringFormat = JDoc.getJava("String#format");
+        assertEquals("String#format should be found in Java Jdocs", 2, stringFormat.size());
+    }
+
+    @Test
+    public void javaJDocUrlCheck() {
+        List<Documentation> stringClass = JDoc.getJava("String");
+        assertEquals("String should be found in Java Jdocs", 1, stringClass.size());
+        assertEquals("Url to String JDocs mismatches",
+                "https://docs.oracle.com/javase/8/docs/api/java/lang/String.html",
+                stringClass.get(0).getUrl(JDocUtil.JAVA_JDOCS_PREFIX));
+    }
+
+    @Test
+    public void javaJdocNamesWithNumbersWork() {
+        List<Documentation> graphics2D = JDoc.getJava("Graphics2D");
+        assertEquals("Could not find Class Graphics2D in Java JDocs", 1, graphics2D.size());
+    }
 }
