@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class NotifyCommand implements Command
@@ -37,7 +38,7 @@ public class NotifyCommand implements Command
                     .distinct() //just in case 2 items use same announcement role
                     .collect(Collectors.toList());
             if(roles.size() == 0)
-                channel.sendMessage("No role(s) set up for this channel").queue();
+                respond(message, "No role(s) set up for this channel");
         }
         else
         {
@@ -49,7 +50,7 @@ public class NotifyCommand implements Command
             if(content.contains("experimental"))
                 roles.add(VersionCheckerRegistry.EXPERIMENTAL_ITEM.getAnnouncementRole());
             if(roles.size() == 0)
-                channel.sendMessage("No role(s) found for query").queue();
+                respond(message, "No role(s) found for query");
         }
 
         if(roles.size() == 0)
@@ -61,11 +62,11 @@ public class NotifyCommand implements Command
             guild.getController().addRolesToMember(member, missingRoles).reason("Notify command").queue(vd ->
             {
                 logRoleAddition(sender, missingRoles);
-                channel.sendMessage("Added you to role(s) "+getRoleListString(missingRoles)).queue();
+                respond(message, "Added you to role(s) "+getRoleListString(missingRoles));
             }, e ->
             {
                 Bot.LOG.error("Could not add role(s) to user {}", sender.getIdLong(), e);
-                channel.sendMessage("There was an error adding roles. Please notify the devs.").queue();
+                respond(message, "There was an error adding roles. Please notify the devs.");
             });
         }
         else
@@ -73,11 +74,11 @@ public class NotifyCommand implements Command
             guild.getController().removeRolesFromMember(member, roles).reason("Notify command").queue(vd ->
             {
                 logRoleRemoval(sender, roles);
-                channel.sendMessage("Removed you from role(s) "+getRoleListString(roles)).queue();
+                respond(message, "Removed you from role(s) "+getRoleListString(roles));
             }, e ->
             {
                 Bot.LOG.error("Could not remove role(s) from user {}", sender.getIdLong(), e);
-                channel.sendMessage("There was an error removing roles. Please notify the devs.").queue();
+                respond(message, "There was an error removing roles. Please notify the devs.");
             });
         }
     }
@@ -115,5 +116,14 @@ public class NotifyCommand implements Command
     public String getName()
     {
         return "notify";
+    }
+
+    private static void respond(Message origMsg, String newMessageContent)
+    {
+        origMsg.getChannel().sendMessage(newMessageContent).queue(responseMsg ->
+        {
+            responseMsg.delete().queueAfter(10, TimeUnit.SECONDS);
+            origMsg.delete().queueAfter(10, TimeUnit.SECONDS);
+        });
     }
 }
