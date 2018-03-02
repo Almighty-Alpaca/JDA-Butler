@@ -17,7 +17,8 @@ public class EventListener extends ListenerAdapter
     {
         final Thread t = new Thread(r);
         t.setDaemon(true);
-        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) -> throwable.printStackTrace());
+        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) ->
+                Bot.LOG.error("There was a uncaught exception in the ListenerAdapter threadpool", throwable));
         t.setPriority(Thread.NORM_PRIORITY);
         return t;
     });

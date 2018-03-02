@@ -103,7 +103,7 @@ public class JDoc {
             is = res.body().byteStream();
             JDocParser.parse(JDocUtil.JAVA_JDOCS_PREFIX, urlPath, is, resultMap);
         } catch(Exception e) {
-            e.printStackTrace();
+            JDocUtil.LOG.error("Error parsing java javadocs for {}", name, e);
         } finally {
             if(is != null)
                 try { is.close(); } catch(Exception ignored) {}
@@ -301,7 +301,7 @@ public class JDoc {
                 }
             });
         } catch(Exception e) {
-            e.printStackTrace();
+            JDocUtil.LOG.error("Failed fetching the j8 class index", e);
         }
     }
 }
