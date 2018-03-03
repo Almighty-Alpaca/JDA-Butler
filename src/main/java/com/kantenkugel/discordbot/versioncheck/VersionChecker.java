@@ -111,7 +111,7 @@ public class VersionChecker
 
             Set<Pair<VersionedItem, String>> changedItems = VersionChecker.checkVersions();
 
-            boolean shouldAnnounce = !Bot.config.getBoolean("testing", true);
+            boolean shouldAnnounce = !Bot.config.getBoolean("testing", true) && !Bot.isStealth;
 
             for (Pair<VersionedItem, String> changedItemPair : changedItems)
             {
