@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class VersionChecker
 {
@@ -50,8 +51,9 @@ public class VersionChecker
         ResponseBody body = null;
         try
         {
-            if(item.getCustomVersionSupplier() != null)
-                return item.getCustomVersionSupplier().get();
+            Supplier<String> versionSupplier = item.getCustomVersionSupplier();
+            if(versionSupplier != null)
+                return versionSupplier.get();
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
