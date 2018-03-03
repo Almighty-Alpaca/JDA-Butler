@@ -42,7 +42,7 @@ public class GradleProjectDropboxUploader
 
     public static final File SRC_MAIN_RESOURCES = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "src/main/resources/");
 
-    private static DbxClientV2 client;
+    private static DbxClientV2 client = null;
 
     private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
@@ -100,16 +100,15 @@ public class GradleProjectDropboxUploader
 
     public static void uploadProject()
     {
+        GradleProjectDropboxUploader.createZip();
 
         Bot.LOG.info("Uploading gradle example zip...");
 
         GradleProjectDropboxUploader.init();
 
-        GradleProjectDropboxUploader.createZip();
-
-        if (Bot.config.getBoolean("testing", true))
+        if (client == null)
         {
-            Bot.LOG.debug("Skipping upload!");
+            Bot.LOG.info("Skipping upload!");
             return;
         }
 
@@ -132,7 +131,9 @@ public class GradleProjectDropboxUploader
     {
         if (!GradleProjectDropboxUploader.initialized.getAndSet(true))
         {
-            final String ACCESS_TOKEN = Bot.config.getString("dropbox.access_token");
+            final String ACCESS_TOKEN = Bot.config.getString("dropbox.access_token", "");
+            if(ACCESS_TOKEN.isEmpty())
+                return;
 
             final DbxRequestConfig config = DbxRequestConfig.newBuilder("JDA-Butler").build();
 

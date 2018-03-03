@@ -150,8 +150,6 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             mb.setEmbed(embed);
 
-            mb.build();
-
             final TextChannel channel = getAnnouncementChannel();
 
             announcementRole.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> announcementRole.getManager().setMentionable(false).queue()));
