@@ -98,7 +98,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
                 return;
             }
 
-            VersionChecker.EXECUTOR.submit(() ->
+            Bot.EXECUTOR.submit(() ->
             {
                 JDoc.reFetch();
                 GradleProjectDropboxUploader.uploadProject();

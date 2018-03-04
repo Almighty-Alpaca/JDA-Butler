@@ -7,21 +7,8 @@ import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.requests.restaction.AuditableRestAction;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
 public class EventListener extends ListenerAdapter
 {
-
-    static final ScheduledExecutorService executor = new ScheduledThreadPoolExecutor(1, (r) ->
-    {
-        final Thread t = new Thread(r);
-        t.setDaemon(true);
-        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) ->
-                Bot.LOG.error("There was a uncaught exception in the ListenerAdapter threadpool", throwable));
-        t.setPriority(Thread.NORM_PRIORITY);
-        return t;
-    });
 
     @Override
     public void onGuildMemberJoin(final GuildMemberJoinEvent event)
@@ -46,7 +33,6 @@ public class EventListener extends ListenerAdapter
     @Override
     public void onShutdown(final ShutdownEvent event)
     {
-        EventListener.executor.shutdown();
         Engine.shutdown();
     }
 }

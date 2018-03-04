@@ -30,7 +30,7 @@ public class GradleDownloader
         if (!GradleDownloader.initialized.getAndSet(true))
             GradleDownloader.downloadGradle();
 
-        return (SystemUtils.IS_OS_LINUX ? "." : "") + new File(GradleDownloader.GRADLE_DIR, "/gradle-" + GradleDownloader.GRADLE_VERSION + "/bin/gradle" + (SystemUtils.IS_OS_WINDOWS ? ".bat" : "")).getAbsolutePath();
+        return new File(GradleDownloader.GRADLE_DIR, "/gradle-" + GradleDownloader.GRADLE_VERSION + "/bin/gradle" + (SystemUtils.IS_OS_WINDOWS ? ".bat" : "")).getAbsolutePath();
     }
 
     private static void downloadGradle()

@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Bot
@@ -46,6 +48,14 @@ public class Bot
     public static EventListener listener;
 
     public static final Logger LOG = (Logger) LoggerFactory.getLogger(Bot.class);
+
+    public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(r ->
+    {
+        final Thread t = new Thread(r, "main-executor");
+        t.setDaemon(true);
+        t.setPriority(Thread.NORM_PRIORITY);
+        return t;
+    });
 
     public static Guild getGuildJda()
     {
@@ -94,9 +104,11 @@ public class Bot
 
     public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, SecurityException
     {
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
+                LOG.error("There was an uncaught exception in thread {}", thread.getName(), throwable));
         Bot.httpClient = new OkHttpClient.Builder().build();
 
-        EventListener.executor.submit(JDoc::init);
+        EXECUTOR.submit(JDoc::init);
 
         Bot.config = ConfigFactory.getConfig(new File("config.json"));
 
