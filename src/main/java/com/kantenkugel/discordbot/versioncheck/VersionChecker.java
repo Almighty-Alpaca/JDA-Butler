@@ -14,18 +14,16 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 public class VersionChecker
 {
     public static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
-    public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(run ->
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(2, run ->
     {
-        Thread t = new Thread(run);
+        Thread t = new Thread(run, "versionchecker-thread");
         t.setDaemon(true);
         t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) ->
                 LOG.error("There was a uncaught exception in the threadpool", throwable));
@@ -107,9 +105,25 @@ public class VersionChecker
     {
         EXECUTOR.scheduleWithFixedDelay(() ->
         {
-            Bot.LOG.debug("Checking for updates...");
+            LOG.debug("Checking for updates...");
 
-            Set<Pair<VersionedItem, String>> changedItems = VersionChecker.checkVersions();
+            Set<Pair<VersionedItem, String>> changedItems;
+            Future<Set<Pair<VersionedItem, String>>> check = EXECUTOR.submit(VersionChecker::checkVersions);
+            try
+            {
+                changedItems = check.get(1, TimeUnit.MINUTES);
+            }
+            catch(TimeoutException ex)
+            {
+                check.cancel(true);
+                LOG.error("Version-checking timed out");
+                return;
+            }
+            catch(Exception ex)
+            {
+                LOG.error("There was an error fetching newest versions", ex);
+                return;
+            }
 
             boolean shouldAnnounce = !Bot.config.getBoolean("testing", true);
 
@@ -118,13 +132,29 @@ public class VersionChecker
                 VersionedItem changedItem = changedItemPair.getLeft();
                 if(changedItem.getUpdateHandler() == null)
                     continue;
+                Future<?> updateTask = EXECUTOR.submit(() ->
+                {
+                    try
+                    {
+                        changedItem.getUpdateHandler().onUpdate(changedItem, changedItemPair.getRight(), shouldAnnounce);
+                    }
+                    catch(Exception ex)
+                    {
+                        LOG.warn("UpdateHandler for {} failed", changedItem.getName());
+                    }
+                });
                 try
                 {
-                    changedItem.getUpdateHandler().onUpdate(changedItem, changedItemPair.getRight(), shouldAnnounce);
+                    updateTask.get(30, TimeUnit.SECONDS);
                 }
-                catch(Exception ex)
+                catch(TimeoutException e)
                 {
-                    Bot.LOG.warn("UpdateHandler for {} failed", changedItem.getName());
+                    updateTask.cancel(true);
+                    LOG.warn("UpdateHandler for {} timed out!", changedItem.getName());
+                }
+                catch(Exception e)
+                {
+                    LOG.error("There was an error executing the UpdateHandler for {}", changedItem.getName());
                 }
             }
         }, 0, 1, TimeUnit.MINUTES);
