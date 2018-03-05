@@ -225,13 +225,12 @@ public class JDoc {
     public static void init() {
         if (!docs.isEmpty())
             return;
-        JDocUtil.LOG.info("Initializing JDA-Docs");
+        JDocUtil.LOG.info("Initializing Docs...");
         download();
         fetch();
-        JDocUtil.LOG.info("JDA-Docs initialized");
-        JDocUtil.LOG.info("Fetching Java8 class indexes");
+        JDocUtil.LOG.debug("JDA-Docs initialized, Fetching Java8 class indexes");
         fetchJavaClassIndexes();
-        JDocUtil.LOG.info("Done fetching Java8 class indexes");
+        JDocUtil.LOG.info("Docs initialized");
     }
 
     public static void reFetch() {
@@ -259,7 +258,7 @@ public class JDoc {
         JenkinsBuild lastBuild = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuild();
         if(lastBuild != null)
         {
-            JDocUtil.LOG.info("Downloading JDA docs...");
+            JDocUtil.LOG.debug("Downloading JDA docs...");
             ResponseBody body = null;
             try {
                 String artifactUrl = lastBuild.artifacts.get("JDA-javadoc").getLink();
@@ -273,7 +272,7 @@ public class JDoc {
                 final InputStream is = body.byteStream();
                 Files.copy(is, JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
                 is.close();
-                JDocUtil.LOG.info("Done downloading JDA docs");
+                JDocUtil.LOG.debug("Done downloading JDA docs");
             } catch(Exception e) {
                 JDocUtil.LOG.error("Error downloading jdoc jar", e);
             }

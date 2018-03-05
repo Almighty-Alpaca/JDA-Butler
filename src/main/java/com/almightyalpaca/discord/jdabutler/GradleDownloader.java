@@ -25,34 +25,39 @@ public class GradleDownloader
         return "https://services.gradle.org/distributions/gradle-" + GradleDownloader.GRADLE_VERSION + "-bin.zip";
     }
 
-    public static String getExecutableGradleFile()
+    public static File getExecutableGradleFile()
     {
         if (!GradleDownloader.initialized.getAndSet(true))
             GradleDownloader.downloadGradle();
 
-        return new File(GradleDownloader.GRADLE_DIR, "/gradle-" + GradleDownloader.GRADLE_VERSION + "/bin/gradle" + (SystemUtils.IS_OS_WINDOWS ? ".bat" : "")).getAbsolutePath();
+        return new File(GradleDownloader.GRADLE_DIR, "/gradle-" + GradleDownloader.GRADLE_VERSION + "/bin/gradle" + (SystemUtils.IS_OS_WINDOWS ? ".bat" : ""));
     }
 
     private static void downloadGradle()
     {
+        if(getExecutableGradleFile().exists())
+            return; //don't re-fetch already existing gradle version
+
+        Bot.LOG.info("Downloading gradle...");
         try
         {
-            if (GradleDownloader.GRADLE_ZIP.exists())
-                GradleDownloader.GRADLE_ZIP.delete();
+            if (GRADLE_ZIP.exists())
+                GRADLE_ZIP.delete();
             else
-                GradleDownloader.GRADLE_ZIP.getParentFile().mkdirs();
-            GradleDownloader.GRADLE_ZIP.createNewFile();
+                GRADLE_ZIP.getParentFile().mkdirs();
+            GRADLE_ZIP.createNewFile();
 
-            FileUtils.copyURLToFile(new URL(GradleDownloader.getGradleDitributionURL()), GradleDownloader.GRADLE_ZIP);
+            FileUtils.copyURLToFile(new URL(getGradleDitributionURL()), GRADLE_ZIP);
 
-            final ZipFile zip = new ZipFile(GradleDownloader.GRADLE_ZIP);
+            final ZipFile zip = new ZipFile(GRADLE_ZIP);
 
-            zip.extractAll(GradleDownloader.GRADLE_DIR.getAbsolutePath());
+            zip.extractAll(GRADLE_DIR.getAbsolutePath());
+            getExecutableGradleFile().setExecutable(true);
+            GRADLE_ZIP.delete();
         }
         catch (IOException | ZipException e)
         {
-            throw new RuntimeException(e);
-
+            Bot.LOG.error("There was an error downloading/extracting gradle", e);
         }
     }
 }

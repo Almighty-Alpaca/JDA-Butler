@@ -29,7 +29,7 @@ public class GradleProjectDropboxUploader
     public static final String DROPBOX_FILE_NAME = "/JDA/jda gradle setup example.zip";
 
     public static final String EXMAPLE_IMPL_URL = "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
-    public static final File GRADLE_PROJECT_DIR = new File("/gradle project/");
+    public static final File GRADLE_PROJECT_DIR = new File("gradle project/");
     public static final File GRADLE_BUILD_FILE = new File(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR, "build.gradle");
     public static final File GRADLE_PROJECT_ZIP = new File("exmaple gradle project for jda.zip");
 
@@ -59,9 +59,8 @@ public class GradleProjectDropboxUploader
             if (GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.exists())
                 GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.delete();
 
-            final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getExecutableGradleFile(), "init");
+            final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getExecutableGradleFile().getAbsolutePath(), "--no-daemon", "init");
             builder.directory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
-            builder.inheritIO();
 
             final Process process = builder.start();
 
@@ -102,8 +101,6 @@ public class GradleProjectDropboxUploader
     {
         GradleProjectDropboxUploader.createZip();
 
-        Bot.LOG.info("Uploading gradle example zip...");
-
         GradleProjectDropboxUploader.init();
 
         if (client == null)
@@ -111,6 +108,8 @@ public class GradleProjectDropboxUploader
             Bot.LOG.info("Skipping upload!");
             return;
         }
+
+        Bot.LOG.info("Uploading gradle example zip...");
 
         try (InputStream in = new FileInputStream(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP))
         {
