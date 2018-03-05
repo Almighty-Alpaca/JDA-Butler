@@ -61,11 +61,11 @@ public class GradleProjectDropboxUploader
 
             final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getExecutableGradleFile().getAbsolutePath(), "--no-daemon", "init");
             builder.directory(GradleProjectDropboxUploader.GRADLE_PROJECT_DIR);
+            builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
             final Process process = builder.start();
 
             process.waitFor(1L, TimeUnit.MINUTES);
-
 
             List<VersionedItem> jdaSingleton = Collections.singletonList(VersionCheckerRegistry.getItem("jda"));
 
