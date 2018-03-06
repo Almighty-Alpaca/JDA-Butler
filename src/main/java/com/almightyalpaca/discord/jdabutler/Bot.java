@@ -15,6 +15,7 @@ import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.fakebutler.FakeButlerListener;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
+import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
@@ -154,7 +155,20 @@ public class Bot
             root.addAppender(appender);
         }
 
-        VersionCheckerRegistry.init();
+        EXECUTOR.submit(() ->
+        {
+            VersionCheckerRegistry.init();
+            VersionedItem jdaItem = VersionCheckerRegistry.getItem("jda");
+            if(jdaItem.getVersion() != null && jdaItem.parseVersion().build != config.getInt("jda.version.build"))
+            {
+                //do not announce here as that might cause duplicate announcements when a new instance is fired up (or a very old one)
+                jdaItem.getUpdateHandler().onUpdate(jdaItem, config.getString("jda.version.name"), false);
+            }
+            else
+            {
+                GradleProjectDropboxUploader.uploadProject();
+            }
+        });
     }
 
     public static void shutdown()

@@ -14,7 +14,8 @@ public class GradleProjectCommand implements Command
     {
         if (!GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP.exists())
             channel.sendTyping().queue();
-        GradleProjectDropboxUploader.createZip();
+        //not needed as the zip is auto-created on jda update
+//        GradleProjectDropboxUploader.createZip();
 
         channel.sendFile(GradleProjectDropboxUploader.GRADLE_PROJECT_ZIP).queue();
     }

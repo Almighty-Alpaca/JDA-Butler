@@ -42,7 +42,7 @@ public class JDocParser {
     public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("(?:[a-z]+\\.)*([a-zA-Z][a-zA-Z0-9.<,?>\\[\\]]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
     static Map<String, ClassDocumentation> parse() {
-        JDocUtil.LOG.info("Parsing docs-files");
+        JDocUtil.LOG.debug("Parsing jda-docs-files");
         Map<String, ClassDocumentation> docs = new HashMap<>();
         try (final JarFile file = new JarFile(JDocUtil.LOCAL_DOC_PATH.toFile())) {
             file.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(JDocUtil.JDA_CODE_BASE) && entry.getName().endsWith(".html")).forEach(entry -> {
@@ -52,7 +52,7 @@ public class JDocParser {
                     JDocUtil.LOG.error("Error while parsing doc file {}", entry.getName(), e);
                 }
             });
-            JDocUtil.LOG.info("Done parsing docs-files");
+            JDocUtil.LOG.debug("Done parsing jda-docs-files");
         } catch (final Exception e) {
             JDocUtil.LOG.error("Error reading the jdoc jarfile", e);
         }
