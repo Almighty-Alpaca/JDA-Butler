@@ -24,6 +24,8 @@ public class JenkinsVersionSupplier implements Supplier<String>
     public String get()
     {
         JenkinsBuild build = jenkins.fetchLastSuccessfulBuild();
+        if(build == null)   //jenkins failed fetching (internet or jenkins server?)
+            return null;
         if(build.artifacts.size() > 0)
         {
             JenkinsBuild.Artifact firstArtifact = build.artifacts.values().iterator().next();
