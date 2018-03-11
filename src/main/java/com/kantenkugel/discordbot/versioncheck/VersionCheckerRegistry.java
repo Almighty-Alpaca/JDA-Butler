@@ -127,5 +127,6 @@ public class VersionCheckerRegistry
         /*
             OTHERS
          */
+        addItem(new DiscordRpcItem());
     }
 }
