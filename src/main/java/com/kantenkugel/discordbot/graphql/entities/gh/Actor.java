@@ -1,11 +1,9 @@
 package com.kantenkugel.discordbot.graphql.entities.gh;
 
-import com.kantenkugel.discordbot.graphql.anno.GQLEntity;
-import com.kantenkugel.discordbot.graphql.anno.GQLIgnore;
+import com.kantenkugel.discordbot.graphql.JsonIgnore;
 
 import java.time.OffsetDateTime;
 
-@GQLEntity
 public class Actor
 {
     private String name;
@@ -13,7 +11,7 @@ public class Actor
     private String email;
     private String date;
 
-    @GQLIgnore
+    @JsonIgnore
     private OffsetDateTime dateTime;
 
     public String getName()

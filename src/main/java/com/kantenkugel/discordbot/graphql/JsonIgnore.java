@@ -1,4 +1,4 @@
-package com.kantenkugel.discordbot.graphql.anno;
+package com.kantenkugel.discordbot.graphql;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Prevents a warning message if this key was not found in the json graphql response
+ * Fields annotated with this annotation should not be attempted to be deserialized from json
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface GQLOptional {}
+public @interface JsonIgnore {}

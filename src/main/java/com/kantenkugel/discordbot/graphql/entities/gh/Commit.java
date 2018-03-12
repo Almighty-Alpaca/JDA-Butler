@@ -1,14 +1,12 @@
 package com.kantenkugel.discordbot.graphql.entities.gh;
 
-import com.kantenkugel.discordbot.graphql.anno.GQLEntity;
-import com.kantenkugel.discordbot.graphql.anno.GQLField;
+import com.google.gson.annotations.SerializedName;
 
-@GQLEntity
 public class Commit
 {
-    @GQLField(name = "oid")
+    @SerializedName("oid")
     private String hash;
-    @GQLField(name = "abbreviatedOid")
+    @SerializedName("abbreviatedOid")
     private String shortHash;
     private String message;
     private Actor author;

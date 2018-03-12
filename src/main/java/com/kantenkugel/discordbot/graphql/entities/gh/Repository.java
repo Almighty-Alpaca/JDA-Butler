@@ -1,24 +1,22 @@
 package com.kantenkugel.discordbot.graphql.entities.gh;
 
-import com.kantenkugel.discordbot.graphql.anno.GQLEntity;
-import com.kantenkugel.discordbot.graphql.anno.GQLField;
-import com.kantenkugel.discordbot.graphql.anno.GQLOptional;
+import com.google.gson.annotations.JsonAdapter;
+import com.google.gson.annotations.SerializedName;
+import com.kantenkugel.discordbot.graphql.adapters.gh.GHListAdapter;
 
 import java.util.List;
 
-@GQLEntity
 public class Repository
 {
-    @GQLOptional
-    @GQLField(path = "releases", name = "nodes")
+    @JsonAdapter(GHListAdapter.class)
     private List<Release> releases;
 
-    @GQLOptional
-    @GQLField(path = "refs", name = "nodes")
+    @SerializedName("refs")
+    @JsonAdapter(GHListAdapter.class)
     private List<Tag> tags;
 
-    @GQLOptional
-    @GQLField(path = "ref.target.history", name = "nodes")
+    @SerializedName("ref")
+    @JsonAdapter(GHListAdapter.class)
     private List<Commit> commits;
 
     public List<Release> getReleases()
@@ -29,5 +27,10 @@ public class Repository
     public List<Tag> getTags()
     {
         return tags;
+    }
+
+    public List<Commit> getCommits()
+    {
+        return commits;
     }
 }
