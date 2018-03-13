@@ -28,7 +28,7 @@ public class GithubVersionSupplier implements Supplier<String>
             QUERY = new GQLQuery<>(
                     "https://api.github.com/graphql",
                     "Bearer " + ghToken,
-                    GQLQuery.readSchema("ghTags"),
+                    GQLQuery.readQuery("ghTags"),
                     Repository.class
             );
         }
