@@ -60,13 +60,14 @@ public class VersionChecker
                     new Request.Builder().url(item.getRepoUrl()).get().build()
             ).execute();
 
-            if (!res.isSuccessful())
+            body = res.body();
+
+            if (!res.isSuccessful() || body == null)
             {
                 LOG.warn("Could not fetch Maven metadata from " + item.getRepoUrl() + " - OkHttp returned with failure");
                 return null;
             }
 
-            body = res.body();
             Document doc = dBuilder.parse(body.byteStream());
 
             Element root = doc.getDocumentElement();
@@ -88,10 +89,10 @@ public class VersionChecker
 
             return versionElem.getTextContent();
 
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
-            LOG.warn("Could not fetch Maven metadata from " + item.getRepoUrl());
-            //e.printStackTrace();
+            LOG.warn("Could not fetch version info for item {}", item.getName(), e);
         }
         finally
         {
