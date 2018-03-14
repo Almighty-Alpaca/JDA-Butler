@@ -60,13 +60,14 @@ public class VersionChecker
                     new Request.Builder().url(item.getRepoUrl()).get().build()
             ).execute();
 
-            if (!res.isSuccessful())
+            body = res.body();
+
+            if (!res.isSuccessful() || body == null)
             {
                 LOG.warn("Could not fetch Maven metadata from " + item.getRepoUrl() + " - OkHttp returned with failure");
                 return null;
             }
 
-            body = res.body();
             Document doc = dBuilder.parse(body.byteStream());
 
             Element root = doc.getDocumentElement();
@@ -75,23 +76,23 @@ public class VersionChecker
             Element versioningElem = (Element) root.getElementsByTagName("versioning").item(0);
             if (versioningElem == null)
             {
-                LOG.warn("Could not find versioning node");
+                LOG.warn("Could not find versioning node for item {}", item.getName());
                 return null;
             }
 
             Element versionElem = (Element) versioningElem.getElementsByTagName("release").item(0);
             if (versionElem == null)
             {
-                LOG.warn("Could not find release node");
+                LOG.warn("Could not find release node for item {}", item.getName());
                 return null;
             }
 
             return versionElem.getTextContent();
 
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
-            LOG.warn("Could not fetch Maven metadata from " + item.getRepoUrl());
-            //e.printStackTrace();
+            LOG.warn("Could not fetch version info for item {}", item.getName(), e);
         }
         finally
         {
@@ -103,6 +104,7 @@ public class VersionChecker
 
     static void initUpdateLoop()
     {
+        final int delayMinutes = 1 + (VersionCheckerRegistry.getVersionedItems().size() / 5);
         EXECUTOR.scheduleWithFixedDelay(() ->
         {
             LOG.debug("Checking for updates...");
@@ -111,7 +113,7 @@ public class VersionChecker
             Future<Set<Pair<VersionedItem, String>>> check = EXECUTOR.submit(VersionChecker::checkVersions);
             try
             {
-                changedItems = check.get(1, TimeUnit.MINUTES);
+                changedItems = check.get(delayMinutes, TimeUnit.MINUTES);
             }
             catch(TimeoutException ex)
             {
@@ -157,6 +159,6 @@ public class VersionChecker
                     LOG.error("There was an error executing the UpdateHandler for {}", changedItem.getName());
                 }
             }
-        }, 0, 1, TimeUnit.MINUTES);
+        }, delayMinutes, delayMinutes, TimeUnit.MINUTES);
     }
 }

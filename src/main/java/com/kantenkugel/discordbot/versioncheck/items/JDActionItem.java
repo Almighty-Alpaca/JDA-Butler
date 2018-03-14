@@ -3,20 +3,25 @@ package com.kantenkugel.discordbot.versioncheck.items;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.versioncheck.RepoType;
 import com.kantenkugel.discordbot.versioncheck.VersionChecker;
-import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
-import com.kantenkugel.discordbot.versioncheck.VersionUtils;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import okhttp3.ResponseBody;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.function.Supplier;
 
 public class JDActionItem extends VersionedItem
 {
     private static final String versionDir =
-            "https://plugins.gradle.org/m2/com/sedmelluq/jdaction/com.sedmelluq.jdaction.gradle.plugin/";
+            "https://plugins.gradle.org/m2/com/sedmelluq/jdaction/com.sedmelluq.jdaction.gradle.plugin/maven-metadata.xml";
+
+    private static final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 
     @Override
     public String getName()
@@ -60,18 +65,39 @@ public class JDActionItem extends VersionedItem
         try
         {
             Response res = Bot.httpClient.newCall(req).execute();
-            Document htmlDoc = Jsoup.parse(res.body().byteStream(), "UTF-8", versionDir);
-            Elements links = htmlDoc.getElementsByTag("a");
-            return links.stream()
-                    .map(e ->
-                    {
-                        String text = e.text();
-                        return text.substring(0, text.length() - 1);
-                    })
-                    .max(VersionUtils.VERSION_STRING_COMP)
-                    .orElse(null);
+
+            ResponseBody body = res.body();
+
+            if(!res.isSuccessful() || body == null)
+            {
+                VersionChecker.LOG.warn("Http call to JDAction repo failed");
+                return null;
+            }
+
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
+            Document doc = dBuilder.parse(body.byteStream());
+
+            Element root = doc.getDocumentElement();
+            root.normalize();
+
+            Element versioningElem = (Element) root.getElementsByTagName("versioning").item(0);
+            if (versioningElem == null)
+            {
+                VersionChecker.LOG.warn("Could not find versioning node for JDAction");
+                return null;
+            }
+
+            Element versionElem = (Element) versioningElem.getElementsByTagName("release").item(0);
+            if (versionElem == null)
+            {
+                VersionChecker.LOG.warn("Could not find release node for JDAction");
+                return null;
+            }
+
+            return versionElem.getTextContent();
         }
-        catch(Exception e)
+        catch(SAXException | ParserConfigurationException | IOException e)
         {
             VersionChecker.LOG.warn("There was an error fetching the newest version of JDAction", e);
         }
