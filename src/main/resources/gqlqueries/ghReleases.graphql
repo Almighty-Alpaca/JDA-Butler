@@ -1,0 +1,15 @@
+query ($owner: String!, $name: String!, $count: Int!) {
+  repository(owner: $owner, name: $name) {
+    releases(first: $count, orderBy: {field: CREATED_AT, direction: DESC}) {
+      nodes {
+        name
+        description
+        isDraft
+        isPrerelease
+        tag {
+          name
+        }
+      }
+    }
+  }
+}

@@ -107,8 +107,7 @@ public class JenkinsApi
             return build;
         } catch (IOException e)
         {
-            LOG.error("Error while Fetching Jenkins build {}", identifier);
-            //LOG.log(e);
+            LOG.error("Error while Fetching Jenkins build {} for {}", identifier, jenkinsBase);
         }
         return null;
     }
