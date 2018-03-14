@@ -76,14 +76,14 @@ public class VersionChecker
             Element versioningElem = (Element) root.getElementsByTagName("versioning").item(0);
             if (versioningElem == null)
             {
-                LOG.warn("Could not find versioning node");
+                LOG.warn("Could not find versioning node for item {}", item.getName());
                 return null;
             }
 
             Element versionElem = (Element) versioningElem.getElementsByTagName("release").item(0);
             if (versionElem == null)
             {
-                LOG.warn("Could not find release node");
+                LOG.warn("Could not find release node for item {}", item.getName());
                 return null;
             }
 
