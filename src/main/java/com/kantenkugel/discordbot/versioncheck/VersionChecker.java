@@ -104,6 +104,7 @@ public class VersionChecker
 
     static void initUpdateLoop()
     {
+        final int delayMinutes = 1 + (VersionCheckerRegistry.getVersionedItems().size() / 5);
         EXECUTOR.scheduleWithFixedDelay(() ->
         {
             LOG.debug("Checking for updates...");
@@ -112,7 +113,7 @@ public class VersionChecker
             Future<Set<Pair<VersionedItem, String>>> check = EXECUTOR.submit(VersionChecker::checkVersions);
             try
             {
-                changedItems = check.get(1, TimeUnit.MINUTES);
+                changedItems = check.get(delayMinutes, TimeUnit.MINUTES);
             }
             catch(TimeoutException ex)
             {
@@ -158,6 +159,6 @@ public class VersionChecker
                     LOG.error("There was an error executing the UpdateHandler for {}", changedItem.getName());
                 }
             }
-        }, 0, 1, TimeUnit.MINUTES);
+        }, delayMinutes, delayMinutes, TimeUnit.MINUTES);
     }
 }
