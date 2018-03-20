@@ -6,10 +6,10 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import net.dv8tion.jda.core.utils.JDALogger;
 import okhttp3.*;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,7 +80,7 @@ public class GQLQuery<T>
             return null;
         try
         {
-            return new String(IOUtils.readFully(stream, -1, false), StandardCharsets.UTF_8);
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
         }
         catch(IOException e)
         {
@@ -137,27 +137,27 @@ public class GQLQuery<T>
                 while(reader.hasNext())
                 {
                     String name = reader.nextName();
-                    if(name.equals("errors"))
+                    switch (name)
                     {
-                        readErrors(errors, reader);
-                    }
-                    else if(name.equals("data"))
-                    {
-                        if(reader.peek() == JsonToken.BEGIN_OBJECT)
-                        {
-                            reader.beginObject();
-                            reader.nextName();
-                            object = GSON.fromJson(reader, clazz);
-                            reader.endObject();
-                        }
-                        else
-                        {
+                        case "errors":
+                            readErrors(errors, reader);
+                            break;
+                        case "data":
+                            if (reader.peek() == JsonToken.BEGIN_OBJECT)
+                            {
+                                reader.beginObject();
+                                reader.nextName();
+                                object = GSON.fromJson(reader, clazz);
+                                reader.endObject();
+                            }
+                            else
+                            {
+                                reader.skipValue();
+                            }
+                            break;
+                        default:
                             reader.skipValue();
-                        }
-                    }
-                    else
-                    {
-                        reader.skipValue();
+                            break;
                     }
                 }
                 reader.endObject();
