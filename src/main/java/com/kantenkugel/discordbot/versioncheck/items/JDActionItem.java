@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.function.Supplier;
 
 public class JDActionItem extends VersionedItem
@@ -96,6 +97,10 @@ public class JDActionItem extends VersionedItem
             }
 
             return versionElem.getTextContent();
+        }
+        catch(SocketTimeoutException ex)
+        {
+            throw ex;
         }
         catch(SAXException | ParserConfigurationException | IOException e)
         {

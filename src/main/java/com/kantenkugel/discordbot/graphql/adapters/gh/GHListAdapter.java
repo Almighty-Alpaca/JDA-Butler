@@ -8,10 +8,10 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GHListAdapter implements JsonDeserializer<List>
+public class GHListAdapter implements JsonDeserializer<List<?>>
 {
     @Override
-    public List deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
+    public List<?> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException
     {
         if(!(typeOfT instanceof ParameterizedType)
                 || ((ParameterizedType) typeOfT).getActualTypeArguments().length == 0
@@ -21,7 +21,7 @@ public class GHListAdapter implements JsonDeserializer<List>
             return null;
         }
         Type subType = ((ParameterizedType) typeOfT).getActualTypeArguments()[0];
-        List l = new ArrayList();
+        List<?> l = new ArrayList();
         JsonObject root = json.getAsJsonObject();
         while(!root.has("nodes") && root.size() == 1)
         {

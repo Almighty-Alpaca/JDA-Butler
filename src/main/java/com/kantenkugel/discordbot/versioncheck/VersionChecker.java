@@ -118,7 +118,7 @@ public class VersionChecker
             catch(TimeoutException ex)
             {
                 check.cancel(true);
-                LOG.error("Version-checking timed out");
+                LOG.warn("Version-checking timed out");
                 return;
             }
             catch(Exception ex)
