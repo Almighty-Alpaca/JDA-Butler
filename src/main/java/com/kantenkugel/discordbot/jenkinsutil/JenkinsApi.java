@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 
 public class JenkinsApi
 {
@@ -105,7 +106,12 @@ public class JenkinsApi
             if(build.status != JenkinsBuild.Status.BUILDING)
                 resultCache.add(build.buildNum, build);
             return build;
-        } catch (IOException e)
+        }
+        catch(SocketTimeoutException ex)
+        {
+            throw ex;
+        }
+        catch (IOException e)
         {
             LOG.error("Error while Fetching Jenkins build {} for {}", identifier, jenkinsBase);
         }

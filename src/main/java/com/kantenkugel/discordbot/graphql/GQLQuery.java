@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -178,6 +179,10 @@ public class GQLQuery<T>
                 }
                 return object;
             }
+        }
+        catch(SocketTimeoutException ex)
+        {
+            throw ex;
         }
         catch(IOException e)
         {
