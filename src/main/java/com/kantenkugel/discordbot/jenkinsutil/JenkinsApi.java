@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.SocketTimeoutException;
 
 public class JenkinsApi
@@ -109,7 +110,7 @@ public class JenkinsApi
         }
         catch(SocketTimeoutException ex)
         {
-            throw ex;
+            throw new UncheckedIOException(ex);
         }
         catch (IOException e)
         {

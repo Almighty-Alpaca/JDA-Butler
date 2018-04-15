@@ -4,6 +4,8 @@ import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsChange;
 
+import java.io.UncheckedIOException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,30 +55,40 @@ public class JenkinsChangelogProvider implements ChangelogProvider
         }
 
         List<Changelog> changelogs = new ArrayList<>();
-        for (int i = start; i <= end; i++)
+        try
         {
-            JenkinsBuild build = jenkins.getBuild(i);
-            if(build == null)
-                continue;
-
-            String title = build.status == JenkinsBuild.Status.SUCCESS
-                    ? build.artifacts.values().iterator().next().fileNameParts.get(1)
-                    : "Build " + build.buildNum + " (failed)";
-
-            final List<JenkinsChange> changeSet = build.changes;
-
-            final List<String> changes;
-            if (changeSet.size() > 0)
+            for (int i = start; i <= end; i++)
             {
-                changes = getChangelog(changeSet);
-            }
-            else
-            {
-                changes = Collections.singletonList("No git commits assigned");
-            }
+                JenkinsBuild build = jenkins.getBuild(i);
+                if(build == null)
+                    continue;
 
-            changelogs.add(new Changelog(title, changes, build.getUrl()));
+                String title = build.status == JenkinsBuild.Status.SUCCESS
+                        ? build.artifacts.values().iterator().next().fileNameParts.get(1)
+                        : "Build " + build.buildNum + " (failed)";
+
+                final List<JenkinsChange> changeSet = build.changes;
+
+                final List<String> changes;
+                if (changeSet.size() > 0)
+                {
+                    changes = getChangelog(changeSet);
+                }
+                else
+                {
+                    changes = Collections.singletonList("No git commits assigned");
+                }
+
+                changelogs.add(new Changelog(title, changes, build.getUrl()));
+            }
         }
+        catch(UncheckedIOException ex) {
+            if(ex.getCause().getClass() == SocketTimeoutException.class)
+                changelogs.add(new Changelog("Jenkins timout", Collections.singletonList("Jenkins timed out while fetching build(s)")));
+            else
+                throw ex;
+        }
+
         return changelogs;
     }
 

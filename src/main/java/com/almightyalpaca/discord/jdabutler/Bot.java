@@ -160,7 +160,10 @@ public class Bot
             {
                 //do not announce here as that might cause duplicate announcements when a new instance is fired up (or a very old one)
                 jdaItem.getUpdateHandler().onUpdate(jdaItem, config.getString("jda.version.name"), false);
-                GradleProjectDropboxUploader.uploadProject();
+            }
+            else
+            {
+                GradleProjectDropboxUtil.fetchUrl();
             }
         });
     }
