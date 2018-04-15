@@ -166,7 +166,7 @@ public class Bot
             }
             else
             {
-                GradleProjectDropboxUploader.uploadProject();
+                GradleProjectDropboxUtil.fetchUrl();
             }
         });
     }

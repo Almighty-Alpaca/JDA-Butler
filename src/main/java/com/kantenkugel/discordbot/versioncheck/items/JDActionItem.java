@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.SocketTimeoutException;
 import java.util.function.Supplier;
 
@@ -100,7 +101,7 @@ public class JDActionItem extends VersionedItem
         }
         catch(SocketTimeoutException ex)
         {
-            throw ex;
+            throw new UncheckedIOException(ex);
         }
         catch(SAXException | ParserConfigurationException | IOException e)
         {

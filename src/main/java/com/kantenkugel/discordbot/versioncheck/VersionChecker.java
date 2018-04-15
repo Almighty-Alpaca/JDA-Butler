@@ -13,6 +13,8 @@ import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.UncheckedIOException;
+import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
@@ -90,9 +92,16 @@ public class VersionChecker
             return versionElem.getTextContent();
 
         }
+        catch(UncheckedIOException ex)
+        {
+            if(ex.getCause().getClass() == SocketTimeoutException.class)
+                LOG.warn("Version-fetch for item {} timed out", item.getName());
+            else
+                LOG.error("Could not fetch version info for item {}", item.getName(), ex);
+        }
         catch (Exception e)
         {
-            LOG.warn("Could not fetch version info for item {}", item.getName(), e);
+            LOG.error("Could not fetch version info for item {}", item.getName(), e);
         }
         finally
         {

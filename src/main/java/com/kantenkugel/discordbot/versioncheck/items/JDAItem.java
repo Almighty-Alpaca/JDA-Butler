@@ -3,7 +3,7 @@ package com.kantenkugel.discordbot.versioncheck.items;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.FormattingUtil;
-import com.almightyalpaca.discord.jdabutler.GradleProjectDropboxUploader;
+import com.almightyalpaca.discord.jdabutler.GradleProjectDropboxUtil;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
@@ -101,7 +101,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
             Bot.EXECUTOR.submit(() ->
             {
                 JDoc.reFetch();
-                GradleProjectDropboxUploader.uploadProject();
+                GradleProjectDropboxUtil.uploadProject();
             });
 
             if(!shouldAnnounce)
