@@ -16,10 +16,10 @@ public class GradleProjectCommand implements Command
         {
             channel.sendMessage(GradleProjectDropboxUtil.dropboxShareLink).queue();
         }
-        else if (!GradleProjectDropboxUtil.GRADLE_PROJECT_ZIP.exists())
+        else if (GradleProjectDropboxUtil.ZIP_FILE.exists())
         {
             channel.sendTyping().queue();
-            channel.sendFile(GradleProjectDropboxUtil.GRADLE_PROJECT_ZIP).queue();
+            channel.sendFile(GradleProjectDropboxUtil.ZIP_FILE).queue();
         }
         else
         {

@@ -29,21 +29,21 @@ public class GradleProjectDropboxUtil
 {
     public static String dropboxShareLink = null;
 
-    public static final String DROPBOX_FILE_NAME = "/JDA/jda gradle setup example.zip";
+    private static final String ZIP_NAME = "jdaGradleExample.zip";
 
-    public static final String EXMAPLE_IMPL_URL = "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
-    public static final File GRADLE_PROJECT_DIR = new File("gradle project/");
-    public static final File GRADLE_BUILD_FILE = new File(GRADLE_PROJECT_DIR, "build.gradle");
-    public static final File GRADLE_PROJECT_ZIP = new File("example gradle project for jda.zip");
+    public static final String DROPBOX_FILE_NAME = "/JDA/"+ZIP_NAME;
+    public static final File ZIP_FILE = new File(ZIP_NAME);
 
-    public static final File GRADLE_SETTINGS_FILE = new File(GRADLE_PROJECT_DIR, "settings.gradle");
-    public static final File GRADLE_TEMP_DIR = new File(GRADLE_PROJECT_DIR, ".gradle/");
+    private static final File GRADLE_PROJECT_DIR = new File("gradle project/");
+    private static final File GRADLE_BUILD_FILE = new File(GRADLE_PROJECT_DIR, "build.gradle");
+    private static final File GRADLE_SETTINGS_FILE = new File(GRADLE_PROJECT_DIR, "settings.gradle");
+    private static final File GRADLE_TEMP_DIR = new File(GRADLE_PROJECT_DIR, ".gradle/");
 
-    public static final File SRC_MAIN_JAVA = new File(GRADLE_PROJECT_DIR, "src/main/java/");
+    private static final File SRC_MAIN_JAVA = new File(GRADLE_PROJECT_DIR, "src/main/java/");
+    private static final File SRC_MAIN_RESOURCES = new File(GRADLE_PROJECT_DIR, "src/main/resources/");
 
-    public static final File EXAMPLE_IMPL = new File(SRC_MAIN_JAVA, "MessageListenerExample.java");
-
-    public static final File SRC_MAIN_RESOURCES = new File(GRADLE_PROJECT_DIR, "src/main/resources/");
+    private static final String EXMAPLE_IMPL_URL = "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
+    private static final File EXAMPLE_IMPL = new File(SRC_MAIN_JAVA, "MessageListenerExample.java");
 
     private static DbxClientV2 client = null;
 
@@ -59,8 +59,8 @@ public class GradleProjectDropboxUtil
             else
                 GRADLE_PROJECT_DIR.mkdirs();
 
-            if (GRADLE_PROJECT_ZIP.exists())
-                GRADLE_PROJECT_ZIP.delete();
+            if (ZIP_FILE.exists())
+                ZIP_FILE.delete();
 
             final ProcessBuilder builder = new ProcessBuilder(GradleDownloader.getExecutableGradleFile().getAbsolutePath(), "--no-daemon", "init");
             builder.directory(GRADLE_PROJECT_DIR);
@@ -83,11 +83,10 @@ public class GradleProjectDropboxUtil
 
             FileUtils.copyURLToFile(new URL(EXMAPLE_IMPL_URL), EXAMPLE_IMPL);
 
-            final ZipFile zip = new ZipFile(GRADLE_PROJECT_ZIP);
+            final ZipFile zip = new ZipFile(ZIP_FILE);
 
             final ZipParameters parameters = new ZipParameters();
             parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_ULTRA);
-            parameters.setDefaultFolderPath("exmaple gradle project for jda/");
 
             zip.addFolder(GRADLE_PROJECT_DIR, parameters);
 
@@ -113,7 +112,7 @@ public class GradleProjectDropboxUtil
 
         Bot.LOG.info("Uploading gradle example zip...");
 
-        try (InputStream in = new FileInputStream(GRADLE_PROJECT_ZIP))
+        try (InputStream in = new FileInputStream(ZIP_FILE))
         {
 
             client.files().uploadBuilder(DROPBOX_FILE_NAME).withMute(true).withMode(WriteMode.OVERWRITE).uploadAndFinish(in);
