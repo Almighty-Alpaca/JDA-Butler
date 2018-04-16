@@ -4,10 +4,13 @@ err.log
 out.log
 config.json
 /.idea/
-exmaple gradle project for jda.zip
-example gradle project for jda.zip
 gradle project/
 gradle-cache/
+jdaGradleExample.zip
+
+# no longer used but for old, pre-existing artifacts
+exmaple gradle project for jda.zip
+example gradle project for jda.zip
 
 # Created by https://www.gitignore.io/api/windows,osx,linux,eclipse,intellij,java,gradle
 
