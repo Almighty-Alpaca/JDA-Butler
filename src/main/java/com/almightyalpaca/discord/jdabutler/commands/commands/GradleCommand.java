@@ -1,7 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import com.almightyalpaca.discord.jdabutler.EmbedUtil;
-import com.almightyalpaca.discord.jdabutler.GradleUtil;
+import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
+import com.almightyalpaca.discord.jdabutler.util.gradle.GradleUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;

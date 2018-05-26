@@ -1,4 +1,4 @@
-package com.almightyalpaca.discord.jdabutler;
+package com.almightyalpaca.discord.jdabutler.util.gradle;
 
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import org.apache.commons.lang3.tuple.ImmutablePair;

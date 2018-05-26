@@ -1,4 +1,4 @@
-package com.almightyalpaca.discord.jdabutler;
+package com.almightyalpaca.discord.jdabutler.util;
 
 import net.dv8tion.jda.core.EmbedBuilder;
 

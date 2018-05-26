@@ -1,6 +1,6 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import com.almightyalpaca.discord.jdabutler.EmbedUtil;
+import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;

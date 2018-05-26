@@ -1,7 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import com.almightyalpaca.discord.jdabutler.EmbedUtil;
+import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.commands.ReactionCommand;
 import com.kantenkugel.discordbot.jdocparser.Documentation;

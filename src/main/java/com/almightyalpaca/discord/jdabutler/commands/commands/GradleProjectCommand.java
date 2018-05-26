@@ -1,6 +1,6 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import com.almightyalpaca.discord.jdabutler.GradleProjectDropboxUtil;
+import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.TextChannel;

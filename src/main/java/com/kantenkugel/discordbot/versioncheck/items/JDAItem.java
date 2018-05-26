@@ -1,9 +1,9 @@
 package com.kantenkugel.discordbot.versioncheck.items;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import com.almightyalpaca.discord.jdabutler.EmbedUtil;
-import com.almightyalpaca.discord.jdabutler.FormattingUtil;
-import com.almightyalpaca.discord.jdabutler.GradleProjectDropboxUtil;
+import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
+import com.almightyalpaca.discord.jdabutler.util.FormattingUtil;
+import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
