@@ -4,6 +4,8 @@ import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.function.Supplier;
 
 /**
@@ -23,14 +25,21 @@ public class JenkinsVersionSupplier implements Supplier<String>
     @Override
     public String get()
     {
-        JenkinsBuild build = jenkins.fetchLastSuccessfulBuild();
-        if(build == null)   //jenkins failed fetching (internet or jenkins server?)
-            return null;
-        if(build.artifacts.size() > 0)
+        try
         {
-            JenkinsBuild.Artifact firstArtifact = build.artifacts.values().iterator().next();
-            return firstArtifact.fileNameParts.get(1);
+            JenkinsBuild build = jenkins.fetchLastSuccessfulBuild();
+            if(build == null)   //there is no successful build
+                return null;
+            if(build.artifacts.size() > 0)
+            {
+                JenkinsBuild.Artifact firstArtifact = build.artifacts.values().iterator().next();
+                return firstArtifact.fileNameParts.get(1);
+            }
+            return Integer.toString(build.buildNum);
         }
-        return Integer.toString(build.buildNum);
+        catch(IOException ex)
+        {
+            throw new UncheckedIOException(ex);
+        }
     }
 }

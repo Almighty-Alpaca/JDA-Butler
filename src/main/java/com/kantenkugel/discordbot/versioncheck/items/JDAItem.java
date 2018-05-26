@@ -1,9 +1,9 @@
 package com.kantenkugel.discordbot.versioncheck.items;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import com.almightyalpaca.discord.jdabutler.EmbedUtil;
-import com.almightyalpaca.discord.jdabutler.FormattingUtil;
-import com.almightyalpaca.discord.jdabutler.GradleProjectDropboxUtil;
+import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
+import com.almightyalpaca.discord.jdabutler.util.FormattingUtil;
+import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
@@ -16,6 +16,7 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 
+import java.io.IOException;
 import java.util.List;
 
 public class JDAItem extends VersionedItem implements UpdateHandler
@@ -90,7 +91,17 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             Bot.config.save();
 
-            JenkinsBuild jenkinsBuild = JenkinsApi.JDA_JENKINS.fetchLastSuccessfulBuild();
+            JenkinsBuild jenkinsBuild;
+
+            try
+            {
+                jenkinsBuild = JenkinsApi.JDA_JENKINS.fetchLastSuccessfulBuild();
+            }
+            catch(IOException ex)
+            {
+                Bot.LOG.warn("Could not fetch latest Jenkins build in JDAItem#onUpdate()", ex);
+                return;
+            }
 
             if(jenkinsBuild == null)
             {

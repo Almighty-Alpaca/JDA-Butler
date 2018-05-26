@@ -28,6 +28,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -255,32 +256,46 @@ public class JDoc {
     }
 
     private static void download() {
-        JenkinsBuild lastBuild = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuild();
-        if(lastBuild != null)
+        try
         {
-            JDocUtil.LOG.debug("Downloading JDA docs...");
-            ResponseBody body = null;
-            try {
-                String artifactUrl = lastBuild.artifacts.get("JDA-javadoc").getLink();
-                Response res = Bot.httpClient.newCall(new Request.Builder().url(artifactUrl).get().build()).execute();
-                if (!res.isSuccessful())
-                {
-                    JDocUtil.LOG.warn("OkHttp returned failure for " + artifactUrl);
-                    return;
-                }
-                body = res.body();
-                final InputStream is = body.byteStream();
-                Files.copy(is, JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
-                is.close();
-                JDocUtil.LOG.debug("Done downloading JDA docs");
-            } catch(Exception e) {
-                JDocUtil.LOG.error("Error downloading jdoc jar", e);
-            }
-            finally
+            JenkinsBuild lastBuild = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuild();
+            if(lastBuild != null)
             {
-                if(body != null)
-                    body.close();
+                JDocUtil.LOG.debug("Downloading JDA docs...");
+                ResponseBody body = null;
+                try
+                {
+                    String artifactUrl = lastBuild.artifacts.get("JDA-javadoc").getLink();
+                    Response res = Bot.httpClient.newCall(new Request.Builder().url(artifactUrl).get().build()).execute();
+                    if(!res.isSuccessful())
+                    {
+                        JDocUtil.LOG.warn("OkHttp returned failure for " + artifactUrl);
+                        return;
+                    }
+                    body = res.body();
+                    final InputStream is = body.byteStream();
+                    Files.copy(is, JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
+                    is.close();
+                    JDocUtil.LOG.debug("Done downloading JDA docs");
+                }
+                catch(Exception e)
+                {
+                    JDocUtil.LOG.error("Error downloading jdoc jar", e);
+                }
+                finally
+                {
+                    if(body != null)
+                        body.close();
+                }
             }
+            else
+            {
+                JDocUtil.LOG.warn("There was no Jenkins build?! Skipping download");
+            }
+        }
+        catch(IOException ex)
+        {
+            JDocUtil.LOG.warn("Could not contact Jenkins, skipping download");
         }
     }
 

@@ -1,4 +1,4 @@
-package com.almightyalpaca.discord.jdabutler;
+package com.almightyalpaca.discord.jdabutler.util;
 
 import com.kantenkugel.discordbot.versioncheck.DependencyType;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;

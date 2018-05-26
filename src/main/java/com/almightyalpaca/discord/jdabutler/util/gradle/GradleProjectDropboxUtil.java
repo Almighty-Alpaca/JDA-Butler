@@ -1,5 +1,6 @@
-package com.almightyalpaca.discord.jdabutler;
+package com.almightyalpaca.discord.jdabutler.util.gradle;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.v2.DbxClientV2;

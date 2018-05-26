@@ -1,5 +1,6 @@
-package com.almightyalpaca.discord.jdabutler;
+package com.almightyalpaca.discord.jdabutler.util;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsUser;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.User;

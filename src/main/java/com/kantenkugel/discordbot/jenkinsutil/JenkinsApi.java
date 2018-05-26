@@ -10,8 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.net.SocketTimeoutException;
 
 public class JenkinsApi
 {
@@ -66,19 +64,19 @@ public class JenkinsApi
 
     private JenkinsBuild lastSuccBuild = null;
 
-    public JenkinsBuild getBuild(int buildNumber)
+    public JenkinsBuild getBuild(int buildNumber) throws IOException
     {
         return resultCache.contains(buildNumber)
                 ? resultCache.get(buildNumber)
                 : getBuild(buildNumber + "/");
     }
 
-    public JenkinsBuild fetchLastSuccessfulBuild()
+    public JenkinsBuild fetchLastSuccessfulBuild() throws IOException
     {
         return lastSuccBuild = getBuild(LATEST_SUCC_SUFFIX);
     }
 
-    public JenkinsBuild getLastSuccessfulBuild()
+    public JenkinsBuild getLastSuccessfulBuild() throws IOException
     {
         if(lastSuccBuild == null)
             return fetchLastSuccessfulBuild();
@@ -95,28 +93,17 @@ public class JenkinsApi
         return jenkinsBase + LATEST_SUCC_SUFFIX;
     }
 
-    private JenkinsBuild getBuild(String identifier)
+    private JenkinsBuild getBuild(String identifier) throws IOException
     {
         Request req = new Request.Builder().url(jenkinsBase + identifier + API_SUFFIX + BUILD_OPTIONS).get().build();
-        try
-        {
-            Response res = Bot.httpClient.newCall(req).execute();
-            if(!res.isSuccessful())
-                return null;
-            JenkinsBuild build = JenkinsBuild.fromJson(new JSONObject(new JSONTokener(res.body().charStream())), this);
-            if(build.status != JenkinsBuild.Status.BUILDING)
-                resultCache.add(build.buildNum, build);
-            return build;
-        }
-        catch(SocketTimeoutException ex)
-        {
-            throw new UncheckedIOException(ex);
-        }
-        catch (IOException e)
-        {
-            LOG.error("Error while Fetching Jenkins build {} for {}", identifier, jenkinsBase);
-        }
-        return null;
+
+        Response res = Bot.httpClient.newCall(req).execute();
+        if(!res.isSuccessful())
+            return null;
+        JenkinsBuild build = JenkinsBuild.fromJson(new JSONObject(new JSONTokener(res.body().charStream())), this);
+        if(build.status != JenkinsBuild.Status.BUILDING)
+            resultCache.add(build.buildNum, build);
+        return build;
     }
 
     private JenkinsApi(String jenkinsurl)

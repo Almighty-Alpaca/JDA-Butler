@@ -1,6 +1,7 @@
 package com.kantenkugel.discordbot.versioncheck;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.utils.tuple.Pair;
 import okhttp3.Request;
@@ -23,14 +24,7 @@ public class VersionChecker
 {
     public static final Logger LOG = LoggerFactory.getLogger(VersionChecker.class);
 
-    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(2, run ->
-    {
-        Thread t = new Thread(run, "versionchecker-thread");
-        t.setDaemon(true);
-        t.setUncaughtExceptionHandler((final Thread thread, final Throwable throwable) ->
-                LOG.error("There was a uncaught exception in the threadpool", throwable));
-        return t;
-    });
+    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(2, MiscUtils.newThreadFactory("versionchecker-thread", LOG));
 
     public static Set<Pair<VersionedItem, String>> checkVersions()
     {
@@ -92,9 +86,9 @@ public class VersionChecker
             return versionElem.getTextContent();
 
         }
-        catch(UncheckedIOException ex)
+        catch(SocketTimeoutException | UncheckedIOException ex)
         {
-            if(ex.getCause().getClass() == SocketTimeoutException.class)
+            if(ex instanceof SocketTimeoutException || ex.getCause().getClass() == SocketTimeoutException.class)
                 LOG.warn("Version-fetch for item {} timed out", item.getName());
             else
                 LOG.error("Could not fetch version info for item {}", item.getName(), ex);
