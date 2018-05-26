@@ -9,6 +9,7 @@ import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
+import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
@@ -48,13 +49,7 @@ public class Bot
 
     public static final Logger LOG = (Logger) LoggerFactory.getLogger(Bot.class);
 
-    public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(r ->
-    {
-        final Thread t = new Thread(r, "main-executor");
-        t.setDaemon(true);
-        t.setPriority(Thread.NORM_PRIORITY);
-        return t;
-    });
+    public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(MiscUtils.newThreadFactory("main-executor"));
 
     public static Guild getGuildJda()
     {

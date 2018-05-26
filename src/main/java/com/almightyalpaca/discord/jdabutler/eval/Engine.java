@@ -1,5 +1,6 @@
 package com.almightyalpaca.discord.jdabutler.eval;
 
+import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.almightyalpaca.discord.jdabutler.util.StringUtils;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -53,7 +54,7 @@ public enum Engine
 
     public static final Collection<String> DEFAULT_IMPORTS = Arrays.asList("net.dv8tion.jda.core.entities.impl", "net.dv8tion.jda.core.managers", "net.dv8tion.jda.core.entities", "net.dv8tion.jda.core", "java.lang", "java.io", "java.math", "java.util", "java.util.concurrent", "java.time");
 
-    private final static ScheduledExecutorService service = Executors.newScheduledThreadPool(1, r -> new Thread(r, "Eval-Thread"));
+    private final static ScheduledExecutorService service = Executors.newScheduledThreadPool(1, MiscUtils.newThreadFactory("eval-thread", false));
 
     private final List<String> codes;
 

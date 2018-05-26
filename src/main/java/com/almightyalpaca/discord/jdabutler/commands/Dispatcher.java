@@ -3,6 +3,7 @@ package com.almightyalpaca.discord.jdabutler.commands;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.commands.*;
 import com.almightyalpaca.discord.jdabutler.commands.commands.moderation.SoftbanCommand;
+import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.google.common.util.concurrent.MoreExecutors;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.ShutdownEvent;
@@ -22,7 +23,7 @@ public class Dispatcher extends ListenerAdapter
 {
 
     private final Set<Command> commands = ConcurrentHashMap.newKeySet();
-    private final ExecutorService pool = Executors.newCachedThreadPool();
+    private final ExecutorService pool = Executors.newCachedThreadPool(MiscUtils.newThreadFactory("command-runner", false));
     private final ReactionListenerRegistry reactListReg = new ReactionListenerRegistry();
 
     public Dispatcher()
