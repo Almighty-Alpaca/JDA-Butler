@@ -1,10 +1,11 @@
 package com.kantenkugel.discordbot.versioncheck.changelog;
 
+import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsChange;
 
-import java.io.UncheckedIOException;
+import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -82,11 +83,15 @@ public class JenkinsChangelogProvider implements ChangelogProvider
                 changelogs.add(new Changelog(title, changes, build.getUrl()));
             }
         }
-        catch(UncheckedIOException ex) {
-            if(ex.getCause().getClass() == SocketTimeoutException.class)
-                changelogs.add(new Changelog("Jenkins timout", Collections.singletonList("Jenkins timed out while fetching build(s)")));
+        catch(IOException ex)
+        {
+            if(ex instanceof SocketTimeoutException)
+                changelogs.add(new Changelog("Jenkins timeout", Collections.singletonList("Jenkins timed out while fetching build(s)")));
             else
-                throw ex;
+            {
+                Bot.LOG.warn("Fetching build(s) from jenkins errored in Changelog command", ex);
+                changelogs.add(new Changelog("Jenkins error", Collections.singletonList("There was an error fetching from Jenkins")));
+            }
         }
 
         return changelogs;

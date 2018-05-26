@@ -16,6 +16,7 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
 
+import java.io.IOException;
 import java.util.List;
 
 public class JDAItem extends VersionedItem implements UpdateHandler
@@ -90,7 +91,17 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             Bot.config.save();
 
-            JenkinsBuild jenkinsBuild = JenkinsApi.JDA_JENKINS.fetchLastSuccessfulBuild();
+            JenkinsBuild jenkinsBuild;
+
+            try
+            {
+                jenkinsBuild = JenkinsApi.JDA_JENKINS.fetchLastSuccessfulBuild();
+            }
+            catch(IOException ex)
+            {
+                Bot.LOG.warn("Could not fetch latest Jenkins build in JDAItem#onUpdate()", ex);
+                return;
+            }
 
             if(jenkinsBuild == null)
             {

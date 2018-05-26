@@ -92,9 +92,9 @@ public class VersionChecker
             return versionElem.getTextContent();
 
         }
-        catch(UncheckedIOException ex)
+        catch(SocketTimeoutException | UncheckedIOException ex)
         {
-            if(ex.getCause().getClass() == SocketTimeoutException.class)
+            if(ex instanceof SocketTimeoutException || ex.getCause().getClass() == SocketTimeoutException.class)
                 LOG.warn("Version-fetch for item {} timed out", item.getName());
             else
                 LOG.error("Could not fetch version info for item {}", item.getName(), ex);
