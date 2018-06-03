@@ -39,7 +39,8 @@ public class JarsCommand implements Command
             eb.addField("jar", "[download](" + lastBuild.artifacts.get("JDA").getLink() + ")", true);
             eb.addField("javadoc", "[download](" + lastBuild.artifacts.get("JDA-javadoc").getLink() + ")", true);
             eb.addField("sources", "[download](" + lastBuild.artifacts.get("JDA-sources").getLink() + ")", true);
-            eb.addField("withDependencies", "[download](" + lastBuild.artifacts.get("JDA-withDependencies").getLink() + ")", true);
+            eb.addField("withDependencies", "[(normal)](" + lastBuild.artifacts.get("JDA-withDependencies").getLink() + ") " +
+                    "[(no-opus)](" + lastBuild.artifacts.get("JDA-withDependencies-no-opus").getLink() + ")", true);
 
             channel.sendMessage(eb.build()).queue();
         }
