@@ -185,6 +185,7 @@ public class NotifyCommand implements Command
         switch(args[0].toLowerCase())
         {
             case "fetch":
+            case "generate":
             case "get":
                 TextChannel searchChannel = msg.getMentionedChannels().isEmpty()
                         ? VersionCheckerRegistry.getItem("jda").getAnnouncementChannel()
