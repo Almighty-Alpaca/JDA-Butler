@@ -14,6 +14,7 @@ import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+import com.kantenkugel.discordbot.fakebutler.FakeButlerListener;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
@@ -43,6 +44,7 @@ public class Bot
     public static Dispatcher dispatcher;
     public static final String INVITE_LINK = "https://discord.gg/0hMr4ce0tIk3pSjp";
     public static JDAImpl jda;
+    public static boolean isStealth = false;
 
     public static OkHttpClient httpClient;
 
@@ -118,6 +120,7 @@ public class Bot
         Bot.listener = new EventListener();
         builder.addEventListener(Bot.listener);
         builder.addEventListener(Bot.dispatcher = new Dispatcher());
+        builder.addEventListener(new FakeButlerListener());
 
         builder.setGame(Game.playing("JDA"));
 
