@@ -1,6 +1,7 @@
 package com.kantenkugel.discordbot.fakebutler;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.commands.commands.NotifyCommand;
 import com.almightyalpaca.discord.jdabutler.commands.commands.StatsCommand;
 import com.almightyalpaca.discord.jdabutler.util.DurationUtils;
 import net.dv8tion.jda.core.JDA;
@@ -10,7 +11,7 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.ReadyEvent;
-import net.dv8tion.jda.core.events.user.UserOnlineStatusUpdateEvent;
+import net.dv8tion.jda.core.events.user.update.UserUpdateOnlineStatusEvent;
 import net.dv8tion.jda.core.hooks.EventListener;
 import net.dv8tion.jda.core.managers.Presence;
 
@@ -42,9 +43,9 @@ public class FakeButlerListener implements EventListener
     @Override
     public void onEvent(Event event)
     {
-        if (event instanceof UserOnlineStatusUpdateEvent)
+        if (event instanceof UserUpdateOnlineStatusEvent)
         {
-            UserOnlineStatusUpdateEvent e = (UserOnlineStatusUpdateEvent) event;
+            UserUpdateOnlineStatusEvent e = (UserUpdateOnlineStatusEvent) event;
             Guild guild = e.getGuild();
             User user = e.getUser();
             if(user.getIdLong() == REAL_BUTLER_ID && guild.getIdLong() == JDA_SERVER_ID)
@@ -81,6 +82,7 @@ public class FakeButlerListener implements EventListener
             //Main Butler is offline
             if(presence.getStatus() == OnlineStatus.ONLINE)
                 return;
+            NotifyCommand.reloadBlacklist(null);
             online = false;
             onlineTime += (System.currentTimeMillis() - latestStamp);
             presence.setStatus(OnlineStatus.ONLINE);
