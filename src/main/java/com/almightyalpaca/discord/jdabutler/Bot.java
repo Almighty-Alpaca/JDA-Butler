@@ -5,6 +5,7 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.filter.ThresholdFilter;
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
+import com.almightyalpaca.discord.jdabutler.commands.commands.NotifyCommand;
 import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
@@ -150,6 +151,8 @@ public class Bot
             Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
             root.addAppender(appender);
         }
+
+        NotifyCommand.reloadBlacklist(null);
 
         EXECUTOR.submit(() ->
         {
