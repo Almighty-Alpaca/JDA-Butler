@@ -124,6 +124,7 @@ public class VersionCheckerRegistry
         addItem(new YuiItem());
         //JDAction
         addItem(new JDActionItem());
+        addItem(new LavalinkItem());
         /*
             OTHERS
          */
