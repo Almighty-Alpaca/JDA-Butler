@@ -128,6 +128,9 @@ public class VersionCheckerRegistry
         /*
             OTHERS
          */
-        addItem(new DiscordRpcItem());
+        addItem(new SimpleVersionedItem("java-discord-rpc", RepoType.JCENTER, DependencyType.DEFAULT, "club.minnced", "java-discord-rpc")
+                .setUrl("https://github.com/MinnDevelopment/java-discord-rpc")
+                .setAliases("rpc")
+        );
     }
 }
