@@ -16,6 +16,7 @@ import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.awt.Color;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,18 +36,23 @@ public class DocsCommand extends ReactionCommand
     {
         EmbedBuilder embed = getDefaultEmbed()
                 .setTitle(documentation.getTitle(), documentation.getUrl(jDocBase));
+        if(documentation.getFields() != null && documentation.getFields().get("Deprecated") != null)
+        {
+            //element deprecated
+            embed.setColor(Color.RED).setDescription("**DEPRECATED**\n");
+        }
         if (documentation.getContent().length() > MessageEmbed.TEXT_MAX_LENGTH)
         {
-            embed.setDescription("Description too long. Please refer to [the online docs](" + documentation.getUrl(jDocBase) + ')');
+            embed.appendDescription("Description too long. Please refer to [the online docs](" + documentation.getUrl(jDocBase) + ')');
             return new MessageBuilder().setEmbed(embed.build()).build();
         }
         if (documentation.getContent().length() == 0)
         {
-            embed.setDescription("No Description available.");
+            embed.appendDescription("No Description available.");
         }
         else
         {
-            embed.setDescription(documentation.getContent());
+            embed.appendDescription(documentation.getContent());
         }
         if (documentation.getFields() != null && documentation.getFields().size() > 0)
         {

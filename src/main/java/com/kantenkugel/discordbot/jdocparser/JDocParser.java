@@ -88,8 +88,11 @@ public class JDocParser {
         final String className = nameSplits[nameSplits.length - 2];
         final String fullName = fileName.substring(0, fileName.length() - nameSplits[nameSplits.length - 1].length() - 1);
         try (BufferedReader buffer = new BufferedReader(new InputStreamReader(inputStream))) {
+            //create dom Document
             final String content = buffer.lines().collect(Collectors.joining("\n"));
             Document document = Jsoup.parse(content);
+
+            //classDocument (classname, package, description)
             Element titleElem = getSingleElementByClass(document, "title");
             final String classSig = JDocUtil.fixSpaces(titleElem.text());
             Element packageElem = titleElem.previousElementSibling();
@@ -113,6 +116,8 @@ public class JDocParser {
             }
             final String description = descriptionElement == null ? "" : JDocUtil.formatText(descriptionElement.html(), link);
             final ClassDocumentation classDoc = new ClassDocumentation(pack, fullName, classSig, description, classSig.startsWith("Enum"));
+
+            //methods, fields
             final Element details = document.getElementsByClass("details").first();
             if(details != null) {
                 //methods
@@ -120,9 +125,8 @@ public class JDocParser {
                 List<DocBlock> docBlock = getDocBlock(jdocBase, tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
-                        if(!classDoc.methodDocs.containsKey(block.title.toLowerCase()))
-                            classDoc.methodDocs.put(block.title.toLowerCase(), new HashSet<>());
-                        classDoc.methodDocs.get(block.title.toLowerCase()).add(new MethodDocumentation(classDoc, block.signature, block.hashLink, block.description, block.fields));
+                        Set<MethodDocumentation> mdocs = classDoc.methodDocs.computeIfAbsent(block.title.toLowerCase(), key -> new HashSet<>());
+                        mdocs.add(new MethodDocumentation(classDoc, block.signature, block.hashLink, block.description, block.fields));
                     }
                 }
                 //vars
@@ -206,6 +210,7 @@ public class JDocParser {
 
     private static List<DocBlock> getDocBlock(String jdocBase, Element elem, ClassDocumentation reference) {
         if(elem != null) {
+            String baseLink = JDocUtil.getLink(jdocBase, reference);
             List<DocBlock> blocks = new ArrayList<>(10);
             String hashLink = null;
             for(elem = elem.nextElementSibling(); elem != null; elem = elem.nextElementSibling()) {
@@ -218,10 +223,20 @@ public class JDocParser {
                     OrderedMap<String, List<String>> fields = new ListOrderedMap<>();
                     for(;tmp != null; tmp = tmp.nextElementSibling()) {
                         if(tmp.tagName().equals("pre")) {
+                            //contains full signature
                             signature = JDocUtil.fixSpaces(tmp.text().trim());
                         } else if(tmp.tagName().equals("div") && tmp.className().equals("block")) {
-                            description = JDocUtil.formatText(tmp.html(), JDocUtil.getLink(jdocBase, reference));
+                            //main block of content (description or deprecation)
+                            Element deprecationElem = tmp.getElementsByClass("deprecationComment").first();
+                            if(deprecationElem != null) {
+                                //deprecation block
+                                fields.put("Deprecated", Collections.singletonList(JDocUtil.formatText(deprecationElem.html(), baseLink)));
+                            } else {
+                                //description block
+                                description = JDocUtil.formatText(tmp.html(), baseLink);
+                            }
                         } else if(tmp.tagName().equals("dl")) {
+                            //a field
                             String fieldName = null;
                             List<String> fieldValues = new ArrayList<>();
                             for(Element element : tmp.children()) {
@@ -232,7 +247,7 @@ public class JDocParser {
                                     }
                                     fieldName = JDocUtil.fixSpaces(element.text().trim());
                                 } else if(element.tagName().equals("dd")) {
-                                    fieldValues.add(JDocUtil.formatText(element.html(), JDocUtil.getLink(jdocBase, reference)));
+                                    fieldValues.add(JDocUtil.formatText(element.html(), baseLink));
                                 }
                             }
                             if(fieldName != null) {
