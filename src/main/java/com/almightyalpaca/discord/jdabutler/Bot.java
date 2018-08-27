@@ -125,7 +125,7 @@ public class Bot
 
         builder.setGame(Game.playing("JDA"));
 
-        Bot.jda = (JDAImpl) builder.buildBlocking();
+        Bot.jda = (JDAImpl) builder.build().awaitReady();
 
         if(Bot.config.getBoolean("webhook.enabled", false)) {
             LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();

@@ -36,10 +36,15 @@ public class DocsCommand extends ReactionCommand
     {
         EmbedBuilder embed = getDefaultEmbed()
                 .setTitle(documentation.getTitle(), documentation.getUrl(jDocBase));
-        if(documentation.getFields() != null && documentation.getFields().get("Deprecated") != null)
+        if(documentation.getFields() != null && documentation.getFields().get("Deprecated:") != null)
         {
             //element deprecated
-            embed.setColor(Color.RED).setDescription("**DEPRECATED**\n");
+            embed.setColor(Color.RED);
+        }
+        else if(documentation.getFields() != null && documentation.getFields().get("Incubating") != null)
+        {
+            //incubating
+            embed.setColor(Color.orange);
         }
         if (documentation.getContent().length() > MessageEmbed.TEXT_MAX_LENGTH)
         {
@@ -184,7 +189,7 @@ public class DocsCommand extends ReactionCommand
                             {
                                 Documentation doc = javadocs.get(i);
                                 embedB.appendDescription(
-                                        ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl(JDocUtil.JAVA_JDOCS_PREFIX) +
+                                        ReactionCommand.NUMBERS[i] + " [" + doc.getShortTitle() + "](" + doc.getUrl(JDocUtil.JAVA_JDOCS_PREFIX) +
                                         ")\n");
                             }
                             embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
@@ -226,7 +231,7 @@ public class DocsCommand extends ReactionCommand
                 for (int i = 0; i < docs.size(); i++)
                 {
                     Documentation doc = docs.get(i);
-                    embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getTitle() + "](" + doc.getUrl(JDocUtil.JDOCBASE) + ")\n");
+                    embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getShortTitle() + "](" + doc.getUrl(JDocUtil.JDOCBASE) + ")\n");
                 }
                 embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
                 List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, docs.size())));

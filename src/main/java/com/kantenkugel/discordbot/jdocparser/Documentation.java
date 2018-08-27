@@ -5,6 +5,7 @@ import java.util.Map;
 
 public interface Documentation {
     String getTitle();
+    String getShortTitle();
     String getUrl(String jdocBase);
     String getContent();
     default Map<String, List<String>> getFields() {return null;}

@@ -38,6 +38,11 @@ public class JDocParser {
 
     //return, funcName, parameters
     public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z.<>?\\[\\]]+)\\s+([a-zA-Z][a-zA-Z0-9]+)\\(([@a-zA-Z0-9\\s.,<>?\\[\\]]*)\\)");
+
+    //annotations in front of method
+    public static final Pattern ANNOTATION_PATTERN = Pattern.compile("^((?:@[^\n]+\n)+)");
+    //annotation splitter
+    public static final Pattern ANNOTATION_PARTS = Pattern.compile("@([a-zA-Z]+)(\\(\\S*\\))?\n");
     //type, name
     public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("(?:[a-z]+\\.)*([a-zA-Z][a-zA-Z0-9.<,?>\\[\\]]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
@@ -230,7 +235,7 @@ public class JDocParser {
                             Element deprecationElem = tmp.getElementsByClass("deprecationComment").first();
                             if(deprecationElem != null) {
                                 //deprecation block
-                                fields.put("Deprecated", Collections.singletonList(JDocUtil.formatText(deprecationElem.html(), baseLink)));
+                                fields.put("Deprecated:", Collections.singletonList(JDocUtil.formatText(deprecationElem.html(), baseLink)));
                             } else {
                                 //description block
                                 description = JDocUtil.formatText(tmp.html(), baseLink);
@@ -304,6 +309,11 @@ public class JDocParser {
         }
 
         @Override
+        public String getShortTitle() {
+            return getTitle();
+        }
+
+        @Override
         public String getUrl(String jdocBase) {
             return JDocUtil.getLink(jdocBase, this);
         }
@@ -331,6 +341,7 @@ public class JDocParser {
         final List<String>                      argTypes;
         final String                            desc;
         final OrderedMap<String, List<String>>  fields;
+        final List<MethodAnnotation>            methodAnnos;
 
         private MethodDocumentation(ClassDocumentation parent, String functionSig, final String hashLink, final String desc, final OrderedMap<String, List<String>> fields) {
             functionSig = JDocUtil.fixSignature(functionSig);
@@ -338,6 +349,15 @@ public class JDocParser {
             if(!methodMatcher.find()) {
                 System.out.println('"' + functionSig + '"');
                 throw new RuntimeException("Got method with no proper method signature: " + functionSig);
+            }
+            //check for documented annotations of method
+            this.methodAnnos = new ArrayList<>();
+            Matcher annoGroupMatcher = ANNOTATION_PATTERN.matcher(functionSig);
+            if(annoGroupMatcher.find()) {
+                Matcher annoMatcher = ANNOTATION_PARTS.matcher(annoGroupMatcher.group(1));
+                while(annoMatcher.find()) {
+                    this.methodAnnos.add(new MethodAnnotation(annoMatcher.group(1), annoMatcher.group(2)));
+                }
             }
             this.parent = parent;
             this.functionName = methodMatcher.group(2);
@@ -380,8 +400,13 @@ public class JDocParser {
         }
 
         @Override
-        public String getTitle() {
+        public String getShortTitle() {
             return functionSig;
+        }
+
+        @Override
+        public String getTitle() {
+            return getAnnoPrefix() + "\n" + functionSig;
         }
 
         @Override
@@ -397,6 +422,46 @@ public class JDocParser {
         @Override
         public Map<String, List<String>> getFields() {
             return fields;
+        }
+
+        private String getAnnoPrefix() {
+            if(this.methodAnnos.isEmpty())
+                return "";
+            boolean deprecated = false;
+            String deprecatedSince = null;
+            StringBuilder builder = new StringBuilder();
+            for(MethodAnnotation methodAnno : this.methodAnnos) {
+                if(methodAnno.name.equals("Deprecated"))
+                    deprecated = true;
+                else if(methodAnno.name.equals("DeprecatedSince"))
+                    deprecatedSince = methodAnno.args.substring(2, methodAnno.args.length() - 2);
+                else
+                    builder.append('@').append(methodAnno.toString()).append(' ');
+            }
+
+            if(deprecated || deprecatedSince != null) {
+                StringBuilder tmp = new StringBuilder("@Deprecated");
+                if(deprecatedSince != null)
+                    tmp.append("(Since ").append(deprecatedSince).append(") ");
+                builder = tmp.append(builder);
+            }
+
+            return builder.substring(0, builder.length() - 1);
+        }
+
+        private static class MethodAnnotation {
+            private final String name;
+            private final String args;
+
+            private MethodAnnotation(String name, String args) {
+                this.name = name;
+                this.args = args;
+            }
+
+            @Override
+            public String toString() {
+                return name + (args == null ? "" : args);
+            }
         }
     }
 
@@ -418,6 +483,11 @@ public class JDocParser {
         @Override
         public String getTitle() {
             return parent.isEnum ? parent.className + '.' + this.name : this.sig;
+        }
+
+        @Override
+        public String getShortTitle() {
+            return getTitle();
         }
 
         @Override
