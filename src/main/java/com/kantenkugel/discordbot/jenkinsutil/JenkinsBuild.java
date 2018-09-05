@@ -96,11 +96,11 @@ public class JenkinsBuild
             this.fileName = fileName;
             this.relPath = relPath;
 
-            int fileTypeSeperatorIndex = fileName.lastIndexOf('.');
+            int fileTypeSeparatorIndex = fileName.lastIndexOf('.');
 
-            this.fileEnding = fileName.substring(fileTypeSeperatorIndex + 1);
+            this.fileEnding = fileName.substring(fileTypeSeparatorIndex + 1);
             this.fileNameParts = Collections.unmodifiableList(Arrays.asList(
-                    fileName.substring(0, fileTypeSeperatorIndex).split("-")
+                    fileName.substring(0, fileTypeSeparatorIndex).split("-")
             ));
 
             if (this.fileNameParts.size() < 3)
@@ -111,7 +111,7 @@ public class JenkinsBuild
             {
                 LinkedList<String> strings = new LinkedList<>(fileNameParts);
                 strings.remove(1);
-                this.descriptor = strings.stream().collect(Collectors.joining("-"));
+                this.descriptor = String.join("-", strings);
             }
         }
 

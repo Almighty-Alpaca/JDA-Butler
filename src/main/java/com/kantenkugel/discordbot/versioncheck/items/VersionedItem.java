@@ -224,7 +224,7 @@ public abstract class VersionedItem
     @Override
     public boolean equals(Object obj)
     {
-        if(obj == null || !(obj instanceof VersionedItem))
+        if(!(obj instanceof VersionedItem))
             return false;
         VersionedItem other = (VersionedItem) obj;
         return other.getName().equals(this.getName());

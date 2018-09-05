@@ -15,9 +15,9 @@ import java.util.Locale;
 public class FormattingUtil
 {
 
-    public static String formatTimestap(final long timestap)
+    public static String formatTimestamp(final long timestamp)
     {
-        return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, Locale.ENGLISH).format(Date.from(Instant.ofEpochMilli(timestap)));
+        return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.MEDIUM, Locale.ENGLISH).format(Date.from(Instant.ofEpochMilli(timestamp)));
     }
 
     public static void setFooter(final EmbedBuilder eb, final List<JenkinsUser> culprits, OffsetDateTime timestamp)

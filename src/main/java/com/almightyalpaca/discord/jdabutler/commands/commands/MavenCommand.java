@@ -26,17 +26,12 @@ public class MavenCommand implements Command
                 .filter(item -> item.getCustomVersionSupplier() == null)
                 .collect(Collectors.toList());
 
-        StringBuilder descBuilder = new StringBuilder("If you don't know maven type `!pom.xml` for a complete maven build file\n\n```xml\n");
-
-        descBuilder.append(MavenUtil.getDependencyBlock(items, null));
-
-        descBuilder.append("\n\n");
-
-        descBuilder.append(MavenUtil.getRepositoryBlock(items, null));
-
-        descBuilder.append("\n```");
-
-        eb.setDescription(descBuilder.toString());
+        String desc = "If you don't know maven type `!pom.xml` for a complete maven build file\n\n```xml\n" +
+                MavenUtil.getDependencyBlock(items, null) +
+                "\n\n" +
+                MavenUtil.getRepositoryBlock(items, null) +
+                "\n```";
+        eb.setDescription(desc);
 
         EmbedUtil.setColor(eb);
         channel.sendMessage(eb.build()).queue();

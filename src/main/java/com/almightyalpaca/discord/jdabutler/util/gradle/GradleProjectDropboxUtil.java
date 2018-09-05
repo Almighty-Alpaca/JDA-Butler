@@ -43,7 +43,7 @@ public class GradleProjectDropboxUtil
     private static final File SRC_MAIN_JAVA = new File(GRADLE_PROJECT_DIR, "src/main/java/");
     private static final File SRC_MAIN_RESOURCES = new File(GRADLE_PROJECT_DIR, "src/main/resources/");
 
-    private static final String EXMAPLE_IMPL_URL = "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
+    private static final String EXAMPLE_IMPL_URL = "https://raw.githubusercontent.com/DV8FromTheWorld/JDA/master/src/examples/java/MessageListenerExample.java";
     private static final File EXAMPLE_IMPL = new File(SRC_MAIN_JAVA, "MessageListenerExample.java");
 
     private static DbxClientV2 client = null;
@@ -82,7 +82,7 @@ public class GradleProjectDropboxUtil
             SRC_MAIN_JAVA.mkdirs();
             SRC_MAIN_RESOURCES.mkdirs();
 
-            FileUtils.copyURLToFile(new URL(EXMAPLE_IMPL_URL), EXAMPLE_IMPL);
+            FileUtils.copyURLToFile(new URL(EXAMPLE_IMPL_URL), EXAMPLE_IMPL);
 
             final ZipFile zip = new ZipFile(ZIP_FILE);
 

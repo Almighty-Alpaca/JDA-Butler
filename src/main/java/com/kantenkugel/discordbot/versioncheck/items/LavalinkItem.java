@@ -5,7 +5,6 @@ import com.kantenkugel.discordbot.versioncheck.RepoType;
 import net.dv8tion.jda.core.entities.User;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;

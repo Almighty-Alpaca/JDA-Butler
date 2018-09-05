@@ -28,22 +28,22 @@ public class StringUtils
         return text.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
     }
 
-    public static String[] split(String string, final int lenth, final String split)
+    public static String[] split(String string, final int length, final String split)
     {
         Objects.requireNonNull(string);
         if (string.length() == 0)
-            return new String[] {};
+            return new String[0];
         else if (string.length() == 1)
             return new String[]
             { string };
-        else if (string.length() <= lenth)
+        else if (string.length() <= length)
             return new String[]
             { string };
         final List<String> strings = new ArrayList<>();
 
-        while (string.length() > lenth)
+        while (string.length() > length)
         {
-            final String current = string.substring(0, lenth + split.length());
+            final String current = string.substring(0, length + split.length());
 
             final int index = current.lastIndexOf(split);
 
@@ -57,7 +57,7 @@ public class StringUtils
 
         }
 
-        return strings.toArray(new String[strings.size()]);
+        return strings.toArray(new String[0]);
     }
 
     public static String toPrettyString(final Iterable<?> collection)

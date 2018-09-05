@@ -96,7 +96,7 @@ public class FakeButlerListener implements EventListener
             offlineTime += (System.currentTimeMillis() - latestStamp);
             presence.setStatus(OnlineStatus.INVISIBLE);
         }
-        //Only called if change occured (or if main butler is online on startup)
+        //Only called if change occurred (or if main butler is online on startup)
         latestStamp = System.currentTimeMillis();
 
         Bot.isStealth = online;

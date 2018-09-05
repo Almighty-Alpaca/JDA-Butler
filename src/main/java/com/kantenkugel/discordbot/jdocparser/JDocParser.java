@@ -435,12 +435,17 @@ public class JDocParser {
             String deprecatedSince = null;
             StringBuilder builder = new StringBuilder();
             for(MethodAnnotation methodAnno : this.methodAnnos) {
-                if(methodAnno.name.equals("Deprecated"))
-                    deprecated = true;
-                else if(methodAnno.name.equals("DeprecatedSince"))
-                    deprecatedSince = methodAnno.args.substring(2, methodAnno.args.length() - 2);
-                else
-                    builder.append('@').append(methodAnno.toString()).append(' ');
+                switch(methodAnno.name) {
+                    case "Deprecated":
+                        deprecated = true;
+                        break;
+                    case "DeprecatedSince":
+                        deprecatedSince = methodAnno.args.substring(2, methodAnno.args.length() - 2);
+                        break;
+                    default:
+                        builder.append('@').append(methodAnno.toString()).append(' ');
+                        break;
+                }
             }
 
             if(deprecated || deprecatedSince != null) {

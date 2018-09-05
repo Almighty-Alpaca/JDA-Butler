@@ -21,7 +21,7 @@ public class GradleDownloader
 
     private static final AtomicBoolean initialized = new AtomicBoolean(false);
 
-    public static String getGradleDitributionURL()
+    public static String getGradleDistributionURL()
     {
         return "https://services.gradle.org/distributions/gradle-" + GradleDownloader.GRADLE_VERSION + "-bin.zip";
     }
@@ -48,7 +48,7 @@ public class GradleDownloader
                 GRADLE_ZIP.getParentFile().mkdirs();
             GRADLE_ZIP.createNewFile();
 
-            FileUtils.copyURLToFile(new URL(getGradleDitributionURL()), GRADLE_ZIP);
+            FileUtils.copyURLToFile(new URL(getGradleDistributionURL()), GRADLE_ZIP);
 
             final ZipFile zip = new ZipFile(GRADLE_ZIP);
 

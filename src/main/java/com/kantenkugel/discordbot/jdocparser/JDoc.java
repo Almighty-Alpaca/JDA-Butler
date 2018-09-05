@@ -119,7 +119,7 @@ public class JDoc {
         if(noArgNames.length == 1 || className.equalsIgnoreCase(name))
             return Collections.singletonList(doc);
 
-        String searchObj = name.toLowerCase().substring(className.length() + 1);//class name + seperator dot
+        String searchObj = name.toLowerCase().substring(className.length() + 1);//class name + separator dot
         if(doc.classValues.containsKey(searchObj)) {
             return Collections.singletonList(doc.classValues.get(searchObj));
         } else {
