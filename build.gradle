@@ -2,8 +2,8 @@ plugins {
     id 'java'
     id 'idea'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '2.0.2'
-    id 'com.github.ben-manes.versions' version '0.17.0'
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'com.github.ben-manes.versions' version '0.20.0'
     id 'com.sedmelluq.jdaction' version '1.0.2'
 }
 
@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     // JDA
-    compile ('net.dv8tion:JDA:3.7.1_404') {
+    compile ('net.dv8tion:JDA:3.7.1_417') {
         exclude module: 'opus-java'
     }
 
