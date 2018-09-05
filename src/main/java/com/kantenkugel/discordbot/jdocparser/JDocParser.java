@@ -305,12 +305,12 @@ public class JDocParser {
 
         @Override
         public String getTitle() {
-            return classSig;
+            return getShortTitle();
         }
 
         @Override
         public String getShortTitle() {
-            return getTitle();
+            return classSig;
         }
 
         @Override
@@ -335,13 +335,15 @@ public class JDocParser {
 
     static class MethodDocumentation implements Documentation {
         final ClassDocumentation                parent;
+        final List<MethodAnnotation>            methodAnnos;
+        final String                            returnType;
         final String                            functionName;
-        final String                            hashLink;
+        final String                            parameters;
         final String                            functionSig;
         final List<String>                      argTypes;
+        final String                            hashLink;
         final String                            desc;
         final OrderedMap<String, List<String>>  fields;
-        final List<MethodAnnotation>            methodAnnos;
 
         private MethodDocumentation(ClassDocumentation parent, String functionSig, final String hashLink, final String desc, final OrderedMap<String, List<String>> fields) {
             functionSig = JDocUtil.fixSignature(functionSig);
@@ -360,9 +362,11 @@ public class JDocParser {
                 }
             }
             this.parent = parent;
+            this.returnType = methodMatcher.group(1);
             this.functionName = methodMatcher.group(2);
-            this.hashLink = hashLink;
+            this.parameters = methodMatcher.group(3);
             this.functionSig = methodMatcher.group();
+            this.hashLink = hashLink;
             this.desc = desc;
             this.fields = fields;
 
@@ -401,12 +405,12 @@ public class JDocParser {
 
         @Override
         public String getShortTitle() {
-            return functionSig;
+            return parent.className + '#' + functionName + '(' + parameters + ") : " + returnType;
         }
 
         @Override
         public String getTitle() {
-            return getAnnoPrefix() + "\n" + functionSig;
+            return getAnnoPrefix() + "\n" + getShortTitle();
         }
 
         @Override
@@ -482,12 +486,12 @@ public class JDocParser {
 
         @Override
         public String getTitle() {
-            return parent.isEnum ? parent.className + '.' + this.name : this.sig;
+            return parent.isEnum ? getShortTitle() : parent.className + " - " + this.sig;
         }
 
         @Override
         public String getShortTitle() {
-            return getTitle();
+            return parent.className + '.' + this.name;
         }
 
         @Override

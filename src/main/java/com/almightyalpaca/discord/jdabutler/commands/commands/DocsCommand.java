@@ -9,12 +9,8 @@ import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.jdocparser.JDocUtil;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageEmbed;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.awt.Color;
 import java.util.*;
@@ -70,21 +66,70 @@ public class DocsCommand extends ReactionCommand
                 }
                 else
                 {
-                    embed.addField(field.getKey(), field.getValue().stream().collect(Collectors.joining("\n")), false);
+                    embed.addField(field.getKey(), String.join("\n", field.getValue()), false);
                 }
             }
         }
         return new MessageBuilder().setEmbed(embed.build()).build();
     }
 
-    private static Message getMultiResult(String jDocBase, List<Pair<String, ? extends Documentation>> search, int page)
+    private void showPaginatorEmbed(TextChannel channel, User sender, String jDocBase, Set<Documentation> items)
+    {
+        AtomicInteger page = new AtomicInteger(0);
+        List<Documentation> sorted = items.stream().sorted(Comparator.comparing(Documentation::getShortTitle)).collect(Collectors.toList());
+        channel.sendMessage(getMultiResult(jDocBase, sorted, page.get()))
+                .queue(m -> this.addReactions(
+                        m,
+                        Arrays.asList(ReactionCommand.LEFT_ARROW, ReactionCommand.RIGHT_ARROW, ReactionCommand.CANCEL),
+                        Collections.singleton(sender),
+                        3, TimeUnit.MINUTES,
+                        index -> {
+                            if (index >= 2)
+                            {                //cancel button or other error
+                                stopReactions(m, false);
+                                m.delete().queue();
+                                return;
+                            }
+                            int nextPage = page.updateAndGet(current -> index == 1 ? Math.min(current + 1, (sorted.size() - 1) / RESULTS_PER_PAGE) : Math.max(current - 1, 0));
+                            m.editMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, nextPage)).queue();
+                        }));
+    }
+
+    private void showRefinementEmbed(TextChannel channel, User sender, String jDocBase, List<Documentation> docs)
+    {
+        EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
+        for (int i = 0; i < docs.size(); i++)
+        {
+            Documentation doc = docs.get(i);
+            embedB.appendDescription(
+                    ReactionCommand.NUMBERS[i] + " [" + doc.getShortTitle() + "](" + doc.getUrl(jDocBase) + ")\n"
+            );
+        }
+        embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
+        List<String> options = Arrays.stream(ReactionCommand.NUMBERS).limit(docs.size()).collect(Collectors.toList());
+        options.add(ReactionCommand.CANCEL);
+        channel
+                .sendMessage(embedB.build())
+                .queue(m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
+                    if (index >= docs.size())
+                    {                //cancel button or other error
+                        stopReactions(m, false);
+                        m.delete().queue();
+                        return;
+                    }
+                    stopReactions(m);
+                    m.editMessage(getDocMessage(jDocBase, docs.get(index))).queue();
+                }));
+    }
+
+    private static Message getMultiResult(String jDocBase, List<Documentation> search, int page)
     {
         EmbedBuilder embed = getDefaultEmbed()
                 .setTitle("Found " + search.size() + " Results. Page " + (page + 1) + '/' + ((search.size() - 1) / RESULTS_PER_PAGE + 1));
         for (int index = page * RESULTS_PER_PAGE; index < search.size() && index < (page + 1) * RESULTS_PER_PAGE; index++)
         {
-            Pair<String, ? extends Documentation> pair = search.get(index);
-            embed.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl(jDocBase) + ")\n");
+            Documentation documentation = search.get(index);
+            embed.appendDescription('[' + documentation.getShortTitle() + "](" + documentation.getUrl(jDocBase) + ")\n");
         }
         return new MessageBuilder().setEmbed(embed.build()).build();
     }
@@ -133,7 +178,7 @@ public class DocsCommand extends ReactionCommand
                 case "search":
                 {
                     String[] options = split.length == 3 ? split[1].toLowerCase().split("\\s*,\\s*") : new String[0];
-                    Set<Pair<String, ? extends Documentation>> search = JDoc.search(split[split.length - 1], options);
+                    Set<Documentation> search = JDoc.search(split[split.length - 1], options);
                     if (search.size() == 0)
                     {
                         channel.sendMessage("Did not find anything matching query!").queue();
@@ -141,25 +186,15 @@ public class DocsCommand extends ReactionCommand
                     }
                     if (search.size() > RESULTS_PER_PAGE)
                     {
-                        AtomicInteger page = new AtomicInteger(0);
-                        List<Pair<String, ? extends Documentation>> sorted = search.stream().sorted(Comparator.comparing(Pair::getKey)).collect(Collectors.toList());
-                        channel.sendMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, page.get())).queue(m -> this.addReactions(m, Arrays.asList(ReactionCommand.LEFT_ARROW, ReactionCommand.RIGHT_ARROW, ReactionCommand.CANCEL), Collections.singleton(sender), 3, TimeUnit.MINUTES, index -> {
-                            if (index >= 2)
-                            {                //cancel button or other error
-                                stopReactions(m, false);
-                                m.delete().queue();
-                                return;
-                            }
-                            int nextPage = page.updateAndGet(current -> index == 1 ? Math.min(current + 1, (sorted.size() - 1) / RESULTS_PER_PAGE) : Math.max(current - 1, 0));
-                            m.editMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, nextPage)).queue();
-                        }));
+                        showPaginatorEmbed(channel, sender, JDocUtil.JDOCBASE, search);
                     }
                     else
                     {
+                        //show all items, but without emoji selector (search only)
                         EmbedBuilder embedB = getDefaultEmbed().setTitle("Found following:");
-                        for (Pair<String, ? extends Documentation> pair : search)
+                        for (Documentation documentation : search)
                         {
-                            embedB.appendDescription('[' + pair.getKey() + "](" + pair.getValue().getUrl(JDocUtil.JDOCBASE) + ")\n");
+                            embedB.appendDescription('[' + documentation.getShortTitle() + "](" + documentation.getUrl(JDocUtil.JDOCBASE) + ")\n");
                         }
                         embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
                         channel.sendMessage(embedB.build()).queue();
@@ -184,29 +219,7 @@ public class DocsCommand extends ReactionCommand
                             channel.sendMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(0))).queue();
                             break;
                         default:
-                            EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
-                            for (int i = 0; i < javadocs.size(); i++)
-                            {
-                                Documentation doc = javadocs.get(i);
-                                embedB.appendDescription(
-                                        ReactionCommand.NUMBERS[i] + " [" + doc.getShortTitle() + "](" + doc.getUrl(JDocUtil.JAVA_JDOCS_PREFIX) +
-                                        ")\n");
-                            }
-                            embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
-                            List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, javadocs.size())));
-                            options.add(ReactionCommand.CANCEL);
-                            channel
-                                    .sendMessage(embedB.build())
-                                    .queue(m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
-                                        if (index >= javadocs.size())
-                                        {                //cancel button or other error
-                                            stopReactions(m, false);
-                                            m.delete().queue();
-                                            return;
-                                        }
-                                        stopReactions(m);
-                                        m.editMessage(getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(index))).queue();
-                                    }));
+                            showRefinementEmbed(channel, sender, JDocUtil.JAVA_JDOCS_PREFIX, javadocs);
                             break;
                     }
                     break;
@@ -217,6 +230,7 @@ public class DocsCommand extends ReactionCommand
             }
             return;
         }
+        //no : found -> normal lookup
         final List<Documentation> docs = JDoc.get(content);
         switch (docs.size())
         {
@@ -227,25 +241,7 @@ public class DocsCommand extends ReactionCommand
                 channel.sendMessage(getDocMessage(JDocUtil.JDOCBASE, docs.get(0))).queue();
                 break;
             default:
-                EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
-                for (int i = 0; i < docs.size(); i++)
-                {
-                    Documentation doc = docs.get(i);
-                    embedB.appendDescription(ReactionCommand.NUMBERS[i] + " [" + doc.getShortTitle() + "](" + doc.getUrl(JDocUtil.JDOCBASE) + ")\n");
-                }
-                embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
-                List<String> options = new ArrayList<>(Arrays.asList(Arrays.copyOf(ReactionCommand.NUMBERS, docs.size())));
-                options.add(ReactionCommand.CANCEL);
-                channel.sendMessage(embedB.build()).queue(m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
-                    if (index >= docs.size())
-                    {                //cancel button or other error
-                        stopReactions(m, false);
-                        m.delete().queue();
-                        return;
-                    }
-                    stopReactions(m);
-                    m.editMessage(getDocMessage(JDocUtil.JDOCBASE, docs.get(index))).queue();
-                }));
+                showRefinementEmbed(channel, sender, JDocUtil.JDOCBASE, docs);
                 break;
         }
     }
