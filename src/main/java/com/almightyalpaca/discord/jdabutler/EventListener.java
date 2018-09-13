@@ -18,15 +18,16 @@ public class EventListener extends ListenerAdapter
         {
             final Member member = event.getMember();
             final User user = member.getUser();
-            Role role;
-            if (user.isBot())
-                role = Bot.getRoleBots();
-            else
-                role = Bot.getRoleJdaFanclub();
-
-            final AuditableRestAction<Void> action = guild.getController().addSingleRoleToMember(member, role).reason("Auto Role");
-            final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), role.getName());
-            action.queue(v -> Bot.LOG.info(message), ex -> Bot.LOG.error("Could not add User {} to role {}", user.getName(), role.getName(), ex));
+            if(user.isBot())
+            {
+                final AuditableRestAction<Void> action = guild.getController()
+                        .addSingleRoleToMember(member, Bot.getRoleBots()).reason("Auto Role");
+                final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), Bot.getRoleBots().getName());
+                action.queue(
+                        v -> Bot.LOG.info(message),
+                        ex -> Bot.LOG.error("Could not add User {} to role {}", user.getName(), Bot.getRoleBots().getName(), ex)
+                );
+            }
         }
     }
 

@@ -65,11 +65,6 @@ public class Bot
         return Bot.getGuildJda().getRoleById("125616720156033024");
     }
 
-    public static Role getRoleJdaFanclub()
-    {
-        return Bot.getGuildJda().getRoleById("169558668126322689");
-    }
-
     public static Role getRoleStaff()
     {
         return Bot.getGuildJda().getRoleById("169481978268090369");
