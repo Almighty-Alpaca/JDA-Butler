@@ -14,7 +14,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MavenCommand implements Command
+public class MavenCommand extends Command
 {
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
@@ -34,7 +34,7 @@ public class MavenCommand implements Command
         eb.setDescription(desc);
 
         EmbedUtil.setColor(eb);
-        channel.sendMessage(eb.build()).queue();
+        reply(event, eb.build());
     }
 
     @Override

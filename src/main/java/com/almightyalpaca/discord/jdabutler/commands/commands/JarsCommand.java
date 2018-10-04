@@ -13,7 +13,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.io.IOException;
 
-public class JarsCommand implements Command
+public class JarsCommand extends Command
 {
     private static final String[] ALIASES = new String[]
     { "jar" };
@@ -32,7 +32,7 @@ public class JarsCommand implements Command
             JenkinsBuild lastBuild = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuild();
             if(lastBuild == null)
             {
-                channel.sendMessage("Could not get Artifact-data from CI!").queue();
+                reply(event, "Could not get Artifact-data from CI!");
                 return;
             }
 
@@ -42,12 +42,12 @@ public class JarsCommand implements Command
             eb.addField("withDependencies", "[(normal)](" + lastBuild.artifacts.get("JDA-withDependencies").getLink() + ") " +
                     "[(no-opus)](" + lastBuild.artifacts.get("JDA-withDependencies-no-opus").getLink() + ")", true);
 
-            channel.sendMessage(eb.build()).queue();
+            reply(event, eb.build());
         }
         catch(IOException ex)
         {
             Bot.LOG.warn("Failed fetching latest build from Jenkins for Jars command", ex);
-            channel.sendMessage("CI was unreachable!").queue();
+            reply(event, "CI was unreachable!");
         }
     }
 

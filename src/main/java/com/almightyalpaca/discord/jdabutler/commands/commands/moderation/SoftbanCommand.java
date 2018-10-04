@@ -8,7 +8,7 @@ import net.dv8tion.jda.core.managers.GuildController;
 
 import java.util.List;
 
-public class SoftbanCommand implements Command
+public class SoftbanCommand extends Command
 {
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
@@ -16,14 +16,14 @@ public class SoftbanCommand implements Command
         final Member sendMem = event.getMember();
         if (!sendMem.hasPermission(Permission.KICK_MEMBERS))
         { // only kick cause its not perma ban
-            channel.sendMessage("WhO Do U thINk u Are?").queue();
+            sendFailed(message);
             return;
         }
 
         final List<User> mentions = message.getMentionedUsers();
         if (mentions.isEmpty())
         {
-            channel.sendMessage("PLeAse mENTion SOmEoNe!").queue();
+            reply(event, "Please mention someone");
             return;
         }
 

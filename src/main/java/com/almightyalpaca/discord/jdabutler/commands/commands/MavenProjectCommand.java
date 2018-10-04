@@ -16,7 +16,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MavenProjectCommand implements Command
+public class MavenProjectCommand extends Command
 {
     private static String POM;
 
@@ -48,7 +48,7 @@ public class MavenProjectCommand implements Command
         String repoString = MavenUtil.getRepositoryBlock(items, "    ");
 
         final String pom = String.format(MavenProjectCommand.POM, repoString, dependencyString);
-        channel.sendMessage("Here: " + MiscUtils.hastebin(pom) + ".xml").queue();
+        reply(event, "Here: " + MiscUtils.hastebin(pom) + ".xml");
     }
 
     @Override

@@ -12,9 +12,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public abstract class ReactionCommand implements Command
+public abstract class ReactionCommand extends Command
 {
-
+    //TODO: check how deletion from here mixes with command-response linking
+    //todo: move the reaction timeout threads to a threadpool
     public final static String[] NUMBERS = new String[]{"1\u20E3", "2\u20E3", "3\u20E3",
             "4\u20E3", "5\u20E3", "6\u20E3", "7\u20E3", "8\u20E3", "9\u20E3", "\uD83D\uDD1F"};
     public final static String[] LETTERS = new String[]{"\uD83C\uDDE6", "\uD83C\uDDE7", "\uD83C\uDDE8",
@@ -128,7 +129,7 @@ public abstract class ReactionCommand implements Command
 
         private void cleanup()
         {
-            registry.remove(ReactionListener.this);
+            registry.remove(this);
             if (shouldDeleteReactions)
             {
                 try

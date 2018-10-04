@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EvalCommand implements Command
+public class EvalCommand extends Command
 {
     private static final int TIMEOUT_S = 10;
 
@@ -64,7 +64,7 @@ public class EvalCommand implements Command
             event.getMessage().addReaction("✅").queue();
         else
             for (final Message m : builder.buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE))
-                event.getChannel().sendMessage(m).queue();
+                reply(event, m);
     }
 
     @Override

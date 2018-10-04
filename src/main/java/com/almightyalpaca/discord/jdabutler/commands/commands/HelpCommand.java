@@ -14,7 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-public class HelpCommand implements Command
+public class HelpCommand extends Command
 {
     private static final String[] ALIASES = new String[]
     { "info" };
@@ -32,7 +32,7 @@ public class HelpCommand implements Command
         final String help = Bot.dispatcher.getCommands().stream().sorted(Comparator.comparing(Command::getName)).filter(c -> c.getHelp() != null).map(c -> String.format("`%s` - %s", StringUtils.rightPad(prefix + c.getName().toLowerCase() + "", size, "."), c.getHelp())).collect(Collectors.joining("\n"));
         builder.setAuthor(channel.getGuild().getMember(sender).getEffectiveName(), null, sender.getEffectiveAvatarUrl());
         builder.setDescription(help);
-        channel.sendMessage(new MessageBuilder().setEmbed(builder.build()).build()).queue();
+        reply(event, new MessageBuilder().setEmbed(builder.build()).build());
     }
 
     @Override
