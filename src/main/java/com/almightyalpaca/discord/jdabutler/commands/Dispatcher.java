@@ -101,7 +101,7 @@ public class Dispatcher extends ListenerAdapter
     @Override
     public void onGuildMessageDelete(GuildMessageDeleteEvent event)
     {
-        Command.removeResponses(event.getChannel(), event.getMessageIdLong());
+        Command.removeResponses(event.getChannel(), event.getMessageIdLong(), reactListReg);
     }
 
     @Override
@@ -154,38 +154,4 @@ public class Dispatcher extends ListenerAdapter
         return content;
     }
 
-    public static class ReactionListenerRegistry
-    {
-        private final Set<ReactionCommand.ReactionListener> listeners;
-
-        private ReactionListenerRegistry()
-        {
-            this.listeners = new HashSet<>();
-        }
-
-        public void register(final ReactionCommand.ReactionListener listener)
-        {
-            synchronized (this.listeners)
-            {
-                this.listeners.add(listener);
-            }
-        }
-
-        public void remove(final ReactionCommand.ReactionListener listener)
-        {
-            synchronized (this.listeners)
-            {
-                this.listeners.remove(listener);
-            }
-        }
-
-        private void handle(final MessageReactionAddEvent event)
-        {
-            synchronized (this.listeners)
-            {
-                for (final ReactionCommand.ReactionListener listener : this.listeners)
-                    listener.handle(event);
-            }
-        }
-    }
 }

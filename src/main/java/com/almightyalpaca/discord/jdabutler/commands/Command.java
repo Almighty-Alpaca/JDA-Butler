@@ -13,11 +13,19 @@ public abstract class Command
 {
     private static final FixedSizeCache<Long, TLongSet> MESSAGE_LINK_MAP = new FixedSizeCache<>(20);
 
-    public static void removeResponses(TextChannel channel, long messageId)
+    static void removeResponses(TextChannel channel, long messageId, ReactionListenerRegistry reactionRegistry)
     {
         TLongSet responses = MESSAGE_LINK_MAP.get(messageId);
         if(responses != null)
+        {
+            //if the responses had a reaction listener attached, clear it (cancel() is NOP if the id is not registered)
+            responses.forEach(msgId ->
+            {
+                reactionRegistry.cancel(msgId);
+                return true;
+            });
             channel.purgeMessagesById(responses.toArray());
+        }
     }
 
     public static void linkMessage(long commandId, long responseId)

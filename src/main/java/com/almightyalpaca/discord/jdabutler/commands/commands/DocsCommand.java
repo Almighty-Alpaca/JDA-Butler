@@ -1,8 +1,8 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.commands.ReactionListenerRegistry;
 import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
-import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.commands.ReactionCommand;
 import com.kantenkugel.discordbot.jdocparser.Documentation;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
@@ -23,7 +23,7 @@ public class DocsCommand extends ReactionCommand
     private static final int RESULTS_PER_PAGE = 5;
     private static final String[] ALIASES = new String[]{"documentation", "doc", "jdoc", "jdocs"};
 
-    public DocsCommand(Dispatcher.ReactionListenerRegistry registry)
+    public DocsCommand(ReactionListenerRegistry registry)
     {
         super(registry);
     }
@@ -73,29 +73,31 @@ public class DocsCommand extends ReactionCommand
         return new MessageBuilder().setEmbed(embed.build()).build();
     }
 
-    private void showPaginatorEmbed(TextChannel channel, User sender, String jDocBase, Set<Documentation> items)
+    private void showPaginatorEmbed(GuildMessageReceivedEvent event, User sender, String jDocBase, Set<Documentation> items)
     {
         AtomicInteger page = new AtomicInteger(0);
         List<Documentation> sorted = items.stream().sorted(Comparator.comparing(Documentation::getShortTitle)).collect(Collectors.toList());
-        channel.sendMessage(getMultiResult(jDocBase, sorted, page.get()))
-                .queue(m -> this.addReactions(
+        reply(event, getMultiResult(jDocBase, sorted, page.get()),
+                m -> this.addReactions(
                         m,
                         Arrays.asList(ReactionCommand.LEFT_ARROW, ReactionCommand.RIGHT_ARROW, ReactionCommand.CANCEL),
                         Collections.singleton(sender),
                         3, TimeUnit.MINUTES,
                         index -> {
                             if (index >= 2)
-                            {                //cancel button or other error
+                            {   //cancel button or other error
                                 stopReactions(m, false);
                                 m.delete().queue();
                                 return;
                             }
                             int nextPage = page.updateAndGet(current -> index == 1 ? Math.min(current + 1, (sorted.size() - 1) / RESULTS_PER_PAGE) : Math.max(current - 1, 0));
                             m.editMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, nextPage)).queue();
-                        }));
+                        }
+                )
+        );
     }
 
-    private void showRefinementEmbed(TextChannel channel, User sender, String jDocBase, List<Documentation> docs)
+    private void showRefinementEmbed(GuildMessageReceivedEvent event, User sender, String jDocBase, List<Documentation> docs)
     {
         EmbedBuilder embedB = getDefaultEmbed().setTitle("Refine your Search");
         for (int i = 0; i < docs.size(); i++)
@@ -108,18 +110,18 @@ public class DocsCommand extends ReactionCommand
         embedB.getDescriptionBuilder().setLength(embedB.getDescriptionBuilder().length() - 1);
         List<String> options = Arrays.stream(ReactionCommand.NUMBERS).limit(docs.size()).collect(Collectors.toList());
         options.add(ReactionCommand.CANCEL);
-        channel
-                .sendMessage(embedB.build())
-                .queue(m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
+        reply(event, embedB.build(),
+                m -> this.addReactions(m, options, Collections.singleton(sender), 30, TimeUnit.SECONDS, index -> {
                     if (index >= docs.size())
-                    {                //cancel button or other error
+                    {   //cancel button or other error
                         stopReactions(m, false);
                         m.delete().queue();
                         return;
                     }
                     stopReactions(m);
                     m.editMessage(getDocMessage(jDocBase, docs.get(index))).queue();
-                }));
+                })
+        );
     }
 
     private static Message getMultiResult(String jDocBase, List<Documentation> search, int page)
@@ -186,7 +188,7 @@ public class DocsCommand extends ReactionCommand
                     }
                     if (search.size() > RESULTS_PER_PAGE)
                     {
-                        showPaginatorEmbed(channel, sender, JDocUtil.JDOCBASE, search);
+                        showPaginatorEmbed(event, sender, JDocUtil.JDOCBASE, search);
                     }
                     else
                     {
@@ -219,7 +221,7 @@ public class DocsCommand extends ReactionCommand
                             reply(event, getDocMessage(JDocUtil.JAVA_JDOCS_PREFIX, javadocs.get(0)));
                             break;
                         default:
-                            showRefinementEmbed(channel, sender, JDocUtil.JAVA_JDOCS_PREFIX, javadocs);
+                            showRefinementEmbed(event, sender, JDocUtil.JAVA_JDOCS_PREFIX, javadocs);
                             break;
                     }
                     break;
@@ -241,7 +243,7 @@ public class DocsCommand extends ReactionCommand
                 reply(event, getDocMessage(JDocUtil.JDOCBASE, docs.get(0)));
                 break;
             default:
-                showRefinementEmbed(channel, sender, JDocUtil.JDOCBASE, docs);
+                showRefinementEmbed(event, sender, JDocUtil.JDOCBASE, docs);
                 break;
         }
     }
