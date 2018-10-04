@@ -3,6 +3,7 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.util.MavenUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.entities.Message;
@@ -47,7 +48,7 @@ public class MavenProjectCommand implements Command
         String repoString = MavenUtil.getRepositoryBlock(items, "    ");
 
         final String pom = String.format(MavenProjectCommand.POM, repoString, dependencyString);
-        channel.sendMessage("Here: " + Bot.hastebin(pom) + ".xml").queue();
+        channel.sendMessage("Here: " + MiscUtils.hastebin(pom) + ".xml").queue();
     }
 
     @Override

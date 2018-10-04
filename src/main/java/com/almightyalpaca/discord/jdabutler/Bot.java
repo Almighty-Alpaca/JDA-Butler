@@ -23,12 +23,7 @@ import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.entities.impl.JDAImpl;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import okhttp3.*;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
@@ -68,25 +63,6 @@ public class Bot
     public static Role getRoleStaff()
     {
         return Bot.getGuildJda().getRoleById("169481978268090369");
-    }
-
-    public static String hastebin(final String text)
-    {
-        try
-        {
-            return "https://hastebin.com/" + new JSONObject(new JSONTokener(httpClient
-                    .newCall(new Request.Builder()
-                            .post(RequestBody.create(MediaType.parse("text/plain"), text))
-                            .url("https://hastebin.com/documents")
-                            .header("User-Agent", "Mozilla/5.0 JDA-Butler").build())
-                    .execute()
-                    .body()
-                    .charStream())).getString("key");
-        }
-        catch (final Exception e)
-        {
-            return null;
-        }
     }
 
     public static boolean isAdmin(final User user)

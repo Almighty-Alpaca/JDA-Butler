@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     // JDA
-    compile ('net.dv8tion:JDA:3.7.1_417') {
+    compile ('net.dv8tion:JDA:3.8.0_424') {
         exclude module: 'opus-java'
     }
 
