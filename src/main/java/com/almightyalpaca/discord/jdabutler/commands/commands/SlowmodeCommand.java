@@ -45,7 +45,7 @@ public class SlowmodeCommand extends Command
         }
 
         channel.getManager().setSlowmode(seconds).submit()
-                .thenRun(() -> sendFailed(event.getMessage()));
+                .thenRun(() -> sendSuccess(event.getMessage()));
     }
 
     @Override

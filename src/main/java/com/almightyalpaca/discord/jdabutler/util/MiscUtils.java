@@ -82,7 +82,7 @@ public class MiscUtils
         if (slowmode)
         {
             base = channel.getManager().setSlowmode(30).submit();
-            base.thenRun(() -> channel.getManager().setSlowmode(0).submitAfter(2, TimeUnit.MINUTES));
+            base.thenRun(() -> channel.getManager().setSlowmode(0).queueAfter(2, TimeUnit.MINUTES));
         }
         else
         {
