@@ -12,7 +12,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.List;
 
-public class VersionsCommand implements Command
+public class VersionsCommand extends Command
 {
 
     private static final String[] ALIASES = { "version", "latest" };
@@ -52,7 +52,7 @@ public class VersionsCommand implements Command
             }
         }
 
-        channel.sendMessage(eb.build()).queue();
+        reply(event, eb.build());
     }
 
     @Override

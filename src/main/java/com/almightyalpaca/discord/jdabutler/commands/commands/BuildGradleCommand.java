@@ -13,7 +13,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BuildGradleCommand implements Command
+public class BuildGradleCommand extends Command
 {
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
@@ -28,7 +28,7 @@ public class BuildGradleCommand implements Command
         final boolean pretty = content.contains("pretty");
 
         mb.appendCodeBlock(GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "com.example.jda.Bot", "1.0", "1.8", items, pretty), "gradle");
-        channel.sendMessage(mb.build()).queue();
+        reply(event, mb.build());
     }
 
     @Override

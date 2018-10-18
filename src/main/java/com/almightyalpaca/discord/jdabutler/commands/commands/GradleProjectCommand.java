@@ -7,23 +7,23 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class GradleProjectCommand implements Command
+public class GradleProjectCommand extends Command
 {
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
         if (GradleProjectDropboxUtil.dropboxShareLink != null)
         {
-            channel.sendMessage(GradleProjectDropboxUtil.dropboxShareLink).queue();
+            reply(event, GradleProjectDropboxUtil.dropboxShareLink);
         }
         else if (GradleProjectDropboxUtil.ZIP_FILE.exists())
         {
             channel.sendTyping().queue();
-            channel.sendFile(GradleProjectDropboxUtil.ZIP_FILE).queue();
+            channel.sendFile(GradleProjectDropboxUtil.ZIP_FILE).queue(msg -> linkMessage(message.getIdLong(), msg.getIdLong()));
         }
         else
         {
-            channel.sendMessage("The example zip is currently not available").queue();
+            reply(event, "The example zip is currently not available");
         }
     }
 

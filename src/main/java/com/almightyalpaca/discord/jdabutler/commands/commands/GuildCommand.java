@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class GuildCommand implements Command
+public class GuildCommand extends Command
 {
 
     private static final String[] ALIASES = new String[]
@@ -16,7 +16,7 @@ public class GuildCommand implements Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        channel.sendMessage(Bot.INVITE_LINK).queue();
+        reply(event, Bot.INVITE_LINK);
     }
 
     @Override

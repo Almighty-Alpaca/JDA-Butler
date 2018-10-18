@@ -14,7 +14,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GradleCommand implements Command
+public class GradleCommand extends Command
 {
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
@@ -37,7 +37,7 @@ public class GradleCommand implements Command
         eb.setDescription(description);
 
         EmbedUtil.setColor(eb);
-        channel.sendMessage(eb.build()).queue();
+        reply(event, eb.build());
     }
 
     @Override

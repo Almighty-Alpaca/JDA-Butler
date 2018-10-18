@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry.EXPERIMENTAL_ITEM;
 
-public class AnnouncementCommand implements Command
+public class AnnouncementCommand extends Command
 {
 
     @Override
@@ -58,7 +58,7 @@ public class AnnouncementCommand implements Command
                 VersionedItem item = VersionCheckerRegistry.getItem(args[0]);
                 if(item == null)
                 {
-                    channel.sendMessage("Item with name " + args[0] + " doesn't exist!").queue();
+                    reply(event, "Item with name " + args[0] + " doesn't exist!");
                     return;
                 }
                 if(!item.canAnnounce(sender) && !Bot.isAdmin(sender))
@@ -71,7 +71,7 @@ public class AnnouncementCommand implements Command
                     image = EmbedUtil.JDA_ICON;
                 if(role == null)
                 {
-                    channel.sendMessage("This item has no announcement role set up!").queue();
+                    reply(event, "This item has no announcement role set up!");
                     return;
                 }
             }
@@ -87,21 +87,21 @@ public class AnnouncementCommand implements Command
             switch(items.size())
             {
                 case 0:
-                    channel.sendMessage("No roles set up for this channel or you do not have access to them").queue();
+                    reply(event, "No roles set up for this channel or you do not have access to them");
                     return;
                 case 1:
                     VersionedItem item = items.get(0);
                     role = item.getAnnouncementRole();
                     if(role == null)
                     {
-                        channel.sendMessage("Item has invalid role id set up").queue();
+                        reply(event, "Item has invalid role id set up");
                         return;
                     }
                     if(item.getName().equalsIgnoreCase("jda") || item == EXPERIMENTAL_ITEM)
                         image = EmbedUtil.JDA_ICON;
                     break;
                 default:
-                    channel.sendMessage("Too many roles set up for this channel. You have to manually specify one via command.").queue();
+                    reply(event, "Too many roles set up for this channel. You have to manually specify one via command.");
                     return;
             }
         }

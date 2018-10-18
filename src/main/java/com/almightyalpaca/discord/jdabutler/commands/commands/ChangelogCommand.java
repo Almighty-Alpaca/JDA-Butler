@@ -15,7 +15,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.List;
 
-public class ChangelogCommand implements Command
+public class ChangelogCommand extends Command
 {
 
     private static final String[] ALIASES = { "changes" };
@@ -44,15 +44,15 @@ public class ChangelogCommand implements Command
 
         if(clProvider == null)
         {
-            channel.sendMessage("No Changelogs set up for " + item.getName()).queue();
+            reply(event, "No Changelogs set up for " + item.getName());
             return;
         }
 
         //no version parameters or no version lookup supported
         if(!clProvider.supportsIndividualLogs() || args == null || args.length == versionStart)
         {
-            channel.sendMessage(String.format("Changelogs for %s can be found here: %s",
-                    item.getName(), clProvider.getChangelogUrl())).queue();
+            reply(event, String.format("Changelogs for %s can be found here: %s",
+                    item.getName(), clProvider.getChangelogUrl()));
             return;
         }
 
@@ -64,7 +64,7 @@ public class ChangelogCommand implements Command
             ChangelogProvider.Changelog changelog = clProvider.getChangelog(args[versionStart]);
             if(changelog == null)
             {
-                channel.sendMessage("The specified version does not exist").queue();
+                reply(event, "The specified version does not exist");
                 return;
             }
             if(changelog.getChangelogUrl() == null)
@@ -83,7 +83,7 @@ public class ChangelogCommand implements Command
             List<ChangelogProvider.Changelog> changelogs = clProvider.getChangelogs(args[versionStart], args[versionStart + 1]);
             if(changelogs.size() == 0)
             {
-                channel.sendMessage("No Changelogs found in given range").queue();
+                reply(event, "No Changelogs found in given range");
                 return;
             }
             int fields = 0;
@@ -110,11 +110,11 @@ public class ChangelogCommand implements Command
         MessageEmbed embed = eb.build();
         if(embed.isSendable(AccountType.BOT))
         {
-            channel.sendMessage(embed).queue();
+            reply(event, embed);
         }
         else
         {
-            channel.sendMessage("Too much content. Please restrict your build range").queue();
+            reply(event, "Too much content. Please restrict your build range");
         }
     }
 

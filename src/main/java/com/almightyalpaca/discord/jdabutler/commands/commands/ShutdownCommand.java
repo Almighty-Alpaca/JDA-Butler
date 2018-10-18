@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class ShutdownCommand implements Command
+public class ShutdownCommand extends Command
 {
 
     private static final String[] ALIASES = new String[]

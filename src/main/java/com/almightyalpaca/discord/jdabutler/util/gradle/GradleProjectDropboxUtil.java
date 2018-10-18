@@ -105,7 +105,7 @@ public class GradleProjectDropboxUtil
         createZip();
         init();
 
-        if (client == null)
+        if (client == null || Bot.config.getBoolean("testing", true))
         {
             Bot.LOG.info("Skipping upload!");
             return;

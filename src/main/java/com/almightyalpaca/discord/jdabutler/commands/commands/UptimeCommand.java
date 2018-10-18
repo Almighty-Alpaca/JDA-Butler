@@ -9,7 +9,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
 import java.lang.management.ManagementFactory;
 
-public class UptimeCommand implements Command
+public class UptimeCommand extends Command
 {
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
@@ -34,7 +34,7 @@ public class UptimeCommand implements Command
         uptime = StringUtils.replaceLast(uptime, ", ", "");
         uptime = StringUtils.replaceLast(uptime, ",", " and");
 
-        channel.sendMessage(uptime).queue();
+        reply(event, uptime);
     }
 
     @Override

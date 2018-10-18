@@ -7,7 +7,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class StatsCommand implements Command
+public class StatsCommand extends Command
 {
     private final FakeButlerListener fakeListener;
 
@@ -19,7 +19,7 @@ public class StatsCommand implements Command
     @Override
     public void dispatch(User sender, TextChannel channel, Message message, String content, GuildMessageReceivedEvent event)
     {
-        channel.sendMessage(fakeListener.getStats(event.getJDA())).queue();
+        reply(event, fakeListener.getStats(event.getJDA()));
     }
 
     @Override

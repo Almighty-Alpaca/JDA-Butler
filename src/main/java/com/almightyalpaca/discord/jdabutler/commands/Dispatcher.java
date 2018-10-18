@@ -7,6 +7,7 @@ import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.google.common.util.concurrent.MoreExecutors;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.ShutdownEvent;
+import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -98,6 +99,12 @@ public class Dispatcher extends ListenerAdapter
     }
 
     @Override
+    public void onGuildMessageDelete(GuildMessageDeleteEvent event)
+    {
+        Command.removeResponses(event.getChannel(), event.getMessageIdLong(), reactListReg);
+    }
+
+    @Override
     public void onMessageReactionAdd(final MessageReactionAddEvent event)
     {
         this.reactListReg.handle(event);
@@ -132,7 +139,8 @@ public class Dispatcher extends ListenerAdapter
             }
             catch (final Exception e)
             {
-                event.getChannel().sendMessage("**There was an error processing your command!**").queue();
+                event.getChannel().sendMessage("**There was an error processing your command!**").queue(msg ->
+                        Command.linkMessage(event.getMessageIdLong(), msg.getIdLong()));
                 Bot.LOG.error("Error processing command {}", c.getName(), e);
             }
         });
@@ -146,38 +154,4 @@ public class Dispatcher extends ListenerAdapter
         return content;
     }
 
-    public static class ReactionListenerRegistry
-    {
-        private final Set<ReactionCommand.ReactionListener> listeners;
-
-        private ReactionListenerRegistry()
-        {
-            this.listeners = new HashSet<>();
-        }
-
-        public void register(final ReactionCommand.ReactionListener listener)
-        {
-            synchronized (this.listeners)
-            {
-                this.listeners.add(listener);
-            }
-        }
-
-        public void remove(final ReactionCommand.ReactionListener listener)
-        {
-            synchronized (this.listeners)
-            {
-                this.listeners.remove(listener);
-            }
-        }
-
-        private void handle(final MessageReactionAddEvent event)
-        {
-            synchronized (this.listeners)
-            {
-                for (final ReactionCommand.ReactionListener listener : this.listeners)
-                    listener.handle(event);
-            }
-        }
-    }
 }

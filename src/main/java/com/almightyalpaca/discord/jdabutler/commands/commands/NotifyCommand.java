@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class NotifyCommand implements Command
+public class NotifyCommand extends Command
 {
 
     private static final long BLACKLIST_CHANNEL_ID = 454657809397710859L;
@@ -44,7 +44,7 @@ public class NotifyCommand implements Command
             if(Bot.isAdmin(sender))
             {
                 String subContent = content.substring(Math.min("blacklist".length() + 1, content.length()));
-                handleBlacklist(channel, message, subContent);
+                handleBlacklist(event, message, subContent);
             }
             else
             {
@@ -148,7 +148,7 @@ public class NotifyCommand implements Command
         return "notify";
     }
 
-    public static void reloadBlacklist(TextChannel responseChannel)
+    public static void reloadBlacklist(GuildMessageReceivedEvent event)
     {
         TextChannel blacklistChannel = getBlacklistChannel();
         BLACKLIST.clear();
@@ -162,18 +162,20 @@ public class NotifyCommand implements Command
             }
             catch(NumberFormatException ex)
             {
-                if(responseChannel != null)
-                    responseChannel.sendMessageFormat("Message `%s` is not a valid blacklist message", message.getContentStripped()).queue();
+                if(event != null)
+                    event.getChannel().sendMessageFormat("Message `%s` is not a valid blacklist message", message.getContentStripped())
+                            .queue(msg -> linkMessage(event.getMessageIdLong(), msg.getIdLong()));
             }
             return true;
         }).thenRun(() ->
         {
-            if(responseChannel != null)
-                responseChannel.sendMessage("Reloaded " + BLACKLIST.size() + " users into blacklist").queue();
+            if(event != null)
+                event.getChannel().sendMessage("Reloaded " + BLACKLIST.size() + " users into blacklist").queue(msg ->
+                        linkMessage(event.getMessageIdLong(), msg.getIdLong()));
         });
     }
 
-    private void handleBlacklist(TextChannel channel, Message msg, String content)
+    private void handleBlacklist(GuildMessageReceivedEvent event, Message msg, String content)
     {
         if(content.isEmpty())
         {
@@ -191,14 +193,14 @@ public class NotifyCommand implements Command
                         ? VersionCheckerRegistry.getItem("jda").getAnnouncementChannel()
                         : msg.getMentionedChannels().get(0);
                 if(searchChannel == null)
-                    channel.sendMessage("Could not determine channel to search in").queue();
+                    reply(event, "Could not determine channel to search in");
                 else
-                    fetchBlacklist(searchChannel, channel);
+                    fetchBlacklist(searchChannel, event);
                 break;
             case "update":
             case "import":
             case "reload":
-                reloadBlacklist(channel);
+                reloadBlacklist(event);
                 break;
             case "add":
                 msg.getMentionedUsers().forEach(u ->
@@ -226,18 +228,18 @@ public class NotifyCommand implements Command
                 msg.addReaction("\u2705").queue();
                 break;
             default:
-                channel.sendMessage("Unknown modi").queue();
+                reply(event, "Unknown subcommand");
         }
     }
 
-    private void fetchBlacklist(TextChannel searchChannel, TextChannel responseChannel)
+    private void fetchBlacklist(TextChannel searchChannel, GuildMessageReceivedEvent event)
     {
         Message mentionMessage = searchChannel.getIterableHistory().stream()
                 .filter(message -> message.getAuthor().isBot() && !message.getMentionedRoles().isEmpty())
                 .limit(500).findFirst().orElse(null);
         if(mentionMessage == null)
         {
-            responseChannel.sendMessage("Could not find announcement message within 500 messages").queue();
+            reply(event, "Could not find announcement message within 500 messages");
             return;
         }
 
@@ -269,7 +271,7 @@ public class NotifyCommand implements Command
         {
             if(blacklistedUsers.isEmpty() || (blacklistedUsers.removeAll(BLACKLIST) && blacklistedUsers.isEmpty()))
             {
-                responseChannel.sendMessage("No1 matching blacklist criteria found!").queue();
+                reply(event, "No1 matching blacklist criteria found!");
                 return;
             }
             BLACKLIST.addAll(blacklistedUsers);
@@ -279,7 +281,7 @@ public class NotifyCommand implements Command
                 sendBlacklistAdditionMessage(blacklistChannel, Bot.jda.getUserById(userId));
                 return true;
             });
-            responseChannel.sendMessage("Added " + blacklistedUsers.size() + " users to notify blacklist").queue();
+            reply(event, "Added " + blacklistedUsers.size() + " users to notify blacklist");
         });
     }
 
