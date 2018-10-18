@@ -20,6 +20,12 @@ public class SoftbanCommand extends Command
             return;
         }
 
+        if (!channel.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS))
+        {
+            channel.sendMessage("I am unable to ban members!").queue();
+            return;
+        }
+
         final List<User> mentions = message.getMentionedUsers();
         if (mentions.isEmpty())
         {
