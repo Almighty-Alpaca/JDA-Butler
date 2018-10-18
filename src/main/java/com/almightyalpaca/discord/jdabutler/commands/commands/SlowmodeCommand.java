@@ -7,38 +7,50 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 
-public class ShutdownCommand extends Command
+public class SlowmodeCommand extends Command
 {
-
-    private static final String[] ALIASES = new String[] { "reboot" };
-
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        if (!Bot.isAdmin(sender))
+        if (!Bot.isHelper(sender))
         {
             this.sendFailed(message);
             return;
         }
 
-        Bot.shutdown();
-    }
+        int seconds;
 
-    @Override
-    public String[] getAliases()
-    {
-        return ShutdownCommand.ALIASES;
+        String args = content.trim().toLowerCase();
+
+        if (args.equals("off") || args.equals("false"))
+        {
+            seconds = 0;
+        }
+        else
+        {
+            try
+            {
+                seconds = Math.max(0, Math.min(Integer.parseInt(args), 120));
+            }
+            catch (NumberFormatException ignored)
+            {
+                reply(event, "Could not parse argument");
+                return;
+            }
+        }
+
+        channel.getManager().setSlowmode(seconds).queue();
     }
 
     @Override
     public String getHelp()
     {
-        return null;
+        return "`slowmode <seconds | off>";
     }
 
     @Override
     public String getName()
     {
-        return "shutdown";
+        return "slowmode";
     }
 }
