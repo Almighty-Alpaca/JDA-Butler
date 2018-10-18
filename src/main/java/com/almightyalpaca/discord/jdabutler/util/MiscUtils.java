@@ -80,16 +80,18 @@ public class MiscUtils
     {
         CompletionStage<?> base;
         if (slowmode)
+        {
             base = channel.getManager().setSlowmode(30).submit();
+            base.thenRun(() -> channel.getManager().setSlowmode(0).submitAfter(2, TimeUnit.MINUTES));
+        }
         else
+        {
             base = CompletableFuture.completedFuture(null);
+        }
 
-        CompletionStage<?> announcement = base
-                .thenRun(() -> role.getManager().setMentionable(true).submit()
-                        .thenRun(() -> channel.sendMessage(message).submit()
-                                .thenRun(() -> role.getManager().setMentionable(false).submit())));
-
-        if (slowmode)
-            announcement.thenRun(() -> channel.getManager().setSlowmode(0).submitAfter(2, TimeUnit.MINUTES));
+        base
+            .thenCompose(result -> role.getManager().setMentionable(true).submit())
+            .thenCompose(result -> channel.sendMessage(message).submit())
+            .thenCompose(result -> role.getManager().setMentionable(false).submit());
     }
 }

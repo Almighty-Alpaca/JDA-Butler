@@ -22,7 +22,12 @@ public class SlowmodeCommand extends Command
 
         String args = content.trim().toLowerCase();
 
-        if (args.equals("off") || args.equals("false"))
+        if (args.isEmpty())
+        {
+            reply(event, "Missing argument: " + getHelp());
+            return;
+        }
+        else if (args.equals("off") || args.equals("false"))
         {
             seconds = 0;
         }
@@ -39,13 +44,14 @@ public class SlowmodeCommand extends Command
             }
         }
 
-        channel.getManager().setSlowmode(seconds).queue();
+        channel.getManager().setSlowmode(seconds).submit()
+                .thenRun(() -> sendFailed(event.getMessage()));
     }
 
     @Override
     public String getHelp()
     {
-        return "`slowmode <seconds | off>";
+        return "`slowmode <seconds | off>`";
     }
 
     @Override
