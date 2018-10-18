@@ -79,7 +79,7 @@ public class Bot
     public static boolean isHelper(final User user)
     {
         final Member member = Bot.getGuildJda().getMember(user);
-        return member != null && member.getRoles().contains(Bot.getRoleStaff());
+        return member != null && member.getRoles().contains(Bot.getRoleHelper());
     }
 
     public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, SecurityException
