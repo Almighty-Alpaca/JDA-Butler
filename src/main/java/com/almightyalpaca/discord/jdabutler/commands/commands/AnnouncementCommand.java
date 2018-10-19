@@ -36,7 +36,7 @@ public class AnnouncementCommand extends Command
 
         if (args.length < 2)
         {
-            this.sendFailed(message);
+            reply(event, "Syntax: " + getHelp());
             return;
         }
 

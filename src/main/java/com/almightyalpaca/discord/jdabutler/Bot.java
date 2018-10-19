@@ -78,6 +78,8 @@ public class Bot
 
     public static boolean isHelper(final User user)
     {
+        if(isAdmin(user))
+            return true;
         final Member member = Bot.getGuildJda().getMember(user);
         return member != null && member.getRoles().contains(Bot.getRoleHelper());
     }
