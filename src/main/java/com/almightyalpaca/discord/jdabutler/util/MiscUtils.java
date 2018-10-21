@@ -89,9 +89,12 @@ public class MiscUtils
             base = CompletableFuture.completedFuture(null);
         }
 
-        base
-            .thenCompose(result -> role.getManager().setMentionable(true).submit())
-            .thenCompose(result -> channel.sendMessage(message).submit())
-            .thenCompose(result -> role.getManager().setMentionable(false).submit());
+        base.thenRun(() ->
+                role.getManager().setMentionable(true).queue(v ->
+                        channel.sendMessage(message).queue(v2 ->
+                                role.getManager().setMentionable(false).queue()
+                        )
+                )
+        );
     }
 }
