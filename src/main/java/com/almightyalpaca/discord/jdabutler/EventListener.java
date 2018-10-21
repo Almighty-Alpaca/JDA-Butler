@@ -21,11 +21,11 @@ public class EventListener extends ListenerAdapter
             if(user.isBot())
             {
                 final AuditableRestAction<Void> action = guild.getController()
-                        .addSingleRoleToMember(member, Bot.getRoleBots()).reason("Auto Role");
-                final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), Bot.getRoleBots().getName());
+                        .addSingleRoleToMember(member, EntityLookup.getRoleBots()).reason("Auto Role");
+                final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), EntityLookup.getRoleBots().getName());
                 action.queue(
                         v -> Bot.LOG.info(message),
-                        ex -> Bot.LOG.error("Could not add User {} to role {}", user.getName(), Bot.getRoleBots().getName(), ex)
+                        ex -> Bot.LOG.error("Could not add User {} to role {}", user.getName(), EntityLookup.getRoleBots().getName(), ex)
                 );
             }
         }

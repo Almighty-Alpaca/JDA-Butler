@@ -5,7 +5,6 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.filter.ThresholdFilter;
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
-import com.almightyalpaca.discord.jdabutler.commands.commands.NotifyCommand;
 import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
@@ -50,38 +49,18 @@ public class Bot
 
     public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(MiscUtils.newThreadFactory("main-executor"));
 
-    public static Guild getGuildJda()
-    {
-        return Bot.jda.getGuildById("125227483518861312");
-    }
-
-    public static Role getRoleBots()
-    {
-        return Bot.getGuildJda().getRoleById("125616720156033024");
-    }
-
-    public static Role getRoleStaff()
-    {
-        return Bot.getGuildJda().getRoleById("169481978268090369");
-    }
-
     public static boolean isAdmin(final User user)
     {
-        final Member member = Bot.getGuildJda().getMember(user);
-        return member != null && member.getRoles().contains(Bot.getRoleStaff());
-    }
-
-    public static Role getRoleHelper()
-    {
-        return Bot.getGuildJda().getRoleById("183963327033114624");
+        final Member member = EntityLookup.getGuildJda().getMember(user);
+        return member != null && member.getRoles().contains(EntityLookup.getRoleStaff());
     }
 
     public static boolean isHelper(final User user)
     {
         if(isAdmin(user))
             return true;
-        final Member member = Bot.getGuildJda().getMember(user);
-        return member != null && member.getRoles().contains(Bot.getRoleHelper());
+        final Member member = EntityLookup.getGuildJda().getMember(user);
+        return member != null && member.getRoles().contains(EntityLookup.getRoleHelper());
     }
 
     public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, SecurityException
@@ -135,8 +114,6 @@ public class Bot
             Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
             root.addAppender(appender);
         }
-
-        NotifyCommand.reloadBlacklist(null);
 
         EXECUTOR.submit(() ->
         {

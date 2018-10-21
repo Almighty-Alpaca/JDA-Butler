@@ -1,6 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.EntityLookup;
 import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
@@ -26,7 +27,7 @@ public class AnnouncementCommand extends Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        if(!channel.getGuild().equals(Bot.getGuildJda()))
+        if(!channel.getGuild().equals(EntityLookup.getGuildJda()))
         {
             this.sendFailed(message);
             return;
