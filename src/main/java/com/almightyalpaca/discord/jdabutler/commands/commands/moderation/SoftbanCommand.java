@@ -22,7 +22,7 @@ public class SoftbanCommand extends Command
 
         if (!channel.getGuild().getSelfMember().hasPermission(Permission.BAN_MEMBERS))
         {
-            channel.sendMessage("I am unable to ban members!").queue();
+            reply(event, "I am unable to ban members!");
             return;
         }
 

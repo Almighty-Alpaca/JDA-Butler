@@ -3,6 +3,7 @@ package com.kantenkugel.discordbot.versioncheck.items;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.util.FormattingUtil;
+import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
@@ -163,7 +164,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             final TextChannel channel = getAnnouncementChannel();
 
-            announcementRole.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> announcementRole.getManager().setMentionable(false).queue()));
+            MiscUtils.announce(channel, announcementRole, mb.build(), true);
         }
     }
 }

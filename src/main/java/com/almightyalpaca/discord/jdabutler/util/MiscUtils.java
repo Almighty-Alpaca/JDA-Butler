@@ -1,13 +1,19 @@
 package com.almightyalpaca.discord.jdabutler.util;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.TextChannel;
 import okhttp3.*;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 public class MiscUtils
 {
@@ -68,5 +74,27 @@ public class MiscUtils
             Bot.LOG.warn("Error posting text to hastebin", e);
             return null;
         }
+    }
+
+    public static void announce(TextChannel channel, Role role, Message message, boolean slowmode)
+    {
+        CompletionStage<?> base;
+        if (slowmode)
+        {
+            base = channel.getManager().setSlowmode(30).submit();
+            base.thenRun(() -> channel.getManager().setSlowmode(0).queueAfter(2, TimeUnit.MINUTES));
+        }
+        else
+        {
+            base = CompletableFuture.completedFuture(null);
+        }
+
+        base.thenRun(() ->
+                role.getManager().setMentionable(true).queue(v ->
+                        channel.sendMessage(message).queue(v2 ->
+                                role.getManager().setMentionable(false).queue()
+                        )
+                )
+        );
     }
 }

@@ -3,6 +3,7 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -35,7 +36,7 @@ public class AnnouncementCommand extends Command
 
         if (args.length < 2)
         {
-            this.sendFailed(message);
+            reply(event, "Syntax: " + getHelp());
             return;
         }
 
@@ -121,7 +122,7 @@ public class AnnouncementCommand extends Command
 
         mb.setEmbed(eb.build());
 
-        role.getManager().setMentionable(true).queue(s -> channel.sendMessage(mb.build()).queue(m -> role.getManager().setMentionable(false).queue()));
+        MiscUtils.announce(channel, role, mb.build(), true);
 
     }
 

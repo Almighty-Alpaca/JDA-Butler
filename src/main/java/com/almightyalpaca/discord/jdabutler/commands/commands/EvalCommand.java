@@ -61,7 +61,7 @@ public class EvalCommand extends Command
             builder.append("\n").appendCodeBlock(result.getRight(), "");
 
         if (builder.isEmpty())
-            event.getMessage().addReaction("✅").queue();
+            sendSuccess(event.getMessage());
         else
             for (final Message m : builder.buildAll(SplitPolicy.NEWLINE, SplitPolicy.SPACE, SplitPolicy.ANYWHERE))
                 reply(event, m);

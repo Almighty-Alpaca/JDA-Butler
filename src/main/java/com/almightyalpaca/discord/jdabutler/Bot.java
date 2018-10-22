@@ -71,6 +71,19 @@ public class Bot
         return member != null && member.getRoles().contains(Bot.getRoleStaff());
     }
 
+    public static Role getRoleHelper()
+    {
+        return Bot.getGuildJda().getRoleById("183963327033114624");
+    }
+
+    public static boolean isHelper(final User user)
+    {
+        if(isAdmin(user))
+            return true;
+        final Member member = Bot.getGuildJda().getMember(user);
+        return member != null && member.getRoles().contains(Bot.getRoleHelper());
+    }
+
     public static void main(final String[] args) throws JsonIOException, JsonSyntaxException, WrongTypeException, KeyNotFoundException, IOException, LoginException, IllegalArgumentException, InterruptedException, SecurityException
     {
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->

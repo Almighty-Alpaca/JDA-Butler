@@ -59,6 +59,11 @@ public abstract class Command
         message.addReaction("❌").queue();
     }
 
+    protected void sendSuccess(final Message message)
+    {
+        message.addReaction("✅").queue();
+    }
+
     protected void reply(GuildMessageReceivedEvent event, String message)
     {
         reply(event, message, null);
