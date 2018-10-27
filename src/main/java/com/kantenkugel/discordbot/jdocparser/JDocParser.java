@@ -46,6 +46,9 @@ public class JDocParser {
     //type, name
     public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("(?:[a-z]+\\.)*([a-zA-Z][a-zA-Z0-9.<,?>\\[\\]]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
+    //used for inner classes being made available as top-level search if applicable
+    static final String SUBCLASSES_MAP_KEY = "#JDOC_SUBCLASSES_KEY#";
+
     static Map<String, ClassDocumentation> parse() {
         JDocUtil.LOG.debug("Parsing jda-docs-files");
         Map<String, ClassDocumentation> docs = new HashMap<>();
@@ -53,6 +56,13 @@ public class JDocParser {
             file.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(JDocUtil.JDA_CODE_BASE) && entry.getName().endsWith(".html")).forEach(entry -> {
                 try {
                     parse(JDocUtil.JDOCBASE, entry.getName(), file.getInputStream(entry), docs);
+                    ClassDocumentation subClassesNode = docs.remove(SUBCLASSES_MAP_KEY);
+                    if(subClassesNode != null) {
+                        subClassesNode.subClasses.forEach((subclassName, subClassDoc) -> {
+                            if(subClassDoc.classSig != null && !docs.containsKey(subclassName))
+                                docs.put(subclassName, subClassDoc);
+                        });
+                    }
                 } catch (final IOException e) {
                     JDocUtil.LOG.error("Error while parsing doc file {}", entry.getName(), e);
                 }
@@ -156,32 +166,40 @@ public class JDocParser {
 
             //storing
             if(nameSplits.length > 2) {
-                if(!docs.containsKey(nameSplits[0].toLowerCase()))
-                    docs.put(nameSplits[0].toLowerCase(), new ClassDocumentation(null, null, null, null, false));
-                ClassDocumentation parent = docs.get(nameSplits[0].toLowerCase());
+                ClassDocumentation parent = docs.computeIfAbsent(nameSplits[0].toLowerCase(), key -> new ClassDocumentation(null, null, null, null, false));
                 for(int i = 1; i < nameSplits.length - 2; i++) {
-                    if(!parent.subClasses.containsKey(nameSplits[i].toLowerCase()))
-                        parent.subClasses.put(nameSplits[i].toLowerCase(), new ClassDocumentation(null, null, null, null, false));
-                    parent = parent.subClasses.get(nameSplits[i].toLowerCase());
+                    parent = parent.subClasses.computeIfAbsent(nameSplits[i].toLowerCase(), key -> new ClassDocumentation(null, null, null, null, false));
                 }
                 if(parent.subClasses.containsKey(className.toLowerCase()))
                     classDoc.subClasses.putAll(parent.subClasses.get(className.toLowerCase()).subClasses);
                 parent.subClasses.put(className.toLowerCase(), classDoc);
+
+                //store for later subclass indexing
+                String actualClassName = nameSplits[nameSplits.length - 2].toLowerCase();
+                ClassDocumentation subClassesNode = docs.computeIfAbsent(SUBCLASSES_MAP_KEY, key -> new ClassDocumentation(null, null, null, null, false));
+                ClassDocumentation subClassElem = subClassesNode.subClasses.get(actualClassName);
+                if(subClassElem != null && subClassElem.classSig != null)
+                    subClassesNode.subClasses.put(actualClassName, new ClassDocumentation(null, null, null, null, false));
+                else if(subClassElem == null)
+                    subClassesNode.subClasses.put(actualClassName, classDoc);
+            } else {
+                //top-level class, store in map's root
+                ClassDocumentation current = docs.get(className.toLowerCase());
+                if(current != null && current.classSig != null)
+                    throw new RuntimeException(String.format("Got a class-name conflict with classes %s.%s AND %s.%s",
+                            classDoc.pack, classDoc.className, current.pack, current.className));
+                if(current != null)
+                    classDoc.subClasses.putAll(current.subClasses);
+                docs.put(className.toLowerCase(), classDoc);
             }
-            if(docs.containsKey(fullName.toLowerCase())) {
-                ClassDocumentation current = docs.get(fullName.toLowerCase());
-                if(current.classSig != null)
-                    throw new RuntimeException("Got a class-name conflict with classes " + classDoc.classSig + "(" + classDoc.className + ") AND " + current.classSig + "(" + current.className + ")");
-                classDoc.subClasses.putAll(current.subClasses);
-            }
-            docs.put(fullName.toLowerCase(), classDoc);
         } catch (final IOException | NullPointerException ex) {
             JDocUtil.LOG.error("Got excaption for element {}", fullName, ex);
-        }
-        try {
-            inputStream.close();
-        } catch (final IOException e) {
-            JDocUtil.LOG.error("Error closing inputstream", e);
+        } finally {
+            try {
+                inputStream.close();
+            } catch(final IOException e) {
+                JDocUtil.LOG.error("Error closing inputstream", e);
+            }
         }
     }
 
