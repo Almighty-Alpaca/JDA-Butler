@@ -4,8 +4,8 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.status.ErrorStatus;
-import net.dv8tion.jda.webhook.WebhookClient;
-import net.dv8tion.jda.webhook.WebhookClientBuilder;
+import club.minnced.discord.webhook.WebhookClient;
+import club.minnced.discord.webhook.WebhookClientBuilder;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,7 +52,7 @@ public class WebhookAppender extends AppenderBase<ILoggingEvent> {
     protected void append(ILoggingEvent eventObject) {
         if(!isStarted())
             return;
-        if(eventObject.getLoggerName().equals("net.dv8tion.jda.webhook.WebhookClient"))
+        if(eventObject.getLoggerName().equals("club.minnced.discord.webhook.WebhookClient"))
             return;
         byte[] encode = encoder.encode(eventObject);
         String log = new String(encode);
