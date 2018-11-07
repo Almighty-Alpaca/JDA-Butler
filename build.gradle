@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
     id 'java'
     id 'idea'
@@ -58,6 +60,48 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.2.3'
 
     testCompile 'junit:junit:4.12'
+}
+
+task getBotVersionInfo(type: Exec) {
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', 'git', 'log', '-1', '--format=%D%n[%ci] %H%n%s' //don't use trailing ", it will get printed for some reason
+    } else {
+        commandLine 'git', 'log', '-1', '--format="%D%n[%ci] %H%n%s'
+    }
+
+    //store the output instead of printing to the console:
+    standardOutput = new ByteArrayOutputStream()
+
+    doLast {
+        tasks.versionSourcesForRelease.configure {
+            from (sourceSets.main.allJava) {
+                include '**/BotVersion.java'
+                filter(ReplaceTokens, tokens: [
+                        VERSION: standardOutput.toString().trim().replace("\n", "\\n").replace("\"", "\\\"")
+                ])
+            }
+        }
+    }
+}
+
+task versionSourcesForRelease(type: Copy) {
+    dependsOn getBotVersionInfo
+    into 'build/filteredSrc'
+
+    includeEmptyDirs = false
+}
+
+task generateJavaSources(type: SourceTask, dependsOn: versionSourcesForRelease) {
+    def javaSources = sourceSets.main.allJava.filter {
+        it.name != 'BotVersion.java'
+    }
+    source = javaSources + versionSourcesForRelease.destinationDir
+}
+
+compileJava {
+    source = generateJavaSources.source
+
+    dependsOn generateJavaSources
 }
 
 run {
