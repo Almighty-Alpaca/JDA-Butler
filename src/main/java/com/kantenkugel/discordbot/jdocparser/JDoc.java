@@ -102,6 +102,7 @@ public class JDoc {
             }
             is = res.body().byteStream();
             JDocParser.parse(JDocUtil.JAVA_JDOCS_PREFIX, urlPath, is, resultMap);
+            resultMap.remove(JDocParser.SUBCLASSES_MAP_KEY);
         } catch(Exception e) {
             JDocUtil.LOG.error("Error parsing java javadocs for {}", name, e);
         } finally {
