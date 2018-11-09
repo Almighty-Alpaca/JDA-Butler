@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 public class YuiItem extends VersionedItem
 {
-    private final JenkinsApi jenkins = JenkinsApi.forConfig("http://home.dv8tion.net:8080", "Yui");
+    private final JenkinsApi jenkins = JenkinsApi.forConfig("https://ci.dv8tion.net", "Yui");
     private final Supplier<String> versionSupplier = new JenkinsVersionSupplier(jenkins);
     private final ChangelogProvider clProvider = new JenkinsChangelogProvider(jenkins, "https://github.com/DV8FromTheWorld/Yui/");
 
