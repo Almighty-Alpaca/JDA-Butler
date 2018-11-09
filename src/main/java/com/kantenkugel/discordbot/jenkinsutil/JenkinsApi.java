@@ -13,7 +13,7 @@ import java.io.IOException;
 
 public class JenkinsApi
 {
-    public static final JenkinsApi JDA_JENKINS = JenkinsApi.forConfig("http://home.dv8tion.net:8080", "JDA");
+    public static final JenkinsApi JDA_JENKINS = JenkinsApi.forConfig("https://ci.dv8tion.net", "JDA");
 
     /**
      * Returns a new JenkinsApi instance for given configuration
