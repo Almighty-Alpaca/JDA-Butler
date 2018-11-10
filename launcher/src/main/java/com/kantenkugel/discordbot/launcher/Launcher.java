@@ -11,13 +11,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Main {
-    private static final String[] JAVA_ARGS = { "-Xmx175M" };
+public class Launcher {
+    private static final String[] JAVA_ARGS = { "-Xmx200m" };
 
     private static final Path BOT_FILE = Paths.get("Bot.jar");
     private static final Path BOT_UPDATE = Paths.get("Bot_Update.jar");
 
-    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
+    private static final long SLEEP_TIMEOUT = 1000;
+    private static final int MAX_ATTEMPTS = 10;
+
+    private static final Logger LOG = LoggerFactory.getLogger(Launcher.class);
 
     public static void main(String[] args) {
         if(!Files.exists(BOT_UPDATE)) {
@@ -26,21 +29,28 @@ public class Main {
             startBot();
         } else {
             //update
-            try {
-                LOG.info("Updating bot... waiting for System.in to close...");
-                System.in.read(); //blocks until input (either user input or -1 if System.in was closed)
-                    update();
-            } catch(IOException e) {
-                LOG.error("IO Error occurred, waiting for System.in to close. Trying to update anyway... ", e);
-                update();
-            }
+            update();
         }
     }
 
     private static void update() {
+        LOG.info("Updating Bot after file is free for writing");
+        update(0);
+    }
+
+    private static void update(int attempt) {
+        if(attempt >= MAX_ATTEMPTS) {
+            LOG.error("Maximum attempts to update reached. aborting");
+            return;
+        }
         try {
             LOG.debug("Waiting one second for bot to fully close");
-            Thread.sleep(1000);
+            Thread.sleep(SLEEP_TIMEOUT);
+            if(!Files.isWritable(BOT_FILE)) {
+                LOG.debug("Bot file not yet writable, trying later");
+                update(attempt + 1);
+                return;
+            }
             LOG.debug("Moving update file to bot file");
             Files.deleteIfExists(BOT_FILE);
             Files.move(BOT_UPDATE, BOT_FILE);

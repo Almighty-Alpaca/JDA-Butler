@@ -1,7 +1,6 @@
 ### Project ###
-/logs
-/bot/logs
-/launcher/launcherLogs
+logs
+launcherLogs
 err.log
 out.log
 config.json

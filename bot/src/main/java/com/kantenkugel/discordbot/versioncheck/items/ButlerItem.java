@@ -133,9 +133,7 @@ public class ButlerItem extends VersionedItem implements UpdateHandler
             }
             LOG.info("Starting updater and exiting");
             new ProcessBuilder("java", "-jar", LAUNCHER_FILE.toString())
-                    .redirectInput(ProcessBuilder.Redirect.PIPE)
-                    .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                    .redirectError(ProcessBuilder.Redirect.INHERIT)
+                    .inheritIO()
                     .start();
             Bot.shutdown();
         }
