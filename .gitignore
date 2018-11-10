@@ -1,5 +1,7 @@
 ### Project ###
-logs
+/logs
+/bot/logs
+/launcher/launcherLogs
 err.log
 out.log
 config.json
@@ -164,6 +166,8 @@ local.properties
 
 # IntelliJ
 /out/
+/bot/out
+/launcher/out
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
