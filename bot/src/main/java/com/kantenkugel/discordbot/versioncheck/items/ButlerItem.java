@@ -27,7 +27,7 @@ public class ButlerItem extends VersionedItem implements UpdateHandler
     private static final Path UPDATE_FILE = Paths.get("Bot_Update.jar");
     private static final Path LAUNCHER_FILE = Paths.get("Launcher.jar");
 
-    private static final JenkinsApi JENKINS = JenkinsApi.forConfig(JenkinsApi.JDA_JENKINS.jenkinsBase, "JDA-Butler");
+    private static final JenkinsApi JENKINS = JenkinsApi.forConfig("https://ci.dv8tion.net", "JDA-Butler");
     private static final JenkinsVersionSupplier VERSION_SUPPLIER = new JenkinsVersionSupplier(JENKINS, true);
     private static final List<String> ALIASES = Collections.singletonList("butler");
 
