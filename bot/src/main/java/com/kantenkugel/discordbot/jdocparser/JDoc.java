@@ -269,7 +269,7 @@ public class JDoc {
                     Response res = Bot.httpClient.newCall(new Request.Builder().url(artifactUrl).get().build()).execute();
                     if(!res.isSuccessful())
                     {
-                        JDocUtil.LOG.warn("OkHttp returned failure for " + artifactUrl);
+                        JDocUtil.LOG.warn("OkHttp returned failure for {}", artifactUrl);
                         return;
                     }
                     body = res.body();

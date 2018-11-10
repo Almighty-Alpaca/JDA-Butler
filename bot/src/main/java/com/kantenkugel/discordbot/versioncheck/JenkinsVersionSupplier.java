@@ -16,10 +16,17 @@ import java.util.function.Supplier;
 public class JenkinsVersionSupplier implements Supplier<String>
 {
     private final JenkinsApi jenkins;
+    private final boolean useBuildNumber;
 
     public JenkinsVersionSupplier(JenkinsApi jenkins)
     {
+        this(jenkins, false);
+    }
+
+    public JenkinsVersionSupplier(JenkinsApi jenkins, boolean useBuildNumber)
+    {
         this.jenkins = jenkins;
+        this.useBuildNumber = useBuildNumber;
     }
 
     @Override
@@ -30,7 +37,7 @@ public class JenkinsVersionSupplier implements Supplier<String>
             JenkinsBuild build = jenkins.fetchLastSuccessfulBuild();
             if(build == null)   //there is no successful build
                 return null;
-            if(build.artifacts.size() > 0)
+            if(!useBuildNumber && build.artifacts.size() > 0)
             {
                 JenkinsBuild.Artifact firstArtifact = build.artifacts.values().iterator().next();
                 return firstArtifact.fileNameParts.get(1);
