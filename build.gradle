@@ -5,6 +5,11 @@ plugins {
 }
 
 allprojects {
+    def build = System.getenv("BUILD_NUMBER") ?: System.getProperty("BUILD_NUMBER") ?: "DEV"
+    ext {
+        buildNumber = build == "DEV" ? build : "#" + build
+    }
+
     dependencyUpdates.resolutionStrategy = {
         componentSelection { rules ->
             rules.all { ComponentSelection selection ->
