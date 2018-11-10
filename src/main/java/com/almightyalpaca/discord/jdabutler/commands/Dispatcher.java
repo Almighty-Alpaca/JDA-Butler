@@ -1,6 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.EntityLookup;
 import com.almightyalpaca.discord.jdabutler.commands.commands.*;
 import com.almightyalpaca.discord.jdabutler.commands.commands.moderation.SoftbanCommand;
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
@@ -78,9 +79,9 @@ public class Dispatcher extends ListenerAdapter
 
         final TextChannel channel = event.getChannel();
 
-        if (channel.getGuild().getIdLong() == 81384788765712384L                                             // if DAPI
-            && !(channel.getIdLong() == 381889648827301889L                                                  // and not #java_jda
-                || (channel.getParent() != null && channel.getParent().getIdLong() == 356505966201798656L))) // or not testing category
+        if (channel.getGuild().getIdLong() == EntityLookup.GUILD_DAPI_ID                                     // if DAPI
+            && !(channel.getIdLong() == EntityLookup.CHANNEL_DAPI_JDA_ID                                     // and not #java_jda
+                || (channel.getParent() != null && channel.getParent().getIdLong() == EntityLookup.CATEGORY_DAPI_TESTING_ID))) // and not testing category
             return;                                                                                          // ignore message
 
         if (message.toLowerCase().startsWith(prefix.toLowerCase()))

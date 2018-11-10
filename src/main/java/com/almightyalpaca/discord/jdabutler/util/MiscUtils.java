@@ -1,9 +1,13 @@
 package com.almightyalpaca.discord.jdabutler.util;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.EntityLookup;
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.PermissionOverride;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.requests.RequestFuture;
 import okhttp3.*;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -76,13 +80,23 @@ public class MiscUtils
         }
     }
 
-    public static void announce(TextChannel channel, Role role, Message message, boolean slowmode)
+    private static final long ANTI_SPAM_MINUTES = 2;
+    public static void announce(TextChannel channel, Role role, Message message, boolean preventSpam)
     {
         CompletionStage<?> base;
-        if (slowmode)
+        if (preventSpam)
         {
-            base = channel.getManager().setSlowmode(30).submit();
-            base.thenRun(() -> channel.getManager().setSlowmode(0).queueAfter(2, TimeUnit.MINUTES));
+            base = RequestFuture.allOf(
+                    channel.getManager().setSlowmode(30).submit(),
+                    channel.putPermissionOverride(EntityLookup.getRoleAnnounceMute()).setDeny(Permission.MESSAGE_WRITE).submit()
+            );
+            base.thenRun(() ->
+            {
+                channel.getManager().setSlowmode(0).queueAfter(ANTI_SPAM_MINUTES, TimeUnit.MINUTES);
+                PermissionOverride override = channel.getPermissionOverride(EntityLookup.getRoleAnnounceMute());
+                if(override != null)
+                    override.delete().queueAfter(ANTI_SPAM_MINUTES, TimeUnit.MINUTES, null, (ex) -> {});
+            });
         }
         else
         {

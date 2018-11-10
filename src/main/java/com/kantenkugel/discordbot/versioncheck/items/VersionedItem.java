@@ -1,6 +1,6 @@
 package com.kantenkugel.discordbot.versioncheck.items;
 
-import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.EntityLookup;
 import com.kantenkugel.discordbot.versioncheck.UpdateHandler;
 import com.kantenkugel.discordbot.versioncheck.VersionUtils;
 import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
@@ -206,13 +206,13 @@ public abstract class VersionedItem
     public final Role getAnnouncementRole()
     {
         long rid = getAnnouncementRoleId();
-        return rid == 0 ? null : Bot.getGuildJda().getRoleById(rid);
+        return rid == 0 ? null : EntityLookup.getGuildJda().getRoleById(rid);
     }
 
     public final TextChannel getAnnouncementChannel()
     {
         long cid = getAnnouncementChannelId();
-        return cid == 0 ? null : Bot.getGuildJda().getTextChannelById(cid);
+        return cid == 0 ? null : EntityLookup.getGuildJda().getTextChannelById(cid);
     }
 
     @Override
