@@ -156,15 +156,21 @@ public class Bot
 
     public static void shutdown()
     {
+        shutdown(0);
+    }
+
+    public static void shutdown(int code)
+    {
         Bot.jda.removeEventListener(Bot.jda.getRegisteredListeners());
 
         try
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(2);
         }
         catch (final InterruptedException ignored)
         {}
 
-        Bot.jda.shutdown();
+        Bot.jda.shutdownNow();
+        System.exit(code);
     }
 }

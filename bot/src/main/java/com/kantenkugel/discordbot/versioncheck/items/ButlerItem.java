@@ -24,8 +24,9 @@ import static com.almightyalpaca.discord.jdabutler.Bot.LOG;
 
 public class ButlerItem extends VersionedItem implements UpdateHandler
 {
+    private static final int UPDATE_CODE = 101;
+
     private static final Path UPDATE_FILE = Paths.get("Bot_Update.jar");
-    private static final Path LAUNCHER_FILE = Paths.get("Launcher.jar");
 
     private static final JenkinsApi JENKINS = JenkinsApi.forConfig("https://ci.dv8tion.net", "JDA-Butler");
     private static final JenkinsVersionSupplier VERSION_SUPPLIER = new JenkinsVersionSupplier(JENKINS, true);
@@ -85,20 +86,19 @@ public class ButlerItem extends VersionedItem implements UpdateHandler
         LOG.warn("Updating Butler to new build #{}", item.getVersion());
         try
         {
-            JenkinsBuild lastSuccessfulBuild = JENKINS.getLastSuccessfulBuild();
+            JenkinsBuild lastSuccessfulBuild = JENKINS.fetchLastSuccessfulBuild();
             if(lastSuccessfulBuild == null)
             {
                 LOG.error("For some reason, the latest build was null");
                 return;
             }
             JenkinsBuild.Artifact bot = lastSuccessfulBuild.artifacts.get("Bot");
-            JenkinsBuild.Artifact launcher = lastSuccessfulBuild.artifacts.get("Launcher");
-            if(bot == null || launcher == null)
+            if(bot == null)
             {
-                LOG.error("Could not find all required artifacts (Bot, Launcher) in {}", lastSuccessfulBuild.artifacts);
+                LOG.error("Could not find required artifact (Bot) in {}", lastSuccessfulBuild.artifacts);
                 return;
             }
-            LOG.info("Downloading new Butler version (+ launcher)...");
+            LOG.info("Downloading new Butler version...");
             try
             {
                 Response res = Bot.httpClient.newCall(new Request.Builder().url(bot.getLink()).get().build()).execute();
@@ -113,33 +113,18 @@ public class ButlerItem extends VersionedItem implements UpdateHandler
                     Files.copy(is, UPDATE_FILE, StandardCopyOption.REPLACE_EXISTING);
                     is.close();
                 }
-                res = Bot.httpClient.newCall(new Request.Builder().url(launcher.getLink()).get().build()).execute();
-                if(!res.isSuccessful())
-                {
-                    LOG.warn("OkHttp returned failure for {}", launcher.getLink());
-                    return;
-                }
-                try(ResponseBody body = res.body())
-                {
-                    final InputStream is = body.byteStream();
-                    Files.copy(is, LAUNCHER_FILE, StandardCopyOption.REPLACE_EXISTING);
-                    is.close();
-                }
             }
             catch(Exception e)
             {
                 LOG.error("Error downloading new Butler version", e);
                 return;
             }
-            LOG.info("Starting updater and exiting");
-            new ProcessBuilder("java", "-jar", LAUNCHER_FILE.toString())
-                    .inheritIO()
-                    .start();
-            Bot.shutdown();
+            LOG.info("Exiting with update code ({})", UPDATE_CODE);
+            Bot.shutdown(UPDATE_CODE);
         }
         catch(IOException e)
         {
-            LOG.error("Could not get latest Butler build (from cache!)", e);
+            LOG.error("Could not get latest Butler build", e);
         }
     }
 }

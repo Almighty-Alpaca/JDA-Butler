@@ -39,6 +39,6 @@ subprojects {
     }
 }
 
-project(':launcher') {
+project(':bot') {
     tasks.run.enabled = false
 }

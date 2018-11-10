@@ -12,9 +12,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Launcher {
-    private static final String[] JAVA_ARGS = { "-Xmx200m" };
+    private static final String[] JAVA_ARGS = { "-Xmx250m" };
 
-    private static final Path BOT_FILE = Paths.get("Bot.jar");
+    private static final int UPDATE_RETURN_VALUE = 101;
+
+    private static final Path BOT_FILE = Paths.get("Bot-all.jar");
     private static final Path BOT_UPDATE = Paths.get("Bot_Update.jar");
 
     private static final long SLEEP_TIMEOUT = 1000;
@@ -23,50 +25,76 @@ public class Launcher {
     private static final Logger LOG = LoggerFactory.getLogger(Launcher.class);
 
     public static void main(String[] args) {
-        if(!Files.exists(BOT_UPDATE)) {
-            //just try launching bot
-            LOG.info("No update file exists. Just attempting to start bot normally...");
-            startBot();
-        } else {
-            //update
-            update();
+        if(!Files.exists(BOT_FILE)) {
+            LOG.warn("Bot file not found. aborting ({})", BOT_FILE.toAbsolutePath().toString());
+            return;
         }
+
+        if(!Files.isWritable(BOT_FILE)) {
+            LOG.warn("Bot might still be running. aborting");
+            return;
+        }
+
+        if(Files.exists(BOT_UPDATE)) {
+            //update first
+            if(!update())
+                LOG.warn("Found update file but could not update... starting up anyway");
+        }
+
+        int returnValue;
+        do {
+            Process p = startBot();
+            if(p == null)
+                return;
+            try {
+                returnValue = p.waitFor();
+                if(returnValue == UPDATE_RETURN_VALUE && Files.exists(BOT_UPDATE)) {
+                    if(!update())
+                        return;
+                }
+            } catch(InterruptedException e) {
+                LOG.error("Could not wait for bot to exit", e);
+                return;
+            }
+        } while(returnValue == UPDATE_RETURN_VALUE);
+        LOG.info("Bot shut down with code {}", returnValue);
     }
 
-    private static void update() {
+    private static boolean update() {
         LOG.info("Updating Bot after file is free for writing");
-        update(0);
+        return update(0);
     }
 
-    private static void update(int attempt) {
+    private static boolean update(int attempt) {
         if(attempt >= MAX_ATTEMPTS) {
             LOG.error("Maximum attempts to update reached. aborting");
-            return;
+            return false;
         }
         try {
             LOG.debug("Waiting one second for bot to fully close");
             Thread.sleep(SLEEP_TIMEOUT);
             if(!Files.isWritable(BOT_FILE)) {
                 LOG.debug("Bot file not yet writable, trying later");
-                update(attempt + 1);
-                return;
+                return update(attempt + 1);
             }
             LOG.debug("Moving update file to bot file");
             Files.deleteIfExists(BOT_FILE);
             Files.move(BOT_UPDATE, BOT_FILE);
-            startBot();
+            return true;
         } catch(IOException | InterruptedException e) {
             LOG.error("There was an error moving the update file", e);
         }
+        return false;
     }
 
-    private static void startBot() {
+    private static Process startBot() {
         try {
             LOG.info("Starting bot...");
-            new ProcessBuilder(getStartCommand()).inheritIO().start();
+            return new ProcessBuilder(getStartCommand()).inheritIO().start();
         } catch(IOException e) {
             LOG.error("Starting bot failed, used start command {}", getStartCommand(), e);
         }
+        return null;
     }
 
     private static List<String> getStartCommand() {
