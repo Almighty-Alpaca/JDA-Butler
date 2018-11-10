@@ -1,0 +1,97 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+//    id 'com.sedmelluq.jdaction' version '1.0.2' //warning: fails horribly on gradle 4.8+
+}
+
+mainClassName = 'com.almightyalpaca.discord.jdabutler.Bot'
+
+repositories {
+    maven {
+        url = 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    // JDA
+    compile ('net.dv8tion:JDA:3.8.1_439') {
+        exclude module: 'opus-java'
+    }
+
+    // Webhooks
+    compile group: 'club.minnced', name: 'discord-webhooks', version: '0.1.3'
+
+    // Apache commons Lang 3
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
+
+    // Apache Commons Text
+    compile group: 'org.apache.commons', name: 'commons-text', version: '1.2'
+
+    // Apache Commons IO
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+
+    // Groovy JSR-223 / Script engine
+    compile group: 'org.codehaus.groovy', name: 'groovy-jsr223', version: '2.4.13'
+
+    // Gson
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.2'
+
+    // Guava
+    compile group: 'com.google.guava', name: 'guava', version: '24.0-jre'
+
+    // Dropbox
+    compile group: 'com.dropbox.core', name: 'dropbox-core-sdk', version: '3.0.6'
+
+    // Zip4J
+    compile group: 'net.lingala.zip4j', name: 'zip4j', version: '1.3.2'
+
+    // jsoup HTML parser library @ http://jsoup.org/
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.11.2'
+
+    testCompile 'junit:junit:4.12'
+}
+
+task getBotVersionInfo(type: Exec) {
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', 'git', 'log', '-1', '--format=%D%n[%ci] %H%n%s' //don't use trailing ", it will get printed for some reason
+    } else {
+        commandLine 'git', 'log', '-1', '--format="%D%n[%ci] %H%n%s'
+    }
+
+    //store the output instead of printing to the console:
+    standardOutput = new ByteArrayOutputStream()
+
+    doLast {
+        tasks.versionSourcesForRelease.configure {
+            from (sourceSets.main.allJava) {
+                include '**/BotVersion.java'
+                filter(ReplaceTokens, tokens: [
+                        VERSION: standardOutput.toString().trim().replace("\n", "\\n").replace("\"", "\\\"")
+                ])
+            }
+        }
+    }
+}
+
+task versionSourcesForRelease(type: Copy) {
+    dependsOn getBotVersionInfo
+    into 'build/filteredSrc'
+
+    includeEmptyDirs = false
+}
+
+task generateJavaSources(type: SourceTask, dependsOn: versionSourcesForRelease) {
+    def javaSources = sourceSets.main.allJava.filter {
+        it.name != 'BotVersion.java'
+    }
+    source = javaSources + versionSourcesForRelease.destinationDir
+}
+
+compileJava {
+    dependsOn generateJavaSources
+    source = generateJavaSources.source
+}
+
+run {
+    systemProperties System.properties
+}
