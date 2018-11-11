@@ -4,7 +4,6 @@ import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.util.FixedSizeCache;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.slf4j.Logger;
@@ -98,15 +97,11 @@ public class JenkinsApi
     {
         Request req = new Request.Builder().url(jenkinsBase + identifier + API_SUFFIX + BUILD_OPTIONS).get().build();
 
-        Response res = Bot.httpClient.newCall(req).execute();
-        if(!res.isSuccessful())
+        try(Response res = Bot.httpClient.newCall(req).execute())
         {
-            res.close();
-            return null;
-        }
-        try(ResponseBody body = res.body())
-        {
-            JenkinsBuild build = JenkinsBuild.fromJson(new JSONObject(new JSONTokener(body.charStream())), this);
+            if(!res.isSuccessful())
+                return null;
+            JenkinsBuild build = JenkinsBuild.fromJson(new JSONObject(new JSONTokener(res.body().charStream())), this);
             if(build.status != JenkinsBuild.Status.BUILDING)
                 resultCache.add(build.buildNum, build);
             return build;

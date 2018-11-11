@@ -22,13 +22,11 @@ import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -93,17 +91,14 @@ public class JDoc {
         }
 
         Map<String, JDocParser.ClassDocumentation> resultMap = new HashMap<>();
-        try {
-            Response res = Bot.httpClient.newCall(new Request.Builder().url(JDocUtil.JAVA_JDOCS_PREFIX+urlPath).get().build()).execute();
+        try(Response res = Bot.httpClient.newCall(new Request.Builder()
+                .url(JDocUtil.JAVA_JDOCS_PREFIX+urlPath).get().build()).execute()) {
             if(!res.isSuccessful()) {
-                res.close();
                 JDocUtil.LOG.warn("OkHttp returned failure for java8 index: "+res.code());
                 return Collections.emptyList();
             }
-            try(ResponseBody body = res.body()) {
-                JDocParser.parse(JDocUtil.JAVA_JDOCS_PREFIX, urlPath, body.byteStream(), resultMap);
-                resultMap.remove(JDocParser.SUBCLASSES_MAP_KEY);
-            }
+            JDocParser.parse(JDocUtil.JAVA_JDOCS_PREFIX, urlPath, res.body().byteStream(), resultMap);
+            resultMap.remove(JDocParser.SUBCLASSES_MAP_KEY);
         } catch(Exception e) {
             JDocUtil.LOG.error("Error parsing java javadocs for {}", name, e);
         }
@@ -259,14 +254,13 @@ public class JDoc {
                 JDocUtil.LOG.debug("Downloading JDA docs...");
                 try {
                     String artifactUrl = lastBuild.artifacts.get("JDA-javadoc").getLink();
-                    Response res = Bot.httpClient.newCall(new Request.Builder().url(artifactUrl).get().build()).execute();
-                    if(!res.isSuccessful()) {
-                        res.close();
-                        JDocUtil.LOG.warn("OkHttp returned failure for {}", artifactUrl);
-                        return;
-                    }
-                    try(ResponseBody body = res.body()) {
-                        Files.copy(body.byteStream(), JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
+                    try(Response res = Bot.httpClient.newCall(new Request.Builder()
+                            .url(artifactUrl).get().build()).execute()) {
+                        if(!res.isSuccessful()) {
+                            JDocUtil.LOG.warn("OkHttp returned failure for {}", artifactUrl);
+                            return;
+                        }
+                        Files.copy(res.body().byteStream(), JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
                         JDocUtil.LOG.debug("Done downloading JDA docs");
                     }
                 }
@@ -284,22 +278,19 @@ public class JDoc {
     }
 
     private static void fetchJavaClassIndexes() {
-        try {
-            Response res = Bot.httpClient.newCall(new Request.Builder().url(JDocUtil.JAVA_JDOCS_CLASS_INDEX).get().build()).execute();
+        try(Response res = Bot.httpClient.newCall(new Request.Builder()
+                .url(JDocUtil.JAVA_JDOCS_CLASS_INDEX).get().build()).execute()) {
             if(!res.isSuccessful()) {
-                res.close();
                 JDocUtil.LOG.warn("OkHttp returned failure for java8 index: "+res.code());
                 return;
             }
-            try(ResponseBody body = res.body()) {
-                Document docBody = Jsoup.parse(body.byteStream(), "UTF-8", JDocUtil.JAVA_JDOCS_PREFIX);
-                docBody.getElementsByClass("indexContainer").first().child(0).children().forEach(child -> {
-                    Element link = child.child(0);
-                    if(link.tagName().equals("a") && link.attr("href").startsWith("java/")) {
-                        javaJavaDocs.put(link.text().toLowerCase(), link.attr("href"));
-                    }
-                });
-            }
+            Document docBody = Jsoup.parse(res.body().byteStream(), "UTF-8", JDocUtil.JAVA_JDOCS_PREFIX);
+            docBody.getElementsByClass("indexContainer").first().child(0).children().forEach(child -> {
+                Element link = child.child(0);
+                if(link.tagName().equals("a") && link.attr("href").startsWith("java/")) {
+                    javaJavaDocs.put(link.text().toLowerCase(), link.attr("href"));
+                }
+            });
         } catch(Exception e) {
             JDocUtil.LOG.error("Failed fetching the j8 class index", e);
         }

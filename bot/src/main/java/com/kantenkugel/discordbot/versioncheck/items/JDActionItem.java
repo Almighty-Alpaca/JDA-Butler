@@ -5,7 +5,6 @@ import com.kantenkugel.discordbot.versioncheck.RepoType;
 import com.kantenkugel.discordbot.versioncheck.VersionChecker;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -64,24 +63,18 @@ public class JDActionItem extends VersionedItem
     private String getCustomVersion()
     {
         Request req = new Request.Builder().get().url(versionDir).build();
-        try
+        try(Response res = Bot.httpClient.newCall(req).execute())
         {
-            Response res = Bot.httpClient.newCall(req).execute();
 
-            ResponseBody body = res.body();
-
-            if(!res.isSuccessful() || body == null)
+            if(!res.isSuccessful())
             {
-                if(body != null)
-                    body.close();
                 VersionChecker.LOG.warn("Http call to JDAction repo failed");
                 return null;
             }
 
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-            Document doc = dBuilder.parse(body.byteStream());
-            body.close();
+            Document doc = dBuilder.parse(res.body().byteStream());
 
             Element root = doc.getDocumentElement();
             root.normalize();
