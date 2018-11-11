@@ -55,7 +55,7 @@ task getBotVersionInfo(type: Exec) {
     commandLine 'git', 'log', '-1', '--format=[%ci]%n%H%n%s'
 
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-        commandLine = ['cmd', '/c'] + commandLine //don't use trailing ", it will get printed for some reason
+        commandLine = ['cmd', '/c'] + commandLine
     }
 
     //store the output instead of printing to the console:
