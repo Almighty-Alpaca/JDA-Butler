@@ -72,6 +72,8 @@ public class JDActionItem extends VersionedItem
 
             if(!res.isSuccessful() || body == null)
             {
+                if(body != null)
+                    body.close();
                 VersionChecker.LOG.warn("Http call to JDAction repo failed");
                 return null;
             }
@@ -79,6 +81,7 @@ public class JDActionItem extends VersionedItem
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
             Document doc = dBuilder.parse(body.byteStream());
+            body.close();
 
             Element root = doc.getDocumentElement();
             root.normalize();

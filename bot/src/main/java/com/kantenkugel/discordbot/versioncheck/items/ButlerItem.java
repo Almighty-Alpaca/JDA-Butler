@@ -104,14 +104,13 @@ public class ButlerItem extends VersionedItem implements UpdateHandler
                 Response res = Bot.httpClient.newCall(new Request.Builder().url(bot.getLink()).get().build()).execute();
                 if(!res.isSuccessful())
                 {
+                    res.close();
                     LOG.warn("OkHttp returned failure for {}", bot.getLink());
                     return;
                 }
                 try(ResponseBody body = res.body())
                 {
-                    final InputStream is = body.byteStream();
-                    Files.copy(is, UPDATE_FILE, StandardCopyOption.REPLACE_EXISTING);
-                    is.close();
+                    Files.copy(body.byteStream(), UPDATE_FILE, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
             catch(Exception e)

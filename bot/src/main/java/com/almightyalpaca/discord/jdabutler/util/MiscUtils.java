@@ -58,7 +58,10 @@ public class MiscUtils
             ).execute();
 
             if(!response.isSuccessful())
+            {
+                response.close();
                 return null;
+            }
 
             try(ResponseBody body = response.body())
             {
