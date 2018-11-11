@@ -22,13 +22,11 @@ import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -93,21 +91,16 @@ public class JDoc {
         }
 
         Map<String, JDocParser.ClassDocumentation> resultMap = new HashMap<>();
-        InputStream is = null;
-        try {
-            Response res = Bot.httpClient.newCall(new Request.Builder().url(JDocUtil.JAVA_JDOCS_PREFIX+urlPath).get().build()).execute();
+        try(Response res = Bot.httpClient.newCall(new Request.Builder()
+                .url(JDocUtil.JAVA_JDOCS_PREFIX+urlPath).get().build()).execute()) {
             if(!res.isSuccessful()) {
                 JDocUtil.LOG.warn("OkHttp returned failure for java8 index: "+res.code());
                 return Collections.emptyList();
             }
-            is = res.body().byteStream();
-            JDocParser.parse(JDocUtil.JAVA_JDOCS_PREFIX, urlPath, is, resultMap);
+            JDocParser.parse(JDocUtil.JAVA_JDOCS_PREFIX, urlPath, res.body().byteStream(), resultMap);
             resultMap.remove(JDocParser.SUBCLASSES_MAP_KEY);
         } catch(Exception e) {
             JDocUtil.LOG.error("Error parsing java javadocs for {}", name, e);
-        } finally {
-            if(is != null)
-                try { is.close(); } catch(Exception ignored) {}
         }
 
         if(!resultMap.containsKey(className)) {
@@ -212,8 +205,7 @@ public class JDoc {
         List<JDocParser.MethodDocumentation> filteredDocs = docs.parallelStream()
                 .filter(doc -> doc.matches(methodSig, isFuzzy))
                 .collect(Collectors.toList());
-        switch (filteredDocs.size())
-        {
+        switch (filteredDocs.size()) {
             case 1:
                 return Collections.singletonList(filteredDocs.get(0));
             case 0:
@@ -256,58 +248,43 @@ public class JDoc {
     }
 
     private static void download() {
-        try
-        {
+        try {
             JenkinsBuild lastBuild = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuild();
-            if(lastBuild != null)
-            {
+            if(lastBuild != null) {
                 JDocUtil.LOG.debug("Downloading JDA docs...");
-                ResponseBody body = null;
-                try
-                {
+                try {
                     String artifactUrl = lastBuild.artifacts.get("JDA-javadoc").getLink();
-                    Response res = Bot.httpClient.newCall(new Request.Builder().url(artifactUrl).get().build()).execute();
-                    if(!res.isSuccessful())
-                    {
-                        JDocUtil.LOG.warn("OkHttp returned failure for {}", artifactUrl);
-                        return;
+                    try(Response res = Bot.httpClient.newCall(new Request.Builder()
+                            .url(artifactUrl).get().build()).execute()) {
+                        if(!res.isSuccessful()) {
+                            JDocUtil.LOG.warn("OkHttp returned failure for {}", artifactUrl);
+                            return;
+                        }
+                        Files.copy(res.body().byteStream(), JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
+                        JDocUtil.LOG.debug("Done downloading JDA docs");
                     }
-                    body = res.body();
-                    final InputStream is = body.byteStream();
-                    Files.copy(is, JDocUtil.LOCAL_DOC_PATH, StandardCopyOption.REPLACE_EXISTING);
-                    is.close();
-                    JDocUtil.LOG.debug("Done downloading JDA docs");
                 }
-                catch(Exception e)
-                {
+                catch(Exception e) {
                     JDocUtil.LOG.error("Error downloading jdoc jar", e);
                 }
-                finally
-                {
-                    if(body != null)
-                        body.close();
-                }
             }
-            else
-            {
+            else {
                 JDocUtil.LOG.warn("There was no Jenkins build?! Skipping download");
             }
         }
-        catch(IOException ex)
-        {
+        catch(IOException ex) {
             JDocUtil.LOG.warn("Could not contact Jenkins, skipping download");
         }
     }
 
     private static void fetchJavaClassIndexes() {
-        try {
-            Response res = Bot.httpClient.newCall(new Request.Builder().url(JDocUtil.JAVA_JDOCS_CLASS_INDEX).get().build()).execute();
+        try(Response res = Bot.httpClient.newCall(new Request.Builder()
+                .url(JDocUtil.JAVA_JDOCS_CLASS_INDEX).get().build()).execute()) {
             if(!res.isSuccessful()) {
                 JDocUtil.LOG.warn("OkHttp returned failure for java8 index: "+res.code());
                 return;
             }
-            ResponseBody body = res.body();
-            Document docBody = Jsoup.parse(body.byteStream(), "UTF-8", JDocUtil.JAVA_JDOCS_PREFIX);
+            Document docBody = Jsoup.parse(res.body().byteStream(), "UTF-8", JDocUtil.JAVA_JDOCS_PREFIX);
             docBody.getElementsByClass("indexContainer").first().child(0).children().forEach(child -> {
                 Element link = child.child(0);
                 if(link.tagName().equals("a") && link.attr("href").startsWith("java/")) {

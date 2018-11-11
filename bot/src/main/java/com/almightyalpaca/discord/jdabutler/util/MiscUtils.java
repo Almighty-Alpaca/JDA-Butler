@@ -46,29 +46,22 @@ public class MiscUtils
 
     public static String hastebin(final String text)
     {
-        try
+        String server = "https://haste.kantenkugel.com/"; //requires trailing slash
+        try(Response response = Bot.httpClient.newCall(
+                new Request.Builder()
+                        .post(RequestBody.create(MediaType.parse("text/plain"), text))
+                        .url(server + "documents")
+                        .header("User-Agent", "Mozilla/5.0 JDA-Butler")
+                        .build()
+        ).execute())
         {
-            String server = "https://haste.kantenkugel.com/"; //requires trailing slash
-            Response response = Bot.httpClient.newCall(
-                    new Request.Builder()
-                            .post(RequestBody.create(MediaType.parse("text/plain"), text))
-                            .url(server + "documents")
-                            .header("User-Agent", "Mozilla/5.0 JDA-Butler")
-                            .build()
-            ).execute();
-
             if(!response.isSuccessful())
                 return null;
 
-            try(ResponseBody body = response.body())
-            {
-                if(body == null)
-                    throw new IOException("We received an OK response without body when POSTing to hastebin");
-                JSONObject obj = new JSONObject(new JSONTokener(body.charStream()));
-                return server + obj.getString("key");
-            }
-
+            JSONObject obj = new JSONObject(new JSONTokener(response.body().charStream()));
+            return server + obj.getString("key");
         }
+
         catch (final Exception e)
         {
             Bot.LOG.warn("Error posting text to hastebin", e);

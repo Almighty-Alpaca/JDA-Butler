@@ -122,64 +122,55 @@ public class GQLQuery<T>
         Request.Builder post = new Request.Builder().url(remoteUrl).post(RequestBody.create(jsonType, data.toString().getBytes()));
         if(auth != null)
             post.header("Authorization", auth);
-        try
+        try(Response execute = Bot.httpClient.newCall(post.build()).execute())
         {
-            Response execute = Bot.httpClient.newCall(post.build()).execute();
-            try(ResponseBody body = execute.body())
+            List<String> errors = new ArrayList<>();
+            T object = null;
+            JsonReader reader = GSON.newJsonReader(execute.body().charStream());
+            reader.beginObject();
+            while(reader.hasNext())
             {
-                if(body == null)
+                String name = reader.nextName();
+                switch (name)
                 {
-                    LOG.error("Got empty body from GQL query");
-                    return null;
-                }
-                List<String> errors = new ArrayList<>();
-                T object = null;
-                JsonReader reader = GSON.newJsonReader(body.charStream());
-                reader.beginObject();
-                while(reader.hasNext())
-                {
-                    String name = reader.nextName();
-                    switch (name)
-                    {
-                        case "errors":
-                            readErrors(errors, reader);
-                            break;
-                        case "data":
-                            if (reader.peek() == JsonToken.BEGIN_OBJECT)
-                            {
-                                reader.beginObject();
-                                reader.nextName();
-                                object = GSON.fromJson(reader, clazz);
-                                reader.endObject();
-                            }
-                            else
-                            {
-                                reader.skipValue();
-                            }
-                            break;
-                        default:
-                            reader.skipValue();
-                            break;
-                    }
-                }
-                reader.endObject();
-                reader.close();
-                if(!errors.isEmpty())
-                {
-                    LOG.error("There was at least one GQL error:\n{}", JDALogger.getLazyString(() ->
-                    {
-                        StringBuilder b = new StringBuilder();
-                        for(String error : errors)
+                    case "errors":
+                        readErrors(errors, reader);
+                        break;
+                    case "data":
+                        if (reader.peek() == JsonToken.BEGIN_OBJECT)
                         {
-                            b.append(error).append('\n');
+                            reader.beginObject();
+                            reader.nextName();
+                            object = GSON.fromJson(reader, clazz);
+                            reader.endObject();
                         }
-                        b.setLength(b.length() - 1);
-                        return b.toString();
-                    }));
-                    return null;
+                        else
+                        {
+                            reader.skipValue();
+                        }
+                        break;
+                    default:
+                        reader.skipValue();
+                        break;
                 }
-                return object;
             }
+            reader.endObject();
+            reader.close();
+            if(!errors.isEmpty())
+            {
+                LOG.error("There was at least one GQL error:\n{}", JDALogger.getLazyString(() ->
+                {
+                    StringBuilder b = new StringBuilder();
+                    for(String error : errors)
+                    {
+                        b.append(error).append('\n');
+                    }
+                    b.setLength(b.length() - 1);
+                    return b.toString();
+                }));
+                return null;
+            }
+            return object;
         }
         catch(SocketTimeoutException ex)
         {

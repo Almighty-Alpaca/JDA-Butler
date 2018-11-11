@@ -6,7 +6,6 @@ import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import net.dv8tion.jda.core.utils.tuple.Pair;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -42,7 +41,6 @@ public class VersionChecker
 
     static String getVersion(VersionedItem item)
     {
-        ResponseBody body = null;
         try
         {
             Supplier<String> versionSupplier = item.getCustomVersionSupplier();
@@ -52,39 +50,37 @@ public class VersionChecker
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
-            Response res = Bot.httpClient.newCall(
-                    new Request.Builder().url(item.getRepoUrl()).get().build()
-            ).execute();
-
-            body = res.body();
-
-            if (!res.isSuccessful() || body == null)
+            try(Response res = Bot.httpClient.newCall(new Request.Builder()
+                    .url(item.getRepoUrl()).get().build()).execute())
             {
-                LOG.warn("Could not fetch Maven metadata from " + item.getRepoUrl() + " - OkHttp returned with failure");
-                return null;
+
+                if (!res.isSuccessful())
+                {
+                    LOG.warn("Could not fetch Maven metadata from " + item.getRepoUrl() + " - OkHttp returned with failure");
+                    return null;
+                }
+
+                Document doc = dBuilder.parse(res.body().byteStream());
+
+                Element root = doc.getDocumentElement();
+                root.normalize();
+
+                Element versioningElem = (Element) root.getElementsByTagName("versioning").item(0);
+                if (versioningElem == null)
+                {
+                    LOG.warn("Could not find versioning node for item {}", item.getName());
+                    return null;
+                }
+
+                Element versionElem = (Element) versioningElem.getElementsByTagName("release").item(0);
+                if (versionElem == null)
+                {
+                    LOG.warn("Could not find release node for item {}", item.getName());
+                    return null;
+                }
+
+                return versionElem.getTextContent();
             }
-
-            Document doc = dBuilder.parse(body.byteStream());
-
-            Element root = doc.getDocumentElement();
-            root.normalize();
-
-            Element versioningElem = (Element) root.getElementsByTagName("versioning").item(0);
-            if (versioningElem == null)
-            {
-                LOG.warn("Could not find versioning node for item {}", item.getName());
-                return null;
-            }
-
-            Element versionElem = (Element) versioningElem.getElementsByTagName("release").item(0);
-            if (versionElem == null)
-            {
-                LOG.warn("Could not find release node for item {}", item.getName());
-                return null;
-            }
-
-            return versionElem.getTextContent();
-
         }
         catch(SocketTimeoutException | UncheckedIOException ex)
         {
@@ -96,11 +92,6 @@ public class VersionChecker
         catch (Exception e)
         {
             LOG.error("Could not fetch version info for item {}", item.getName(), e);
-        }
-        finally
-        {
-            if(body != null)
-                body.close();
         }
         return null;
     }

@@ -8,10 +8,8 @@ import com.kantenkugel.discordbot.versioncheck.RepoType;
 import com.kantenkugel.discordbot.versioncheck.UpdateHandler;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -99,20 +97,14 @@ public class ButlerItem extends VersionedItem implements UpdateHandler
                 return;
             }
             LOG.info("Downloading new Butler version...");
-            try
+            try(Response res = Bot.httpClient.newCall(new Request.Builder().url(bot.getLink()).get().build()).execute())
             {
-                Response res = Bot.httpClient.newCall(new Request.Builder().url(bot.getLink()).get().build()).execute();
                 if(!res.isSuccessful())
                 {
                     LOG.warn("OkHttp returned failure for {}", bot.getLink());
                     return;
                 }
-                try(ResponseBody body = res.body())
-                {
-                    final InputStream is = body.byteStream();
-                    Files.copy(is, UPDATE_FILE, StandardCopyOption.REPLACE_EXISTING);
-                    is.close();
-                }
+                Files.copy(res.body().byteStream(), UPDATE_FILE, StandardCopyOption.REPLACE_EXISTING);
             }
             catch(Exception e)
             {
