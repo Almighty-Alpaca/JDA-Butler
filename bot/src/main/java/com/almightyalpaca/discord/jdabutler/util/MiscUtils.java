@@ -55,9 +55,8 @@ public class MiscUtils
                         .build()
         ).execute())
         {
-            if(!response.isSuccessful()) {
+            if(!response.isSuccessful())
                 return null;
-            }
 
             ResponseBody body = response.body();
             if(body == null)
