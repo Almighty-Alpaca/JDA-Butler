@@ -58,10 +58,7 @@ public class MiscUtils
             if(!response.isSuccessful())
                 return null;
 
-            ResponseBody body = response.body();
-            if(body == null)
-                throw new IOException("We received an OK response without body when POSTing to hastebin");
-            JSONObject obj = new JSONObject(new JSONTokener(body.charStream()));
+            JSONObject obj = new JSONObject(new JSONTokener(response.body().charStream()));
             return server + obj.getString("key");
         }
 

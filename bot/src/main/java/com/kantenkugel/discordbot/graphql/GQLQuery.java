@@ -124,15 +124,9 @@ public class GQLQuery<T>
             post.header("Authorization", auth);
         try(Response execute = Bot.httpClient.newCall(post.build()).execute())
         {
-            ResponseBody body = execute.body();
-            if(body == null)
-            {
-                LOG.error("Got empty body from GQL query");
-                return null;
-            }
             List<String> errors = new ArrayList<>();
             T object = null;
-            JsonReader reader = GSON.newJsonReader(body.charStream());
+            JsonReader reader = GSON.newJsonReader(execute.body().charStream());
             reader.beginObject();
             while(reader.hasNext())
             {
