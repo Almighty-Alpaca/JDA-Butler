@@ -56,17 +56,17 @@ public class JDocParser {
             file.stream().filter(entry -> !entry.isDirectory() && entry.getName().startsWith(JDocUtil.JDA_CODE_BASE) && entry.getName().endsWith(".html")).forEach(entry -> {
                 try {
                     parse(JDocUtil.JDOCBASE, entry.getName(), file.getInputStream(entry), docs);
-                    ClassDocumentation subClassesNode = docs.remove(SUBCLASSES_MAP_KEY);
-                    if(subClassesNode != null) {
-                        subClassesNode.subClasses.forEach((subclassName, subClassDoc) -> {
-                            if(subClassDoc.classSig != null && !docs.containsKey(subclassName))
-                                docs.put(subclassName, subClassDoc);
-                        });
-                    }
                 } catch (final IOException e) {
                     JDocUtil.LOG.error("Error while parsing doc file {}", entry.getName(), e);
                 }
             });
+            ClassDocumentation subClassesNode = docs.remove(SUBCLASSES_MAP_KEY);
+            if(subClassesNode != null) {
+                subClassesNode.subClasses.forEach((subclassName, subClassDoc) -> {
+                    if(subClassDoc.classSig != null && !docs.containsKey(subclassName))
+                        docs.put(subclassName, subClassDoc);
+                });
+            }
             JDocUtil.LOG.debug("Done parsing jda-docs-files");
         } catch (final Exception e) {
             JDocUtil.LOG.error("Error reading the jdoc jarfile", e);
