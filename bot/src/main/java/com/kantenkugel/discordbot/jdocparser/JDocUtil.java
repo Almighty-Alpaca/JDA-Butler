@@ -36,7 +36,7 @@ public class JDocUtil {
     public static final String JAVA_JDOCS_PREFIX = "https://docs.oracle.com/javase/8/docs/api/";
     static final String JAVA_JDOCS_CLASS_INDEX = JAVA_JDOCS_PREFIX + "allclasses-noframe.html";
 
-    public static final String JDOCBASE = JenkinsApi.JDA_JENKINS.getLastSuccessfulBuildUrl() + "javadoc/";
+    public static final String JDOCBASE = JenkinsApi.JDA_JENKINS.jenkinsBase + "javadoc/";
 
     static final String JDA_CODE_BASE = "net/dv8tion/jda";
 
