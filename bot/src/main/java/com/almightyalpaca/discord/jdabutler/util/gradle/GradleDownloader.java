@@ -15,7 +15,7 @@ public class GradleDownloader
 {
     public static final File GRADLE_DIR = new File("gradle-cache/");
 
-    public static final String GRADLE_VERSION = "4.5.1";
+    public static final String GRADLE_VERSION = "4.10.2";
 
     public static final File GRADLE_ZIP = new File(GradleDownloader.GRADLE_DIR, "gradle-" + GradleDownloader.GRADLE_VERSION + "-bin.zip");
 
