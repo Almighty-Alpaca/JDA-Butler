@@ -36,8 +36,8 @@ import java.util.stream.Collectors;
 
 public class JDocParser {
 
-    //return, funcName, parameters
-    public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z.<>?\\[\\]]+)\\s+([a-zA-Z][a-zA-Z0-9]+)\\(([@a-zA-Z0-9\\s.,<>?\\[\\]]*)\\)");
+    //annos+modifiers, return, funcName, parameters
+    public static final Pattern METHOD_PATTERN = Pattern.compile("(.*\\s+)?([a-zA-Z.<>?\\[\\]]+)\\s+([a-zA-Z][a-zA-Z0-9]+)\\(([@a-zA-Z0-9\\s.,<>?\\[\\]]*)\\)", Pattern.DOTALL);
 
     //annotations in front of method
     public static final Pattern ANNOTATION_PATTERN = Pattern.compile("^((?:@[^\n]+\n)+)");
@@ -358,6 +358,7 @@ public class JDocParser {
     static class MethodDocumentation implements Documentation {
         final ClassDocumentation                parent;
         final List<MethodAnnotation>            methodAnnos;
+        final boolean                           isStatic;
         final String                            returnType;
         final String                            functionName;
         final String                            parameters;
@@ -376,31 +377,34 @@ public class JDocParser {
             }
             //check for documented annotations of method
             this.methodAnnos = new ArrayList<>();
-            Matcher annoGroupMatcher = ANNOTATION_PATTERN.matcher(functionSig);
-            if(annoGroupMatcher.find()) {
-                Matcher annoMatcher = ANNOTATION_PARTS.matcher(annoGroupMatcher.group(1));
-                while(annoMatcher.find()) {
-                    this.methodAnnos.add(new MethodAnnotation(annoMatcher.group(1), annoMatcher.group(2)));
+            String prefix = methodMatcher.group(1);
+            if(prefix != null) {
+                Matcher annoGroupMatcher = ANNOTATION_PATTERN.matcher(prefix);
+                if(annoGroupMatcher.find()) {
+                    Matcher annoMatcher = ANNOTATION_PARTS.matcher(annoGroupMatcher.group(1));
+                    while(annoMatcher.find()) {
+                        this.methodAnnos.add(new MethodAnnotation(annoMatcher.group(1), annoMatcher.group(2)));
+                    }
                 }
             }
             this.parent = parent;
-            this.returnType = methodMatcher.group(1);
-            this.functionName = methodMatcher.group(2);
-            this.parameters = methodMatcher.group(3);
+            this.isStatic = prefix != null && prefix.contains("static ");
+            this.returnType = methodMatcher.group(2);
+            this.functionName = methodMatcher.group(3);
+            this.parameters = methodMatcher.group(4);
             this.functionSig = methodMatcher.group();
             this.hashLink = hashLink;
             this.desc = desc;
             this.fields = fields;
 
-            String args = methodMatcher.group(3);
-            Matcher argMatcher = METHOD_ARG_PATTERN.matcher(args);
+            Matcher argMatcher = METHOD_ARG_PATTERN.matcher(parameters);
             this.argTypes = new ArrayList<>(3);
 
             while(argMatcher.find()) {
                 this.argTypes.add(argMatcher.group(1).toLowerCase().split("<")[0]);
             }
 
-            if(!args.isEmpty() && this.argTypes.size() == 0) {
+            if(!parameters.isEmpty() && this.argTypes.size() == 0) {
                 throw new RuntimeException("Got non-empty parameters for method " + functionName + " but couldn't parse them. Signature: \"" + functionSig + '\"');
             }
         }
@@ -409,11 +413,11 @@ public class JDocParser {
             final Matcher matcher = METHOD_PATTERN.matcher("ff " + input);
             if (!matcher.find())
                 return false;
-            if (!matcher.group(2).equalsIgnoreCase(this.functionName))
+            if (!matcher.group(3).equalsIgnoreCase(this.functionName))
                 return false;
             if (fuzzy)
                 return true;
-            final String args = matcher.group(3);
+            final String args = matcher.group(4);
             final String[] split = args.toLowerCase().split(",");
             int argLength = args.trim().isEmpty() ? 0 : split.length;
             if (argLength != this.argTypes.size())
@@ -427,7 +431,7 @@ public class JDocParser {
 
         @Override
         public String getShortTitle() {
-            return parent.className + '#' + functionName + '(' + parameters + ") : " + returnType;
+            return parent.className + (isStatic ? '.' : '#') + functionName + '(' + parameters + ") : " + returnType;
         }
 
         @Override
