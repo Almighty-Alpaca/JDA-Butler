@@ -136,7 +136,7 @@ public class JDocParser {
             final Element details = document.getElementsByClass("details").first();
             if(details != null) {
                 //methods
-                Element tmp = getSingleElementByQuery(details, "a[name=\"method.detail\"]");
+                Element tmp = getSingleElementByQuery(details, "a[name=\"method.detail\"], a[id=\"method.detail\"]");
                 List<DocBlock> docBlock = getDocBlock(jdocBase, tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
@@ -145,7 +145,7 @@ public class JDocParser {
                     }
                 }
                 //vars
-                tmp = getSingleElementByQuery(details, "a[name=\"field.detail\"]");
+                tmp = getSingleElementByQuery(details, "a[name=\"field.detail\"], a[id=\"field.detail\"]");
                 docBlock = getDocBlock(jdocBase, tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
@@ -153,7 +153,7 @@ public class JDocParser {
                     }
                 }
                 //enum-values
-                tmp = getSingleElementByQuery(details, "a[name=\"enum.constant.detail\"]");
+                tmp = getSingleElementByQuery(details, "a[name=\"enum.constant.detail\"], a[id=\"enum.constant.detail\"]");
                 docBlock = getDocBlock(jdocBase, tmp, classDoc);
                 if(docBlock != null) {
                     for(DocBlock block : docBlock) {
@@ -238,18 +238,22 @@ public class JDocParser {
             String hashLink = null;
             for(elem = elem.nextElementSibling(); elem != null; elem = elem.nextElementSibling()) {
                 if(elem.tagName().equals("a")) {
-                    hashLink = '#' + elem.attr("name");
+                    hashLink = '#' + (elem.id().isEmpty() ? elem.attr("name") : elem.id());
                 } else if(elem.tagName().equals("ul")) {
                     Element tmp = elem.getElementsByTag("h4").first();
                     String title = JDocUtil.fixSpaces(tmp.text().trim());
                     String description = "", signature = "";
                     OrderedMap<String, List<String>> fields = new ListOrderedMap<>();
-                    for(;tmp != null; tmp = tmp.nextElementSibling()) {
+                    for(tmp = tmp.nextElementSibling();tmp != null; tmp = tmp.nextElementSibling()) {
                         if(tmp.tagName().equals("pre")) {
                             //contains full signature
                             signature = JDocUtil.fixSpaces(tmp.text().trim());
+                        } else if(tmp.tagName().equals("div") && tmp.className().equals("deprecationBlock")) {
+                            //deprecation block(jdk11)
+                            Element deprecationElem = tmp.getElementsByClass("deprecationComment").first();
+                            fields.put("Deprecated:", Collections.singletonList(JDocUtil.formatText(deprecationElem.html(), baseLink)));
                         } else if(tmp.tagName().equals("div") && tmp.className().equals("block")) {
-                            //main block of content (description or deprecation)
+                            //main block of content (description or deprecation (prej11))
                             Element deprecationElem = tmp.getElementsByClass("deprecationComment").first();
                             if(deprecationElem != null) {
                                 //deprecation block
