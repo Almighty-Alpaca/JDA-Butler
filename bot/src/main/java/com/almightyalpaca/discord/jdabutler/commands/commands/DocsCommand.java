@@ -32,12 +32,13 @@ public class DocsCommand extends ReactionCommand
     {
         EmbedBuilder embed = getDefaultEmbed()
                 .setTitle(documentation.getTitle(), documentation.getUrl(jDocBase));
-        if(documentation.getFields() != null && documentation.getFields().get("Deprecated:") != null)
+        Map<String, List<String>> fields = documentation.getFields();
+        if(fields != null && fields.get("Deprecated:") != null)
         {
             //element deprecated
             embed.setColor(Color.RED);
         }
-        else if(documentation.getFields() != null && documentation.getFields().get("Incubating") != null)
+        else if(fields != null && fields.get("Incubating") != null)
         {
             //incubating
             embed.setColor(Color.orange);
@@ -55,9 +56,9 @@ public class DocsCommand extends ReactionCommand
         {
             embed.appendDescription(documentation.getContent());
         }
-        if (documentation.getFields() != null && documentation.getFields().size() > 0)
+        if (fields != null && fields.size() > 0)
         {
-            for (Map.Entry<String, List<String>> field : documentation.getFields().entrySet())
+            for (Map.Entry<String, List<String>> field : fields.entrySet())
             {
                 String fieldValue = String.join("\n", field.getValue());
                 if (fieldValue.length() > MessageEmbed.VALUE_MAX_LENGTH)

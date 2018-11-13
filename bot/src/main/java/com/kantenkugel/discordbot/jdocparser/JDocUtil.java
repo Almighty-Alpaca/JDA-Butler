@@ -90,7 +90,7 @@ public class JDocUtil {
                     '[' +
                     fixSignature(matcher.group(4).replace("*", "")) +
                     ']' +
-                    '(' + resolveLink(matcher.group(2), currentUrl) + ')' +
+                    '(' + resolveLink(matcher.group(2), currentUrl).replace(")", "%29") + ')' +
                     ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "")
             );
         }
