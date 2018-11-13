@@ -90,7 +90,7 @@ public class JDocUtil {
                     '[' +
                     fixSignature(matcher.group(4).replace("*", "")) +
                     ']' +
-                    '(' + resolveLink(matcher.group(2), currentUrl).replace(")", "%29") + ')' +
+                    '(' + resolveLink(matcher.group(2), currentUrl) + ')' +
                     ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "")
             );
         }
@@ -129,11 +129,15 @@ public class JDocUtil {
         try {
             URL base = new URL(relativeTo);
             URL result = new URL(base, href);
-            return result.toString();
+            return fixUrl(result.toString());
         } catch(MalformedURLException e) {
             LOG.error("Could not resolve relative link of jdoc", e);
         }
         return null;
+    }
+
+    static String fixUrl(String url) {
+        return url.replace(")", "%29"); //as markdown doesn't allow ')' in urls
     }
 
     static String fixSignature(String sig) {

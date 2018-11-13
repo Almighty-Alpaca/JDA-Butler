@@ -437,7 +437,7 @@ public class JDocParser {
 
         @Override
         public String getUrl(String jdocBase) {
-            return JDocUtil.getLink(jdocBase, parent) + hashLink;
+            return JDocUtil.fixUrl(JDocUtil.getLink(jdocBase, parent) + hashLink);
         }
 
         @Override
