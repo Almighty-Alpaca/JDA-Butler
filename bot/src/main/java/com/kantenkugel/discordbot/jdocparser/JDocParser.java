@@ -211,7 +211,7 @@ public class JDocParser {
         Elements inheritAnchors = summaryAnchor.select("a[name^=\"methods.inherited.from.class\"]");
         for(Element inheritAnchor : inheritAnchors) {
             if(inheritAnchor.siblingElements().size() != 2)
-                throw new RuntimeException("Got unexpected html while parsing inherited methods from class " + inheritAnchor.attr("name"));
+                continue; //no methods shown as inherited cuz everything overridden
             Element next = inheritAnchor.nextElementSibling();
             if(!next.tagName().equals("h3"))
                 throw new RuntimeException("Got unexpected html while parsing inherited methods from class " + inheritAnchor.attr("name"));
