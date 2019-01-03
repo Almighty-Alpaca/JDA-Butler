@@ -19,10 +19,18 @@ import net.dv8tion.jda.core.entities.TextChannel;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class JDAItem extends VersionedItem implements UpdateHandler
 {
     private final ChangelogProvider changelogProvider = new JenkinsChangelogProvider(JenkinsApi.JDA_JENKINS, "https://github.com/DV8FromTheWorld/JDA/");
+
+    private final Supplier<String> versionSupplier = new JenkinsVersionSupplier(JenkinsApi.JDA_JENKINS);
+
+    @Override
+    public Supplier<String> getCustomVersionSupplier() {
+        return versionSupplier;
+    }
 
     @Override
     public String getName()
