@@ -52,7 +52,7 @@ public class AnnouncementCommand extends Command
                     return;
                 }
                 role = EXPERIMENTAL_ITEM.getAnnouncementRole();
-                image = EmbedUtil.JDA_ICON;
+                image = EmbedUtil.getJDAIconUrl();
             }
             else
             {
@@ -69,7 +69,7 @@ public class AnnouncementCommand extends Command
                 }
                 role = item.getAnnouncementRole();
                 if(item.getName().equalsIgnoreCase("jda"))
-                    image = EmbedUtil.JDA_ICON;
+                    image = EmbedUtil.getJDAIconUrl();
                 if(role == null)
                 {
                     reply(event, "This item has no announcement role set up!");
@@ -99,7 +99,7 @@ public class AnnouncementCommand extends Command
                         return;
                     }
                     if(item.getName().equalsIgnoreCase("jda") || item == EXPERIMENTAL_ITEM)
-                        image = EmbedUtil.JDA_ICON;
+                        image = EmbedUtil.getJDAIconUrl();
                     break;
                 default:
                     reply(event, "Too many roles set up for this channel. You have to manually specify one via command.");

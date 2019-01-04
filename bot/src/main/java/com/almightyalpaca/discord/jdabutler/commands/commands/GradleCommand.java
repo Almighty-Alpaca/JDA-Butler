@@ -19,7 +19,7 @@ public class GradleCommand extends Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        final EmbedBuilder eb = new EmbedBuilder().setAuthor("Gradle dependencies", null, EmbedUtil.JDA_ICON);
+        final EmbedBuilder eb = new EmbedBuilder().setAuthor("Gradle dependencies", null, EmbedUtil.getJDAIconUrl());
 
         List<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content, true).stream()
                 //only allow items which use maven for versioning

@@ -33,15 +33,15 @@ public class VersionsCommand extends Command
 
         if(items.isEmpty())
         {
-            eb.setAuthor("Latest version", null, EmbedUtil.JDA_ICON);
+            eb.setAuthor("Latest version", null, EmbedUtil.getJDAIconUrl());
             eb.setTitle("No item(s) found for input", null);
         }
         else
         {
             if(items.size() == 1)
-                eb.setAuthor("Latest version for "+items.get(0).getName(), null, EmbedUtil.JDA_ICON);
+                eb.setAuthor("Latest version for "+items.get(0).getName(), null, EmbedUtil.getJDAIconUrl());
             else
-                eb.setAuthor("Latest versions", null, EmbedUtil.JDA_ICON);
+                eb.setAuthor("Latest versions", null, EmbedUtil.getJDAIconUrl());
 
             for (VersionedItem versionedItem : items)
             {

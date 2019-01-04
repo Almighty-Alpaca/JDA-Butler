@@ -139,7 +139,7 @@ public class DocsCommand extends ReactionCommand
 
     private static EmbedBuilder getDefaultEmbed()
     {
-        return new EmbedBuilder().setAuthor("JDA Javadocs", null, EmbedUtil.JDA_ICON).setColor(EmbedUtil.COLOR_JDA_PURPLE);
+        return new EmbedBuilder().setAuthor("JDA Javadocs", null, EmbedUtil.getJDAIconUrl()).setColor(EmbedUtil.COLOR_JDA_PURPLE);
     }
 
     @Override

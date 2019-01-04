@@ -24,7 +24,7 @@ public class JarsCommand extends Command
 
         final EmbedBuilder eb = new EmbedBuilder();
         EmbedUtil.setColor(eb);
-        eb.setAuthor("Latest JDA jars", null, EmbedUtil.JDA_ICON);
+        eb.setAuthor("Latest JDA jars", null, EmbedUtil.getJDAIconUrl());
         eb.setTitle(EmbedBuilder.ZERO_WIDTH_SPACE, null);
 
         try

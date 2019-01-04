@@ -137,7 +137,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             mb.append(announcementRole.getAsMention());
 
-            eb.setAuthor("JDA 3 version " + item.getVersion() + " has been released\n", JenkinsApi.JDA_JENKINS.jenkinsBase + versionSplits.build, EmbedUtil.JDA_ICON);
+            eb.setAuthor("JDA 3 version " + item.getVersion() + " has been released\n", JenkinsApi.JDA_JENKINS.jenkinsBase + versionSplits.build, EmbedUtil.getJDAIconUrl());
 
             EmbedUtil.setColor(eb);
 
