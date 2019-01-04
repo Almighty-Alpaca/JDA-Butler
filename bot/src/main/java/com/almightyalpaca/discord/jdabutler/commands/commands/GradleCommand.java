@@ -23,7 +23,7 @@ public class GradleCommand extends Command
 
         List<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content, true).stream()
                 //only allow items which use maven for versioning
-                .filter(item -> item.getCustomVersionSupplier() == null)
+                .filter(item -> item.getGroupId() != null && item.getArtifactId() != null && item.getRepoType() != null)
                 .collect(Collectors.toList());
 
         final boolean pretty = content.contains("pretty");

@@ -23,7 +23,7 @@ public class MavenCommand extends Command
 
         List<VersionedItem> items = VersionCheckerRegistry.getItemsFromString(content, true).stream()
                 //only allow items which use maven for versioning
-                .filter(item -> item.getCustomVersionSupplier() == null)
+                .filter(item -> item.getGroupId() != null && item.getArtifactId() != null && item.getRepoType() != null)
                 .collect(Collectors.toList());
 
         String desc = "If you don't know maven type `!pom.xml` for a complete maven build file\n\n```xml\n" +
