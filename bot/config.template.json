@@ -22,5 +22,6 @@
   "dropbox": {
     "access_token": ""
   },
+  "main_bot_id": "",
   "github_token": ""
 }
