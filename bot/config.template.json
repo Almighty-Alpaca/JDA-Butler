@@ -22,6 +22,7 @@
   "dropbox": {
     "access_token": ""
   },
+  "whitelisted_guild_and_channel_ids": [125227483518861312, 381889648827301889, 356505966201798656],
   "main_bot_id": "",
   "github_token": ""
 }
