@@ -23,9 +23,27 @@ import java.util.function.Supplier;
 
 public class JDAItem extends VersionedItem implements UpdateHandler
 {
-    private final ChangelogProvider changelogProvider = new JenkinsChangelogProvider(JenkinsApi.JDA_JENKINS, "https://github.com/DV8FromTheWorld/JDA/");
+    private final ChangelogProvider changelogProvider;
+    private final Supplier<String> versionSupplier;
+    private final long roleId;
+    private final long channelId;
+    private final String job;
+    private final JenkinsApi jenkins;
 
-    private final Supplier<String> versionSupplier = new JenkinsVersionSupplier(JenkinsApi.JDA_JENKINS);
+    public JDAItem()
+    {
+        this(JenkinsApi.JDA_JENKINS, 241948671325765632L, 125227483518861312L, "JDA");
+    }
+
+    public JDAItem(JenkinsApi api, long roleId, long channelId, String job)
+    {
+        this.roleId = roleId;
+        this.channelId = channelId;
+        this.job = job;
+        this.changelogProvider = new JenkinsChangelogProvider(api, "https://github.com/DV8FromTheWorld/JDA/");
+        this.versionSupplier = new JenkinsVersionSupplier(api);
+        this.jenkins = api;
+    }
 
     @Override
     public Supplier<String> getCustomVersionSupplier() {
@@ -35,7 +53,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     @Override
     public String getName()
     {
-        return "JDA";
+        return job;
     }
 
     @Override
@@ -59,19 +77,19 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     @Override
     public String getUrl()
     {
-        return JenkinsApi.JDA_JENKINS.getLastSuccessfulBuildUrl();
+        return jenkins.getLastSuccessfulBuildUrl();
     }
 
     @Override
     public long getAnnouncementRoleId()
     {
-        return 241948671325765632L;
+        return roleId;
     }
 
     @Override
     public long getAnnouncementChannelId()
     {
-        return 125227483518861312L;
+        return channelId;
     }
 
     @Override
@@ -104,7 +122,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             try
             {
-                jenkinsBuild = JenkinsApi.JDA_JENKINS.fetchLastSuccessfulBuild();
+                jenkinsBuild = jenkins.fetchLastSuccessfulBuild();
             }
             catch(IOException ex)
             {
@@ -137,7 +155,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             mb.append(announcementRole.getAsMention());
 
-            eb.setAuthor("JDA 3 version " + item.getVersion() + " has been released\n", JenkinsApi.JDA_JENKINS.jenkinsBase + versionSplits.build, EmbedUtil.getJDAIconUrl());
+            eb.setAuthor("JDA version " + item.getVersion() + " has been released\n", jenkins.jenkinsBase + versionSplits.build, EmbedUtil.getJDAIconUrl());
 
             EmbedUtil.setColor(eb);
 
