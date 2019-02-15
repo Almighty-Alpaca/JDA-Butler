@@ -108,15 +108,20 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     @Override
     public void onUpdate(VersionedItem item, String previousVersion, boolean shouldAnnounce)
     {
-        VersionUtils.VersionSplits versionSplits = item.parseVersion();
-        if (versionSplits.build != Bot.config.getInt("jda.version.build", -1))
+        boolean isActualJDA = getName().equalsIgnoreCase("jda");
+        String version = item.getVersion();
+        int buildNumber = Integer.parseInt(version.substring(version.indexOf("_") + 1));
+        if (!isActualJDA || buildNumber != Bot.config.getInt("jda.version.build", -1))
         {
             Bot.LOG.debug("Update found!");
 
-            Bot.config.put("jda.version.build", versionSplits.build);
-            Bot.config.put("jda.version.name", item.getVersion());
+            if(isActualJDA)
+            {
+                Bot.config.put("jda.version.build", buildNumber);
+                Bot.config.put("jda.version.name", version);
 
-            Bot.config.save();
+                Bot.config.save();
+            }
 
             JenkinsBuild jenkinsBuild;
 
@@ -136,11 +141,14 @@ public class JDAItem extends VersionedItem implements UpdateHandler
                 return;
             }
 
-            Bot.EXECUTOR.submit(() ->
+            if(isActualJDA)
             {
-                JDoc.reFetch();
-                GradleProjectDropboxUtil.uploadProject();
-            });
+                Bot.EXECUTOR.submit(() ->
+                {
+                    JDoc.reFetch();
+                    GradleProjectDropboxUtil.uploadProject();
+                });
+            }
 
             if(!shouldAnnounce)
                 return;
@@ -155,7 +163,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             mb.append(announcementRole.getAsMention());
 
-            eb.setAuthor("JDA version " + item.getVersion() + " has been released\n", jenkins.jenkinsBase + versionSplits.build, EmbedUtil.getJDAIconUrl());
+            eb.setAuthor("JDA version " + version + " has been released\n", jenkins.jenkinsBase + buildNumber, EmbedUtil.getJDAIconUrl());
 
             EmbedUtil.setColor(eb);
 
