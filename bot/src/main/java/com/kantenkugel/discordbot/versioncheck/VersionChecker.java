@@ -136,7 +136,7 @@ public class VersionChecker
                     }
                     catch(Exception ex)
                     {
-                        LOG.warn("UpdateHandler for {} failed", changedItem.getName());
+                        LOG.warn("UpdateHandler for {} failed", changedItem.getName(), ex);
                     }
                 });
                 try
