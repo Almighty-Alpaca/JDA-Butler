@@ -14,7 +14,7 @@ public class GradleUtil
 
     public static final Collection<Pair<String, String>> DEFAULT_PLUGINS = Arrays.asList(new ImmutablePair<>("java", null), new ImmutablePair<>("application", null), new ImmutablePair<>("com.github.johnrengelman.shadow", GradleUtil.SHADOW_VERSION));
 
-    public static final String SHADOW_VERSION = "2.0.4";
+    public static final String SHADOW_VERSION = "4.0.4";
 
     public static String getBuildFile(final Collection<Pair<String, String>> plugins, final String mainClassName, final String version, final String sourceCompatibility, final List<VersionedItem> items, final boolean pretty)
     {
