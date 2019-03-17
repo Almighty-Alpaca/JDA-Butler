@@ -45,6 +45,9 @@ dependencies {
 
     // jsoup HTML parser library @ http://jsoup.org/
     compile group: 'org.jsoup', name: 'jsoup', version: '1.11.2'
+    
+    // Remark for html -> markdown (docs)
+    compile "com.kotcrab.remark:remark:1.0.0"
 
     testCompile 'junit:junit:4.12'
 }
