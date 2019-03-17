@@ -18,11 +18,11 @@
 package com.kantenkugel.discordbot.jdocparser;
 
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
+import com.overzealous.remark.Options;
+import com.overzealous.remark.Remark;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
@@ -40,77 +40,39 @@ public class JDocUtil {
 
     static final String JDA_CODE_BASE = "net/dv8tion/jda";
 
-    //1: outer "`", 2: href, 3: inner "`", 4: text
-    private static final Pattern LINK_PATTERN = Pattern.compile("(`?)<a\\b[^>]*href=\"([^\"]+)\"[^>]*>(`?)(.*?)\\3</a>\\1", Pattern.DOTALL);
-    private static final Pattern CODE_BLOCK_PATTERN = Pattern.compile("<pre>\\s*<code>(.*?)</code>\\s*</pre>", Pattern.DOTALL);
-    private static final Pattern CODE_PATTERN = Pattern.compile("<code>(.*?)</code>", Pattern.DOTALL);
+    private static final Remark REMARK;
+
+    private static final Pattern CODEBLOCK_PATTERN = Pattern.compile("(```java\n)(.*?)(```)", Pattern.DOTALL);
+
+    static {
+        Options remarkOptions = Options.github();
+        remarkOptions.inlineLinks = true;
+        remarkOptions.fencedCodeBlocksWidth = 3;
+        REMARK = new Remark(remarkOptions);
+    }
 
     static String formatText(String docs, String currentUrl) {
-        //fix all spaces to be " "
-        docs = fixSpaces(docs);
+        String markdown = REMARK.convertFragment(fixSpaces(docs), currentUrl);
 
-        //remove new-lines (only use <br>)
-        //docs = docs.replace("\n", " ");
+        //remove unnecessary carriage return chars
+        markdown = markdown.replace("\r", "");
 
-        //basic formatting
-        docs = docs.replaceAll("</?b>", "**").replaceAll("</?i>", "*");
-        docs = docs.replaceAll("<br\\s?/?>", "\n");
-        docs = docs.replaceAll("<h(\\d)>(.*?)</h\\1>", "\n\n**$2**\n\n");
-        docs = docs.replaceAll("<p>(.*?)</p>", "\n\n$1\n\n");
-
-        //code
-        Matcher matcher = CODE_BLOCK_PATTERN.matcher(docs);
-        StringBuffer sb = new StringBuffer();
-        while(matcher.find()) {
-            matcher.appendReplacement(sb, "```java\n" + matcher.group(1).replaceAll("(?=[\n|\\h])\\h(?=[^\n])", "\u00A0").trim() + "\n```\n");
+        //fix codeblocks
+        markdown = markdown.replace("\n\n```", "\n\n```java");
+        Matcher matcher = CODEBLOCK_PATTERN.matcher(markdown);
+        if(matcher.find()) {
+            StringBuffer buffer = new StringBuffer();
+            do {
+                matcher.appendReplacement(buffer, matcher.group(1) + matcher.group(2).replaceAll("\n\\s", "\n") + matcher.group(3));
+            } while(matcher.find());
+            matcher.appendTail(buffer);
+            markdown = buffer.toString();
         }
-        matcher.appendTail(sb);
-        docs = sb.toString();
-        sb = new StringBuffer();
-        matcher = CODE_PATTERN.matcher(docs);
-        while(matcher.find()) {
-            StringBuffer sb2 = new StringBuffer("`");
-            Matcher codeLinkMatcher = LINK_PATTERN.matcher(matcher.group(1));
-            while(codeLinkMatcher.find()) {
-                codeLinkMatcher.appendReplacement(sb2, codeLinkMatcher.group(4));
-            }
-            codeLinkMatcher.appendTail(sb2);
-            sb2.append('`');
-            matcher.appendReplacement(sb, sb2.toString().replace("$", "\\$"));
-        }
-        matcher.appendTail(sb);
-        docs = sb.toString();
 
-        //links
-        matcher = LINK_PATTERN.matcher(docs);
-        sb = new StringBuffer();
-        while(matcher.find()) {
-            matcher.appendReplacement(sb,
-                    ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "") +
-                    '[' +
-                    fixSignature(matcher.group(4).replace("*", "")) +
-                    ']' +
-                    '(' + resolveLink(matcher.group(2), currentUrl) + ')' +
-                    ((!matcher.group(1).isEmpty() || !matcher.group(3).isEmpty()) ? "***" : "")
-            );
-        }
-        matcher.appendTail(sb);
-        docs = sb.toString();
+        //remove too many newlines (max 2)
+        markdown = markdown.replaceAll("\n{3,}", "\n\n");
 
-        //cut remaining html tags
-        docs = docs.replaceAll("<[^>]+>", "");
-        docs = docs.replace("&lt;", "<").replace("&gt;", ">");
-        docs = docs.replace("&nbsp;", " ");
-
-        //space and newline trimming cleanup
-        docs = docs.replaceAll("[ ]{2,}", " ");
-        docs = docs.replaceAll("\n\\h+\n", "\n\n");
-        //fixes stranded words and line breaks cuz of link/html-tags, but fucks up code-blocks
-        docs = docs.replaceAll("\n[ ](?![ ])", " ").replaceAll("[ ](?![ ])\n", " ");
-        docs = docs.replaceAll("\n{3,}", "\n\n");
-        docs = docs.trim();
-
-        return docs;
+        return markdown;
     }
 
     static String fixSpaces(String input) {
@@ -125,17 +87,6 @@ public class JDocUtil {
         return jdocBase + classPackage.replace(".", "/") + '/' + className + ".html";
     }
 
-    static String resolveLink(String href, String relativeTo) {
-        try {
-            URL base = new URL(relativeTo);
-            URL result = new URL(base, href);
-            return fixUrl(result.toString());
-        } catch(MalformedURLException e) {
-            LOG.error("Could not resolve relative link of jdoc", e);
-        }
-        return null;
-    }
-
     static String fixUrl(String url) {
         return url.replace(")", "%29"); //as markdown doesn't allow ')' in urls
     }
@@ -143,5 +94,4 @@ public class JDocUtil {
     static String fixSignature(String sig) {
         return sig.replace("\u200B", "").replaceAll("\\b(?:[a-z]+\\.)+([A-Z])", "$1").replaceAll("\\s{2,}", " ");
     }
-
 }
