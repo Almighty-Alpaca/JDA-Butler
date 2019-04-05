@@ -5,6 +5,9 @@ import com.almightyalpaca.discord.jdabutler.commands.commands.*;
 import com.almightyalpaca.discord.jdabutler.commands.commands.moderation.SoftbanCommand;
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.gson.JsonArray;
+import gnu.trove.set.TLongSet;
+import gnu.trove.set.hash.TLongHashSet;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.ShutdownEvent;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageDeleteEvent;
@@ -26,6 +29,7 @@ public class Dispatcher extends ListenerAdapter
     private final Set<Command> commands = ConcurrentHashMap.newKeySet();
     private final ExecutorService pool = Executors.newCachedThreadPool(MiscUtils.newThreadFactory("command-runner", false));
     private final ReactionListenerRegistry reactListReg = new ReactionListenerRegistry();
+    private final TLongSet whitelistedIds = new TLongHashSet();
 
     public Dispatcher()
     {
@@ -49,6 +53,12 @@ public class Dispatcher extends ListenerAdapter
         this.registerCommand(new SoftbanCommand());
         this.registerCommand(new SlowmodeCommand());
         this.registerCommand(new UpdateCommand());
+
+        JsonArray whitelistedIds = Bot.config.getJsonArray("whitelisted_guild_and_channel_ids", new JsonArray());
+        if(whitelistedIds.size() == 0)
+            Bot.LOG.warn("Running without guild/channel whitelist");
+        else
+            whitelistedIds.forEach(element -> this.whitelistedIds.add(element.getAsLong()));
     }
 
     public Set<Command> getCommands()
@@ -79,10 +89,11 @@ public class Dispatcher extends ListenerAdapter
 
         final TextChannel channel = event.getChannel();
 
-        if (channel.getGuild().getIdLong() == 81384788765712384L                                             // if DAPI
-            && !(channel.getIdLong() == 381889648827301889L                                                  // and not #java_jda
-                || (channel.getParent() != null && channel.getParent().getIdLong() == 356505966201798656L))) // or not testing category
-            return;                                                                                          // ignore message
+        if (!whitelistedIds.isEmpty()
+                && !whitelistedIds.contains(event.getGuild().getIdLong())
+                && !whitelistedIds.contains(channel.getIdLong())
+                && (channel.getParent() == null || !whitelistedIds.contains(channel.getParent().getIdLong())))
+            return;
 
         if (message.toLowerCase().startsWith(prefix.toLowerCase()))
             for (final Command c : this.getCommands())

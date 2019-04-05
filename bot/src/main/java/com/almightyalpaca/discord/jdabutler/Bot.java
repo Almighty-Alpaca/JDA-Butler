@@ -105,7 +105,10 @@ public class Bot
         Bot.listener = new EventListener();
         builder.addEventListener(Bot.listener);
         builder.addEventListener(Bot.dispatcher = new Dispatcher());
-        builder.addEventListener(new FakeButlerListener());
+
+        long mainBotId = config.getLong("main_bot_id", 0L);
+        if(mainBotId > 0)
+            builder.addEventListener(new FakeButlerListener(mainBotId));
 
         builder.setGame(Game.playing("JDA"));
 

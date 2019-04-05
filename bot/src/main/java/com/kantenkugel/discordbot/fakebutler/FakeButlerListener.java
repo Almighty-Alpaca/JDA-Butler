@@ -17,13 +17,18 @@ import net.dv8tion.jda.core.managers.Presence;
 
 public class FakeButlerListener implements EventListener
 {
-    private static final long REAL_BUTLER_ID = 189074312974696448L;
     private static final long JDA_SERVER_ID = 125227483518861312L;
+
+    private final long mainBotId;
 
     private long onlineTime;
     private long offlineTime;
     private long latestStamp;
     private boolean online = false;
+
+    public FakeButlerListener(long mainBotId) {
+        this.mainBotId = mainBotId;
+    }
 
     public String getStats(JDA jda)
     {
@@ -35,7 +40,7 @@ public class FakeButlerListener implements EventListener
         long sum = on + off;
 
         return String.format("%s stats since start of %s:\nOnline: %s (%.1f%%)\nOffline: %s (%.1f%%)",
-                jda.getUserById(REAL_BUTLER_ID), jda.getSelfUser(),
+                jda.getUserById(mainBotId), jda.getSelfUser(),
                 DurationUtils.formatDuration(on), on*100f/sum,
                 DurationUtils.formatDuration(off), off*100f/sum);
     }
@@ -48,12 +53,12 @@ public class FakeButlerListener implements EventListener
             UserUpdateOnlineStatusEvent e = (UserUpdateOnlineStatusEvent) event;
             Guild guild = e.getGuild();
             User user = e.getUser();
-            if(user.getIdLong() == REAL_BUTLER_ID && guild.getIdLong() == JDA_SERVER_ID)
+            if(user.getIdLong() == mainBotId && guild.getIdLong() == JDA_SERVER_ID)
                 handleStatus(e.getJDA(), guild.getMember(user));
         }
         else if (event instanceof ReadyEvent)
         {
-            if(event.getJDA().getSelfUser().getIdLong() == REAL_BUTLER_ID)
+            if(event.getJDA().getSelfUser().getIdLong() == mainBotId)
             {
                 event.getJDA().removeEventListener(this);
                 return;
@@ -67,7 +72,7 @@ public class FakeButlerListener implements EventListener
                 handleStatus(event.getJDA(), null);
                 return;
             }
-            Member butler = jdaGuild.getMemberById(REAL_BUTLER_ID);
+            Member butler = jdaGuild.getMemberById(mainBotId);
             handleStatus(event.getJDA(), butler);
             latestStamp = System.currentTimeMillis();
             onlineTime = offlineTime = 0L;
