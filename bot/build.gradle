@@ -12,9 +12,15 @@ repositories {
 
 dependencies {
     // JDA
-    compile ('net.dv8tion:JDA:3.8.1_439') {
+    compile ('net.dv8tion:JDA:4.ALPHA.0_93') {
         exclude module: 'opus-java'
     }
+    
+    // Trove Collections
+    compile group: 'net.sf.trove4j', name: 'trove4j', version: '3.0.3'
+    
+    // Other Collections
+    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
 
     // Webhooks
     compile group: 'club.minnced', name: 'discord-webhooks', version: '0.1.3'

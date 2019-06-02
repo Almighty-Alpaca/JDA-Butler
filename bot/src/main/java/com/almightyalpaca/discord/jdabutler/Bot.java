@@ -10,8 +10,8 @@ import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
-import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
+import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
@@ -19,11 +19,11 @@ import com.kantenkugel.discordbot.fakebutler.FakeButlerListener;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
-import net.dv8tion.jda.core.AccountType;
-import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.entities.*;
-import net.dv8tion.jda.core.entities.impl.JDAImpl;
-import okhttp3.*;
+import net.dv8tion.jda.api.AccountType;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.internal.JDAImpl;
+import okhttp3.OkHttpClient;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
@@ -88,7 +88,7 @@ public class Bot
     {
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) ->
                 LOG.error("There was an uncaught exception in thread {}", thread.getName(), throwable));
-        Bot.httpClient = new OkHttpClient.Builder().build();
+        Bot.httpClient = new OkHttpClient();
 
         EXECUTOR.submit(JDoc::init);
 
@@ -103,11 +103,11 @@ public class Bot
 
         Bot.config.save();
         Bot.listener = new EventListener();
-        builder.addEventListener(Bot.listener);
-        builder.addEventListener(Bot.dispatcher = new Dispatcher());
-        builder.addEventListener(new FakeButlerListener());
+        builder.addEventListeners(Bot.listener);
+        builder.addEventListeners(Bot.dispatcher = new Dispatcher());
+        builder.addEventListeners(new FakeButlerListener());
 
-        builder.setGame(Game.playing("JDA"));
+        builder.setActivity(Activity.playing("JDA"));
 
         Bot.jda = (JDAImpl) builder.build().awaitReady();
 

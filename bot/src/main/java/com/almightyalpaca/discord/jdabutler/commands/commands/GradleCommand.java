@@ -1,15 +1,15 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
+import com.almightyalpaca.discord.jdabutler.commands.Command;
 import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
 import com.almightyalpaca.discord.jdabutler.util.gradle.GradleUtil;
-import com.almightyalpaca.discord.jdabutler.commands.Command;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.util.List;
 import java.util.stream.Collectors;

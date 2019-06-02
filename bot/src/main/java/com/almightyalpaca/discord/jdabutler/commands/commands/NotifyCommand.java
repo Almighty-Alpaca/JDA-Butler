@@ -6,11 +6,11 @@ import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
-import net.dv8tion.jda.core.audit.ActionType;
-import net.dv8tion.jda.core.audit.AuditLogChange;
-import net.dv8tion.jda.core.audit.AuditLogKey;
-import net.dv8tion.jda.core.entities.*;
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.audit.ActionType;
+import net.dv8tion.jda.api.audit.AuditLogChange;
+import net.dv8tion.jda.api.audit.AuditLogKey;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -89,7 +89,7 @@ public class NotifyCommand extends Command
         List<Role> missingRoles = roles.stream().filter(r -> !member.getRoles().contains(r)).collect(Collectors.toList());
         if(missingRoles.size() > 0)
         {
-            guild.getController().addRolesToMember(member, missingRoles).reason("Notify command").queue(vd ->
+            guild.modifyMemberRoles(member, missingRoles, null).reason("Notify command").queue(vd ->
             {
                 logRoleAddition(sender, missingRoles);
                 respond(message, "Added you to role(s) "+getRoleListString(missingRoles));
@@ -101,7 +101,7 @@ public class NotifyCommand extends Command
         }
         else
         {
-            guild.getController().removeRolesFromMember(member, roles).reason("Notify command").queue(vd ->
+            guild.modifyMemberRoles(member, null, roles).reason("Notify command").queue(vd ->
             {
                 logRoleRemoval(sender, roles);
                 respond(message, "Removed you from role(s) "+getRoleListString(roles));
@@ -244,13 +244,13 @@ public class NotifyCommand extends Command
         }
 
         Role announcementRole = mentionMessage.getMentionedRoles().get(0);
-        OffsetDateTime abortTime = mentionMessage.getCreationTime();
+        OffsetDateTime abortTime = mentionMessage.getTimeCreated();
 
         TLongSet blacklistedUsers = new TLongHashSet();
 
-        searchChannel.getGuild().getAuditLogs().type(ActionType.MEMBER_ROLE_UPDATE).forEachAsync(log ->
+        searchChannel.getGuild().retrieveAuditLogs().type(ActionType.MEMBER_ROLE_UPDATE).forEachAsync(log ->
         {
-            if(log.getCreationTime().isBefore(abortTime))
+            if(log.getTimeCreated().isBefore(abortTime))
                 return false;
             AuditLogChange removedRoles = log.getChangeByKey(AuditLogKey.MEMBER_ROLES_REMOVE);
             if(removedRoles == null)

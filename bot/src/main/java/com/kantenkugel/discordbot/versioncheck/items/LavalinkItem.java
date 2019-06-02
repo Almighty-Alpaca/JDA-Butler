@@ -2,7 +2,7 @@ package com.kantenkugel.discordbot.versioncheck.items;
 
 import com.kantenkugel.discordbot.versioncheck.GithubVersionSupplier;
 import com.kantenkugel.discordbot.versioncheck.RepoType;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.entities.User;
 
 import java.util.Arrays;
 import java.util.List;

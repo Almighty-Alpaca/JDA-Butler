@@ -1,11 +1,13 @@
 package com.almightyalpaca.discord.jdabutler;
 
 import com.almightyalpaca.discord.jdabutler.eval.Engine;
-import net.dv8tion.jda.core.entities.*;
-import net.dv8tion.jda.core.events.ShutdownEvent;
-import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import net.dv8tion.jda.core.requests.restaction.AuditableRestAction;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.ShutdownEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 
 public class EventListener extends ListenerAdapter
 {
@@ -20,8 +22,7 @@ public class EventListener extends ListenerAdapter
             final User user = member.getUser();
             if(user.isBot())
             {
-                final AuditableRestAction<Void> action = guild.getController()
-                        .addSingleRoleToMember(member, Bot.getRoleBots()).reason("Auto Role");
+                final AuditableRestAction<Void> action = guild.addRoleToMember(member, Bot.getRoleBots()).reason("Auto Role");
                 final String message = String.format("Added %#s (%d) to %s", user, user.getIdLong(), Bot.getRoleBots().getName());
                 action.queue(
                         v -> Bot.LOG.info(message),

@@ -2,8 +2,8 @@ package com.almightyalpaca.discord.jdabutler.util;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsUser;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.User;
 
 import java.text.DateFormat;
 import java.time.Instant;

@@ -1,11 +1,17 @@
 package com.kantenkugel.discordbot.graphql;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import com.google.gson.*;
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
-import net.dv8tion.jda.core.utils.JDALogger;
-import okhttp3.*;
+import net.dv8tion.jda.internal.utils.JDALogger;
+import okhttp3.MediaType;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;

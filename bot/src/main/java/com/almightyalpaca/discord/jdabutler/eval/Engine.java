@@ -52,7 +52,7 @@ public enum Engine
 
     };
 
-    public static final Collection<String> DEFAULT_IMPORTS = Arrays.asList("net.dv8tion.jda.core.entities.impl", "net.dv8tion.jda.core.managers", "net.dv8tion.jda.core.entities", "net.dv8tion.jda.core", "java.lang", "java.io", "java.math", "java.util", "java.util.concurrent", "java.time");
+    public static final Collection<String> DEFAULT_IMPORTS = Arrays.asList("net.dv8tion.jda.api.entities.impl", "net.dv8tion.jda.api.managers", "net.dv8tion.jda.api.entities", "net.dv8tion.jda.api", "java.lang", "java.io", "java.math", "java.util", "java.util.concurrent", "java.time");
 
     private final static ScheduledExecutorService service = Executors.newScheduledThreadPool(1, MiscUtils.newThreadFactory("eval-thread", false));
 

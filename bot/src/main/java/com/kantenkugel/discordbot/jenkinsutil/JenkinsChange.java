@@ -1,6 +1,6 @@
 package com.kantenkugel.discordbot.jenkinsutil;
 
-import net.dv8tion.jda.core.utils.tuple.Pair;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

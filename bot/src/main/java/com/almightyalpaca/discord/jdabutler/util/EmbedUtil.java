@@ -1,9 +1,9 @@
 package com.almightyalpaca.discord.jdabutler.util;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.api.EmbedBuilder;
 
-import java.awt.*;
+import java.awt.Color;
 
 public class EmbedUtil
 {
