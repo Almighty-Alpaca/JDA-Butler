@@ -8,14 +8,16 @@ import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
-import com.kantenkugel.discordbot.versioncheck.*;
+import com.kantenkugel.discordbot.versioncheck.JenkinsVersionSupplier;
+import com.kantenkugel.discordbot.versioncheck.RepoType;
+import com.kantenkugel.discordbot.versioncheck.UpdateHandler;
 import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
 import com.kantenkugel.discordbot.versioncheck.changelog.JenkinsChangelogProvider;
-import net.dv8tion.jda.core.EmbedBuilder;
-import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.MessageEmbed;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.MessageBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.io.IOException;
 import java.util.List;

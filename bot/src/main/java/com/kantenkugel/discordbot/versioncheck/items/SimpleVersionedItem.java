@@ -4,7 +4,7 @@ import com.kantenkugel.discordbot.versioncheck.DependencyType;
 import com.kantenkugel.discordbot.versioncheck.RepoType;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.entities.User;
 
 import java.util.Arrays;
 import java.util.List;

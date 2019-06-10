@@ -2,11 +2,11 @@ package com.almightyalpaca.discord.jdabutler.commands;
 
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import gnu.trove.map.TLongObjectMap;
-import net.dv8tion.jda.core.Permission;
-import net.dv8tion.jda.core.entities.*;
-import net.dv8tion.jda.core.events.message.react.MessageReactionAddEvent;
-import net.dv8tion.jda.core.exceptions.PermissionException;
-import net.dv8tion.jda.core.utils.MiscUtil;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.exceptions.PermissionException;
+import net.dv8tion.jda.api.utils.MiscUtil;
 
 import java.util.List;
 import java.util.Set;

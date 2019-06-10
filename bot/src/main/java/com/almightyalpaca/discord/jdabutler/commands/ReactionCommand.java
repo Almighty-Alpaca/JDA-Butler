@@ -1,6 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.commands;
 
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.User;
 
 import java.util.List;
 import java.util.Set;

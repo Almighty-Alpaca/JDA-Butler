@@ -1,14 +1,14 @@
 package com.kantenkugel.discordbot.versioncheck.items;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.kantenkugel.discordbot.versioncheck.DependencyType;
+import com.kantenkugel.discordbot.versioncheck.RepoType;
 import com.kantenkugel.discordbot.versioncheck.UpdateHandler;
 import com.kantenkugel.discordbot.versioncheck.VersionUtils;
 import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
-import com.kantenkugel.discordbot.versioncheck.DependencyType;
-import com.kantenkugel.discordbot.versioncheck.RepoType;
-import net.dv8tion.jda.core.entities.Role;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 
 import java.util.List;
 import java.util.Objects;

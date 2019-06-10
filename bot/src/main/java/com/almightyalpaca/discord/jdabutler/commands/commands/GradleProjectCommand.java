@@ -1,11 +1,11 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
-import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
+import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public class GradleProjectCommand extends Command
 {

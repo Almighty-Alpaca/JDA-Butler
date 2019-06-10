@@ -3,7 +3,7 @@ package com.kantenkugel.discordbot.versioncheck;
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
-import net.dv8tion.jda.core.utils.tuple.Pair;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.slf4j.Logger;
@@ -15,7 +15,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.UncheckedIOException;
 import java.net.SocketTimeoutException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
