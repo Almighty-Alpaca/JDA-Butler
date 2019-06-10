@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 public class MiscUtils
 {
+    private static final String HASTEBIN_SERVER = "https://hasteb.in/"; //requires trailing slash
+
     public static ThreadFactory newThreadFactory(String threadName)
     {
         return newThreadFactory(threadName, Bot.LOG);
@@ -43,11 +45,10 @@ public class MiscUtils
 
     public static String hastebin(final String text)
     {
-        String server = "https://haste.kantenkugel.com/"; //requires trailing slash
         try(Response response = Bot.httpClient.newCall(
                 new Request.Builder()
                         .post(RequestBody.create(MediaType.parse("text/plain"), text))
-                        .url(server + "documents")
+                        .url(HASTEBIN_SERVER + "documents")
                         .header("User-Agent", "Mozilla/5.0 JDA-Butler")
                         .build()
         ).execute())
@@ -56,7 +57,7 @@ public class MiscUtils
                 return null;
 
             JSONObject obj = new JSONObject(new JSONTokener(response.body().charStream()));
-            return server + obj.getString("key");
+            return HASTEBIN_SERVER + obj.getString("key");
         }
 
         catch (final Exception e)
