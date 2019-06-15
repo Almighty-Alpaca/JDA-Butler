@@ -95,7 +95,6 @@ public class Bot
         Bot.config = ConfigFactory.getConfig(new File("config.json"));
 
         final JDABuilder builder = new JDABuilder(AccountType.BOT);
-        builder.setAudioEnabled(false);
         builder.setBulkDeleteSplittingEnabled(false);
 
         final String token = Bot.config.getString("discord.token", "Your token");
