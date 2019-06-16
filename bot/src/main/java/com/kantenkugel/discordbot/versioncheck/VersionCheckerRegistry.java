@@ -106,7 +106,7 @@ public class VersionCheckerRegistry
                 JenkinsApi.JDA4_JENKINS,
                 544915548366962688L, // @JDA 4 Updates
                 289742061220134912L, // #experimental
-                "JDA4-Alpha")        // JDA4-Alpha job
+                "JDA4-Beta")         // JDA4-Beta job
         );
         //Lavaplayer
         addItem(new SimpleVersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT, "com.sedmelluq", "lavaplayer")
