@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
 //    id 'com.sedmelluq.jdaction' version '1.0.2' //warning: fails horribly on gradle 4.8+
 }
@@ -56,6 +58,48 @@ dependencies {
     compile "com.kotcrab.remark:remark:1.0.0"
 
     testCompile 'junit:junit:4.12'
+}
+
+task getBotVersionInfo(type: Exec) {
+    commandLine 'git', 'log', '-1', '--format=[%ci]%n%H%n%s'
+
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine = ['cmd', '/c'] + commandLine
+    }
+
+    //store the output instead of printing to the console:
+    standardOutput = new ByteArrayOutputStream()
+
+    doLast {
+        tasks.versionSourcesForRelease.configure {
+            from (sourceSets.main.allJava) {
+                include '**/BotVersion.java'
+                filter(ReplaceTokens, tokens: [
+                        VERSION: standardOutput.toString().trim().replace("\n", "\\n").replace("\"", "\\\""),
+                        BUILD: buildNumber
+                ])
+            }
+        }
+    }
+}
+
+task versionSourcesForRelease(type: Copy) {
+    dependsOn getBotVersionInfo
+    into 'build/filteredSrc'
+
+    includeEmptyDirs = false
+}
+
+task generateJavaSources(type: SourceTask, dependsOn: versionSourcesForRelease) {
+    def javaSources = sourceSets.main.allJava.filter {
+        it.name != 'BotVersion.java'
+    }
+    source = javaSources + versionSourcesForRelease.destinationDir
+}
+
+compileJava {
+    dependsOn generateJavaSources
+    source = generateJavaSources.source
 }
 
 run {

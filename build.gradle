@@ -5,6 +5,11 @@ plugins {
 }
 
 allprojects {
+    def build = System.getenv("BUILD_NUMBER") ?: System.getProperty("BUILD_NUMBER") ?: "DEV"
+    ext {
+        buildNumber = build == "DEV" ? build : "#" + build
+    }
+
     dependencyUpdates.resolutionStrategy = {
         componentSelection { rules ->
             rules.all { ComponentSelection selection ->
@@ -39,6 +44,28 @@ subprojects {
     }
 }
 
-project(':bot') {
+//Configurations for run
+project(':launcher') {
     tasks.run.enabled = false
 }
+
+/*
+    Due to gradle not terminating processes run via the run task correctly,
+    running the launcher results in a stranded (still running) bot process when ctrl+c-ing
+ */
+//project('launcher') {
+//    clean.doFirst {
+//        delete "${project.rootDir}/Bot-all.jar"
+//    }
+//
+//    run {
+//        systemProperties System.properties
+//        dependsOn ':bot:shadowJar'
+//        doFirst {
+//            copy {
+//                from project(':bot').buildDir.toPath().resolve('libs/Bot-all.jar')
+//                into project.rootDir
+//            }
+//        }
+//    }
+//}
