@@ -17,9 +17,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class DateVersionCommand extends Command
 {
@@ -65,8 +62,7 @@ public class DateVersionCommand extends Command
         }
         catch (IOException | NumberFormatException ex)
         {
-            final String fullStackTrace = getFullStackTrace(ex);
-            Bot.LOG.error("Exception in DateVersionCommand occured!" + System.lineSeparator() + fullStackTrace);
+            Bot.LOG.error("Exception in DateVersionCommand occured!", ex);
 
             String title;
             if (ex instanceof IOException)
@@ -102,15 +98,6 @@ public class DateVersionCommand extends Command
             .build();
 
         reply(event, successEmbed);
-    }
-
-    private String getFullStackTrace(Exception ex) {
-        List<StackTraceElement> stackTraceElements = Arrays.asList(ex.getStackTrace());
-        String stacktrace = stackTraceElements.stream().map(entry -> "\tat " + entry.toString()).collect(Collectors.joining(System.lineSeparator()));
-
-        StringBuilder builder = new StringBuilder(String.format("%s: %s" + System.lineSeparator(), ex.getClass().getName(), ex.getMessage()));
-        builder.append(stacktrace);
-        return builder.toString();
     }
 
     @Override
