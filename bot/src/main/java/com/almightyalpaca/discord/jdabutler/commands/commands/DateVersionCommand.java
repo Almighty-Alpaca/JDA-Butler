@@ -15,38 +15,37 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.awt.Color;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DateVersionCommand extends Command
 {
     private static final String DATE_FORMAT = "yyyy-MM-dd; HH:mm:ss";
-    private static final String[] ALIASES = { "date", "published" };
+    private static final String[] ALIASES = { "published" };
     private static final JenkinsApi JENKINS = JenkinsApi.JDA_JENKINS;
-    private static final Calendar CAL = Calendar.getInstance();
-    private static final DateFormat DFM = getDateFormat();
+    private static final DateTimeFormatter FORMATTER = getDateTimeFormatter();
 
-    private static DateFormat getDateFormat() {
-        DateFormat dfm;
+    private static DateTimeFormatter getDateTimeFormatter() {
+        DateTimeFormatter formatter;
         try
         {
-            dfm = new SimpleDateFormat(DATE_FORMAT);
+            formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
         }
         catch (NullPointerException | IllegalArgumentException ex)
         {
             final String defaultFormat = "dd.MM.yyyy; HH:mm:ss";
             Bot.LOG.warn("Given format for DateVersionCommand was not valid, using: " + defaultFormat);
-            dfm = new SimpleDateFormat(defaultFormat);
+            formatter = DateTimeFormatter.ofPattern(defaultFormat);
         }
-        return dfm;
+        return formatter;
     }
 
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        final EmbedBuilder eb = new EmbedBuilder();
-
         JenkinsBuild build;
         try
         {
@@ -66,6 +65,9 @@ public class DateVersionCommand extends Command
         }
         catch (IOException | NumberFormatException ex)
         {
+            final String fullStackTrace = getFullStackTrace(ex);
+            Bot.LOG.error("Exception in DateVersionCommand occured!" + System.lineSeparator() + fullStackTrace);
+
             String title;
             if (ex instanceof IOException)
                 title = "Connection to the Jenkins Server timed out!";
@@ -74,19 +76,17 @@ public class DateVersionCommand extends Command
             else
                 title = "Unknown Error occured!";
 
-            final MessageEmbed failureEmbed = eb.setAuthor("Error occured!", null, EmbedUtil.getJDAIconUrl())
-                    .setTitle(title, null)
-                    .setColor(Color.RED)
-                    .build();
+            final MessageEmbed failureEmbed = new EmbedBuilder().setAuthor("Error occured!", null, EmbedUtil.getJDAIconUrl())
+                .setTitle(title, null)
+                .setColor(Color.RED)
+                .build();
             reply(event, failureEmbed);
             return;
         }
 
         // Get time of build
-        final long buildTime = build.buildTime.toInstant().toEpochMilli();
-
-        CAL.setTimeInMillis(buildTime);
-        final String publishedTime = DFM.format(CAL.getTime());
+        OffsetDateTime buildTime = build.buildTime;
+        final String publishedTime = FORMATTER.format(buildTime);
 
         // Get correct version (copied from JenkinsChangelogProvider#getChangelogs(String, String))
         final String buildVersion = build.status == JenkinsBuild.Status.SUCCESS
@@ -94,6 +94,7 @@ public class DateVersionCommand extends Command
                 : build.buildNum + " (failed)";
 
         // Return Info to User
+        final EmbedBuilder eb = new EmbedBuilder();
         EmbedUtil.setColor(eb);
 
         final MessageEmbed successEmbed = eb.setAuthor("Release Time of Version " + buildVersion, build.getUrl(), EmbedUtil.getJDAIconUrl())
@@ -101,6 +102,15 @@ public class DateVersionCommand extends Command
             .build();
 
         reply(event, successEmbed);
+    }
+
+    private String getFullStackTrace(Exception ex) {
+        List<StackTraceElement> stackTraceElements = Arrays.asList(ex.getStackTrace());
+        String stacktrace = stackTraceElements.stream().map(entry -> "\tat " + entry.toString()).collect(Collectors.joining(System.lineSeparator()));
+
+        StringBuilder builder = new StringBuilder(String.format("%s: %s" + System.lineSeparator(), ex.getClass().getName(), ex.getMessage()));
+        builder.append(stacktrace);
+        return builder.toString();
     }
 
     @Override
