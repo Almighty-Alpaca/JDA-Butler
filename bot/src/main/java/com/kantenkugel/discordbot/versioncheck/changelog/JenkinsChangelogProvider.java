@@ -128,7 +128,8 @@ public class JenkinsChangelogProvider implements ChangelogProvider
         return fields;
     }
 
-    private static int extractBuild(String version)
+    // public since also accessed in the ChangelogCommand class
+    public static int extractBuild(String version)
     {
         int i = version.lastIndexOf('_');
         try

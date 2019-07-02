@@ -2,6 +2,8 @@ package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.Command;
+import com.almightyalpaca.discord.jdabutler.util.DateUtils;
+import com.almightyalpaca.discord.jdabutler.util.DurationUtils;
 import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsApi;
 import com.kantenkugel.discordbot.jenkinsutil.JenkinsBuild;
@@ -15,30 +17,15 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateVersionCommand extends Command
 {
-    private static final String DATE_FORMAT = "yyyy-MM-dd; HH:mm:ss";
     private static final String[] ALIASES = { "published" };
-    private static final JenkinsApi JENKINS = JenkinsApi.JDA_JENKINS;
-    private static final DateTimeFormatter FORMATTER = getDateTimeFormatter();
-
-    private static DateTimeFormatter getDateTimeFormatter() {
-        DateTimeFormatter formatter;
-        try
-        {
-            formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
-        }
-        catch (NullPointerException | IllegalArgumentException ex)
-        {
-            final String defaultFormat = "dd.MM.yyyy; HH:mm:ss";
-            Bot.LOG.warn("Given format for DateVersionCommand was not valid, using: " + defaultFormat);
-            formatter = DateTimeFormatter.ofPattern(defaultFormat);
-        }
-        return formatter;
-    }
+    private static final JenkinsApi JENKINS = DateUtils.JENKINS;
+    private static final DateTimeFormatter FORMATTER = DateUtils.getDateTimeFormatter();
 
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
@@ -81,8 +68,14 @@ public class DateVersionCommand extends Command
         }
 
         // Get time of build
-        OffsetDateTime buildTime = build.buildTime;
+        final OffsetDateTime buildTime = build.buildTime;
         final String publishedTime = FORMATTER.format(buildTime);
+
+        final Duration dur = DurationUtils.toDuration(System.currentTimeMillis() - buildTime.toInstant().toEpochMilli());
+        final String difference = DurationUtils.formatDuration(dur, true);
+
+        final int lastSpace = difference.lastIndexOf(' ');
+        final String differenceWithoutMs = lastSpace < 0 ? difference : difference.substring(0, lastSpace);
 
         // Get correct version (copied from JenkinsChangelogProvider#getChangelogs(String, String))
         final String buildVersion = build.status == JenkinsBuild.Status.SUCCESS
@@ -94,7 +87,7 @@ public class DateVersionCommand extends Command
         EmbedUtil.setColor(eb);
 
         final MessageEmbed successEmbed = eb.setAuthor("Release Time of Version " + buildVersion, build.getUrl(), EmbedUtil.getJDAIconUrl())
-            .setTitle(publishedTime, null)
+            .setTitle(publishedTime).setDescription(String.format("That was approximately %s ago.", differenceWithoutMs))
             .build();
 
         reply(event, successEmbed);
