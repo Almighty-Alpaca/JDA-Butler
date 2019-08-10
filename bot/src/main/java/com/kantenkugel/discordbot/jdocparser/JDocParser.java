@@ -251,7 +251,9 @@ public class JDocParser {
                         } else if(tmp.tagName().equals("div") && tmp.className().equals("deprecationBlock")) {
                             //deprecation block(jdk11)
                             Element deprecationElem = tmp.getElementsByClass("deprecationComment").first();
-                            fields.put("Deprecated:", Collections.singletonList(JDocUtil.formatText(deprecationElem.html(), baseLink)));
+                            if(deprecationElem != null) {
+                                fields.put("Deprecated:", Collections.singletonList(JDocUtil.formatText(deprecationElem.html(), baseLink)));
+                            }
                         } else if(tmp.tagName().equals("div") && tmp.className().equals("block")) {
                             //main block of content (description or deprecation (prej11))
                             Element deprecationElem = tmp.getElementsByClass("deprecationComment").first();
