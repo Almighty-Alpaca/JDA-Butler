@@ -82,7 +82,7 @@ public class JDocParserTest {
         List<Documentation> message = JDoc.get("Message");
         assertEquals("Message should be found as single result", 1, message.size());
         assertEquals("URL of Message docs mismatches",
-                "https://ci.dv8tion.net/job/JDA/javadoc/net/dv8tion/jda/core/entities/Message.html",
+                "https://ci.dv8tion.net/job/JDA/javadoc/net/dv8tion/jda/api/entities/Message.html",
                 message.get(0).getUrl(JDocUtil.JDOCBASE)
         );
     }
