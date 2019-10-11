@@ -8,7 +8,7 @@ import java.util.List;
 
 public enum RepoType
 {
-    JCENTER("http://jcenter.bintray.com/", Pair.of("jcenter()", null), "bintray"),
+    JCENTER("https://jcenter.bintray.com/", Pair.of("jcenter()", null), "bintray"),
     MAVENCENTRAL("https://repo.maven.apache.org/maven2/", null, "central", "maven");
 
 
