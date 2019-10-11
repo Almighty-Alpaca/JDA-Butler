@@ -155,19 +155,40 @@ public class DocsCommand extends ReactionCommand
         }
         if (content.trim().equalsIgnoreCase("help"))
         {
-            reply(event, "Prints out JDA documentation.\n" +
-                    "Syntax: `"+Bot.config.getString("prefix")+"docs [term | search:[params:]term | java:term | help]`.\n" +
-                    "While not in special mode, `term` is a class name or a class-prefixed variable or method name (for example `JDA#getUserById`, `RestAction.queue()`).\n" +
-                    "Both `.` and `#` can be used to specify inner classes, methods and variables.\n" +
-                    "Omitting the method parentheses will print all available methods with given name. " +
-                    "When specified (with parameter types), only the specific one is returned (`RestAction#queue` vs `RestAction.queue(Consumer)`).\n\n" +
-                    "When in `search` mode, `.` and `#` won't work and all documentations that **contain** `term` in their name/signature are returned.\n" +
-                    "Search parameters can be used to restrict the search:\n" +
-                    "`f` to only search for methods\n" +
-                    "`var` to only search for variables\n" +
-                    "`c` to only search for classes\n" +
-                    "`cs` to make matching case-sensitive\n\n" +
-                    "When in `java` mode, java 8 docs are searched instead. Syntax for `term` is the same as without mode."
+            String cmd = Bot.config.getString("prefix") + "docs";
+            reply(event, "Searches and prints out documentation.\n"
+                + "Syntax: `" + cmd + " [term | search:[params:]term | java:term | help]`.\n"
+                + "\n"
+                + "**Standard Mode**\n"
+                + "When in `standard` mode, `term` is a class name or a class-prefixed variable or method name. "
+                + "Both `.` and `#` can be used to specify inner classes, methods and variables. "
+                + "Omitting the method parentheses will print all available methods with given name. "
+                + "When specified (with parameter types), only the specific one is returned.\n"
+                + "\n"
+                + "__Examples__:\n"
+                + "`" + cmd + " JDA#getUserById`\n"
+                + "`" + cmd + " TextChannel.sendMessage`\n"
+                + "`" + cmd + " TextChannel.sendMessage(Message)`\n"
+                + "\n"
+                + "**Search Mode**\n"
+                + "When in `search` mode, `.` and `#` won't work and all documentations that **contain** `term` in their name/signature are returned.\n"
+                + "Search parameters can be used to restrict the search:\n"
+                + "   `f  ` - to only search for methods\n"
+                + "   `var` - to only search for variables\n"
+                + "   `c  ` - to only search for classes\n"
+                + "   `cs ` - to make matching case-sensitive\n"
+                + "\n"
+                + "__Examples__:\n"
+                + "`" + cmd + " search:onGuildMember`\n"
+                + "`" + cmd + " search:c:join`\n"
+                + "`" + cmd + " search:f:getTextChannel`\n"
+                + "\n"
+                + "**Java JDK Mode**\n"
+                + "When in `java` mode, java 8 docs are searched instead. Syntax for `term` is the same as `standard` mode.\n"
+                + "\n"
+                + "__Examples__:\n"
+                +  "`" + cmd + " java:BufferedInputStream`\n"
+                +  "`" + cmd + " java:List.get`\n"
             );
             return;
         }
