@@ -35,7 +35,7 @@ public class SlowmodeCommand extends Command
         {
             try
             {
-                seconds = Math.max(0, Math.min(Integer.parseInt(args), 120));
+                seconds = Math.max(0, Math.min(Integer.parseInt(args), TextChannel.MAX_SLOWMODE));
             }
             catch (NumberFormatException ignored)
             {
