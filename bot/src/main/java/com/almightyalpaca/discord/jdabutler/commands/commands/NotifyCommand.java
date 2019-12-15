@@ -6,6 +6,7 @@ import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogChange;
 import net.dv8tion.jda.api.audit.AuditLogKey;
@@ -50,6 +51,24 @@ public class NotifyCommand extends Command
             {
                 sendFailed(message);
             }
+            return;
+        }
+        else if(content.equalsIgnoreCase("list"))
+        {
+            EmbedBuilder embed = new EmbedBuilder();
+            embed.setDescription("You can subscribe to one of the following items. To unsubscribe simply type the command again.");
+            VersionCheckerRegistry.getVersionedItems().stream()
+                .filter(item -> item.getAnnouncementRole() != null)
+                .map(item ->
+                    new MessageEmbed.Field(
+                        item.getName().toUpperCase(),
+                        item.getDescription() +
+                            "\nCommand: `!notify " + item.getName().toLowerCase() + "`",
+                        false
+                    )
+                ).forEach(embed::addField);
+
+            channel.sendMessage(embed.build()).queue();
             return;
         }
 
@@ -139,7 +158,7 @@ public class NotifyCommand extends Command
     @Override
     public String getHelp()
     {
-        return "Notifies you about updates. Usage: `!notify [item...]`";
+        return "Notifies you about updates. Usage: `!notify [item...]` or `!notify list` for a list of subscription options.";
     }
 
     @Override

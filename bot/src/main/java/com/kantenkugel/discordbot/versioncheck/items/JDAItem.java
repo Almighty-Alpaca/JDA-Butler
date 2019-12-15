@@ -59,6 +59,11 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     }
 
     @Override
+    public String getDescription() {
+        return "Updates for every " + getName() + " development build";
+    }
+
+    @Override
     public RepoType getRepoType()
     {
         return RepoType.JCENTER;

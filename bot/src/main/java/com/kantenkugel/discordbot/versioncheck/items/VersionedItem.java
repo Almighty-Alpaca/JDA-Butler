@@ -25,6 +25,13 @@ public abstract class VersionedItem
     public abstract String getName();
 
     /**
+     * The description of this version item, used for listing purposes.
+     *
+     * @return  The description
+     */
+    public abstract String getDescription();
+
+    /**
      * If available, this is used in the registry lookup methods to get this item via alternative names.
      * Should be collision free with other items.
      *

@@ -37,6 +37,9 @@ public class ButlerItem extends VersionedItem implements UpdateHandler
     }
 
     @Override
+    public String getDescription() { return null; } // Unused
+
+    @Override
     public RepoType getRepoType()
     {
         return null;
