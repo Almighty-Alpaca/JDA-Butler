@@ -68,6 +68,13 @@ public class NotifyCommand extends Command
                     )
                 ).forEach(embed::addField);
 
+            embed.addField(
+                "JDA-EXPERIMENTAL",
+                "Experimental builds of JDA. Grants access to <#289742061220134912>." +
+                    "\nCommand: `!notify experimental`",
+                false
+            );
+
             reply(event, embed.build());
             return;
         }
