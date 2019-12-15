@@ -29,7 +29,7 @@ public abstract class VersionedItem
      *
      * @return  The description
      */
-    public abstract String getDescription();
+    public String getDescription() { throw new UnsupportedOperationException(); }
 
     /**
      * If available, this is used in the registry lookup methods to get this item via alternative names.

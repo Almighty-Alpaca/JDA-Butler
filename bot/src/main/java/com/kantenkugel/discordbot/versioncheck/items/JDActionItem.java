@@ -31,9 +31,6 @@ public class JDActionItem extends VersionedItem
     }
 
     @Override
-    public String getDescription() { return null; } // Unused
-
-    @Override
     public RepoType getRepoType()
     {
         return null;

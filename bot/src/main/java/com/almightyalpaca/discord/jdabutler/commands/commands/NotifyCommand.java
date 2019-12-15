@@ -7,6 +7,7 @@ import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogChange;
 import net.dv8tion.jda.api.audit.AuditLogKey;
@@ -68,7 +69,7 @@ public class NotifyCommand extends Command
                     )
                 ).forEach(embed::addField);
 
-            channel.sendMessage(embed.build()).queue();
+            reply(event, embed.build());
             return;
         }
 
@@ -339,6 +340,16 @@ public class NotifyCommand extends Command
     }
 
     private static void respond(Message origMsg, String newMessageContent)
+    {
+        respond(origMsg, new MessageBuilder(newMessageContent).build());
+    }
+
+    private static void respond(Message origMsg, MessageEmbed newMessageContent)
+    {
+        respond(origMsg, new MessageBuilder(newMessageContent).build());
+    }
+
+    private static void respond(Message origMsg, Message newMessageContent)
     {
         origMsg.getChannel().sendMessage(newMessageContent).queue(responseMsg ->
         {

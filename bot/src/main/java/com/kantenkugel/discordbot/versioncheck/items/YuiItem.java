@@ -21,9 +21,6 @@ public class YuiItem extends VersionedItem
     }
 
     @Override
-    public String getDescription() { return null; } // Unused
-
-    @Override
     public RepoType getRepoType()
     {
         return null;
