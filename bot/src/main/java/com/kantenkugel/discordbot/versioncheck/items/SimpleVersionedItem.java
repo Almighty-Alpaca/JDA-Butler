@@ -75,6 +75,11 @@ public class SimpleVersionedItem extends VersionedItem
     }
 
     @Override
+    public String getDescription() {
+        return "Announcements for " + getName();
+    }
+
+    @Override
     public List<String> getAliases()
     {
         return aliases;
