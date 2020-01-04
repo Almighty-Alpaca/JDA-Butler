@@ -5,7 +5,9 @@ import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.exceptions.PermissionException;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.MiscUtil;
 
 import java.util.List;
@@ -98,7 +100,7 @@ public class ReactionListenerRegistry
 
             try
             {
-                event.getReaction().removeReaction(event.getUser()).queue();
+                event.getReaction().removeReaction(event.getUser()).queue(null, ErrorResponseException.ignore(ErrorResponse.UNKNOWN_MESSAGE));
             } catch (PermissionException ignored) {}
 
             if (!allowedUsers.isEmpty() && !allowedUsers.contains(event.getUser()))

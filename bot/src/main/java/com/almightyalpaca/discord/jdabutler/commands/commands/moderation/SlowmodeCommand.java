@@ -1,4 +1,4 @@
-package com.almightyalpaca.discord.jdabutler.commands.commands;
+package com.almightyalpaca.discord.jdabutler.commands.commands.moderation;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.Command;

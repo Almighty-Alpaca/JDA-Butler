@@ -15,7 +15,6 @@ import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil
 import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import com.kantenkugel.discordbot.fakebutler.FakeButlerListener;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
@@ -105,7 +104,6 @@ public class Bot
         Bot.listener = new EventListener();
         builder.addEventListeners(Bot.listener);
         builder.addEventListeners(Bot.dispatcher = new Dispatcher());
-        builder.addEventListeners(new FakeButlerListener());
 
         builder.setActivity(Activity.playing("JDA"));
 

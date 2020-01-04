@@ -2,6 +2,7 @@ package com.almightyalpaca.discord.jdabutler.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
 import com.almightyalpaca.discord.jdabutler.commands.commands.*;
+import com.almightyalpaca.discord.jdabutler.commands.commands.moderation.SlowmodeCommand;
 import com.almightyalpaca.discord.jdabutler.commands.commands.moderation.SoftbanCommand;
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.google.common.util.concurrent.MoreExecutors;
