@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 
 public class JDocParser {
 
+    private static final int MAX_ENUM_FIELDS = 15;
+
     //return, funcName, parameters
     public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z.<>?\\[\\]]+)\\s+([a-zA-Z][a-zA-Z0-9]+)\\(([@a-zA-Z0-9\\s.,<>?\\[\\]]*)\\)");
 
@@ -352,7 +354,12 @@ public class JDocParser {
             if(!isEnum)
                 return null;
             Map<String, List<String>> fields = new HashMap<>();
-            fields.put("Values:", classValues.values().stream().map(valueDoc -> valueDoc.name).collect(Collectors.toList()));
+            List<String> fieldNames = classValues.values().stream().limit(MAX_ENUM_FIELDS)
+                    .map(valueDoc -> valueDoc.name).collect(Collectors.toList());
+            if(classValues.size() > MAX_ENUM_FIELDS) {
+                fieldNames.add("... and more ...");
+            }
+            fields.put("Values:", fieldNames);
             return fields;
         }
     }
