@@ -36,13 +36,15 @@ import java.util.stream.Collectors;
 
 public class JDocParser {
 
+    private static final int MAX_ENUM_FIELDS = 15;
+
     //return, funcName, parameters
     public static final Pattern METHOD_PATTERN = Pattern.compile("([a-zA-Z.<>?\\[\\]]+)\\s+([a-zA-Z][a-zA-Z0-9]+)\\(([@a-zA-Z0-9\\s.,<>?\\[\\]]*)\\)");
 
     //annotations in front of method
     public static final Pattern ANNOTATION_PATTERN = Pattern.compile("^((?:@[^\n]+\n)+)");
     //annotation splitter
-    public static final Pattern ANNOTATION_PARTS = Pattern.compile("@([a-zA-Z]+)(\\(\\S*\\))?\n");
+    public static final Pattern ANNOTATION_PARTS = Pattern.compile("@([a-zA-Z]+)(\\((\"?).*?\\3\\))?\n");
     //type, name
     public static final Pattern METHOD_ARG_PATTERN = Pattern.compile("(?:[a-z]+\\.)*([a-zA-Z][a-zA-Z0-9.<,?>\\[\\]]*)\\s+([a-zA-Z][a-zA-Z0-9]*)(?:\\s*,|$)");
 
@@ -352,7 +354,12 @@ public class JDocParser {
             if(!isEnum)
                 return null;
             Map<String, List<String>> fields = new HashMap<>();
-            fields.put("Values:", classValues.values().stream().map(valueDoc -> valueDoc.name).collect(Collectors.toList()));
+            List<String> fieldNames = classValues.values().stream().limit(MAX_ENUM_FIELDS)
+                    .map(valueDoc -> valueDoc.name).collect(Collectors.toList());
+            if(classValues.size() > MAX_ENUM_FIELDS) {
+                fieldNames.add("... and more ...");
+            }
+            fields.put("Values:", fieldNames);
             return fields;
         }
     }
@@ -369,22 +376,27 @@ public class JDocParser {
         final String                            desc;
         final OrderedMap<String, List<String>>  fields;
 
-        private MethodDocumentation(ClassDocumentation parent, String functionSig, final String hashLink, final String desc, final OrderedMap<String, List<String>> fields) {
+        protected MethodDocumentation(ClassDocumentation parent, String functionSig, final String hashLink, final String desc, final OrderedMap<String, List<String>> fields) {
             functionSig = JDocUtil.fixSignature(functionSig);
-            Matcher methodMatcher = METHOD_PATTERN.matcher(functionSig);
-            if(!methodMatcher.find()) {
-                System.out.println('"' + functionSig + '"');
-                throw new RuntimeException("Got method with no proper method signature: " + functionSig);
-            }
+            String noAnnoSig = functionSig;
+
             //check for documented annotations of method
             this.methodAnnos = new ArrayList<>();
             Matcher annoGroupMatcher = ANNOTATION_PATTERN.matcher(functionSig);
             if(annoGroupMatcher.find()) {
+                noAnnoSig = annoGroupMatcher.replaceFirst("");
                 Matcher annoMatcher = ANNOTATION_PARTS.matcher(annoGroupMatcher.group(1));
                 while(annoMatcher.find()) {
                     this.methodAnnos.add(new MethodAnnotation(annoMatcher.group(1), annoMatcher.group(2)));
                 }
             }
+
+            Matcher methodMatcher = METHOD_PATTERN.matcher(noAnnoSig);
+            if(!methodMatcher.find()) {
+                System.out.println('"' + functionSig + '"');
+                throw new RuntimeException("Got method with no proper method signature: " + functionSig);
+            }
+
             this.parent = parent;
             this.returnType = methodMatcher.group(1);
             this.functionName = methodMatcher.group(2);

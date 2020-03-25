@@ -70,7 +70,13 @@ public class JDoc {
             if(classDoc.methodDocs.containsKey(methodName.toLowerCase())) {
                 return getMethodDocs(classDoc, methodName, fixedSearchObj, fuzzy);
             } else if(classDoc.inheritedMethods.containsKey(methodName.toLowerCase())) {
-                return get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
+                List<Documentation> inherited = get(classDoc.inheritedMethods.get(methodName.toLowerCase()) + '.' + searchObj);
+                JDocParser.ClassDocumentation extendingClass = classDoc;
+                inherited = inherited.stream()
+                        .filter(i -> i instanceof JDocParser.MethodDocumentation)
+                        .map(i -> new InheritedDoc((JDocParser.MethodDocumentation) i, extendingClass))
+                        .collect(Collectors.toList());
+                return inherited;
             }
             return Collections.emptyList();
         }
@@ -293,6 +299,14 @@ public class JDoc {
             });
         } catch(Exception e) {
             JDocUtil.LOG.error("Failed fetching the j8 class index", e);
+        }
+    }
+
+    private static class InheritedDoc extends JDocParser.MethodDocumentation {
+        public InheritedDoc(JDocParser.MethodDocumentation inheritedDoc, JDocParser.ClassDocumentation childClass) {
+            super(childClass, inheritedDoc.functionSig, inheritedDoc.hashLink,
+                    String.format("**Inherited from %s**\n\n%s", inheritedDoc.parent.className, inheritedDoc.desc),
+                    inheritedDoc.fields);
         }
     }
 }
