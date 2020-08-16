@@ -36,6 +36,7 @@ public class SoftbanCommand extends Command
         final Guild guild = event.getGuild();
         final Member self = guild.getSelfMember();
 
+        final String reason = "Softban by " + sender.getName();
         for (final User user : mentions)
         {
             if (user == null)
@@ -43,16 +44,17 @@ public class SoftbanCommand extends Command
             final Member member = guild.getMember(user);
             if (member != null && !self.canInteract(member))
                 continue;
-            final String reason = "Softban by " + sender.getName();
-            guild.ban(user, 7).reason(reason).queue((v) -> guild.unban(user).reason(reason).queue());
+
+            guild.ban(user, 7).reason(reason)
+                 .flatMap((v) -> guild.unban(user).reason(reason))
+                 .queue();
         }
     }
 
     @Override
     public String[] getAliases()
     {
-        return new String[]
-        { "sb" };
+        return new String[] { "sb" };
     }
 
     @Override

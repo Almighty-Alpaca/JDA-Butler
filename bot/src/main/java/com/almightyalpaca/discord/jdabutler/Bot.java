@@ -18,10 +18,10 @@ import com.google.gson.JsonSyntaxException;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
-import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.internal.JDAImpl;
 import okhttp3.OkHttpClient;
 import org.slf4j.LoggerFactory;
@@ -93,12 +93,18 @@ public class Bot
 
         Bot.config = ConfigFactory.getConfig(new File("config.json"));
 
-        final JDABuilder builder = new JDABuilder(AccountType.BOT);
-        builder.setBulkDeleteSplittingEnabled(false);
-
         final String token = Bot.config.getString("discord.token", "Your token");
-        builder.setToken(token);
-        builder.setChunkingFilter(ChunkingFilter.NONE);
+        final JDABuilder builder = JDABuilder.createDefault(token);
+        builder.enableIntents(GatewayIntent.GUILD_MEMBERS); // used for join listener
+        builder.setMemberCachePolicy(MemberCachePolicy.OWNER.or((member) ->
+            // Cache elevated members for specific whitelists
+            // this is required for isAdmin and isHelper to work properly
+            member.getGuild().equals(getGuildJda())
+                && member.getRoles().stream().mapToLong(Role::getIdLong).anyMatch(role ->
+                    role == 169481978268090369L || // staff
+                    role == 183963327033114624L)   // helper
+        ));
+        builder.setBulkDeleteSplittingEnabled(false);
 
         Bot.config.save();
         Bot.listener = new EventListener();
