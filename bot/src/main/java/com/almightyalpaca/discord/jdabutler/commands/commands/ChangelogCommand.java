@@ -108,7 +108,7 @@ public class ChangelogCommand extends Command
         }
 
         MessageEmbed embed = eb.build();
-        if(embed.isSendable(AccountType.BOT))
+        if(embed.isSendable())
         {
             reply(event, embed);
         }

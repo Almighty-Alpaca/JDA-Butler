@@ -41,10 +41,10 @@ public class GradleUtil
     public static String getDependencyString(final VersionedItem item, final boolean pretty)
     {
         if (pretty)
-            return String.format("compile group: '%s', name: '%s', version: '%s'",
+            return String.format("implementation group: '%s', name: '%s', version: '%s'",
                     item.getGroupId(), item.getArtifactId(), item.getVersion());
         else
-            return String.format("compile '%s:%s:%s'", item.getGroupId(), item.getArtifactId(), item.getVersion());
+            return String.format("implementation '%s:%s:%s'", item.getGroupId(), item.getArtifactId(), item.getVersion());
     }
 
     public static String getPluginsBlock(final Collection<Pair<String, String>> plugins)
