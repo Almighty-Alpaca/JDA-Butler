@@ -14,7 +14,7 @@ public class GradleUtil
 
     public static final Collection<Pair<String, String>> DEFAULT_PLUGINS = Arrays.asList(new ImmutablePair<>("java", null), new ImmutablePair<>("application", null), new ImmutablePair<>("com.github.johnrengelman.shadow", GradleUtil.SHADOW_VERSION));
 
-    public static final String SHADOW_VERSION = "4.0.4";
+    public static final String SHADOW_VERSION = "6.0.0";
 
     public static String getBuildFile(final Collection<Pair<String, String>> plugins, final String mainClassName, final String version, final String sourceCompatibility, final List<VersionedItem> items, final boolean pretty)
     {
@@ -41,10 +41,10 @@ public class GradleUtil
     public static String getDependencyString(final VersionedItem item, final boolean pretty)
     {
         if (pretty)
-            return String.format("compile group: '%s', name: '%s', version: '%s'",
+            return String.format("implementation group: '%s', name: '%s', version: '%s'",
                     item.getGroupId(), item.getArtifactId(), item.getVersion());
         else
-            return String.format("compile '%s:%s:%s'", item.getGroupId(), item.getArtifactId(), item.getVersion());
+            return String.format("implementation '%s:%s:%s'", item.getGroupId(), item.getArtifactId(), item.getVersion());
     }
 
     public static String getPluginsBlock(final Collection<Pair<String, String>> plugins)

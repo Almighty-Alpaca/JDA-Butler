@@ -1,7 +1,7 @@
 plugins {
     id 'idea'
     id 'com.github.ben-manes.versions' version '0.20.0'
-    id 'com.github.johnrengelman.shadow' version '4.0.2' apply false
+    id 'com.github.johnrengelman.shadow' version '6.0.0' apply false
 }
 
 allprojects {
@@ -26,7 +26,7 @@ subprojects {
     compileJava.options.encoding = 'UTF-8'
 
     shadowJar { task ->
-        baseName = task.project.name.capitalize()
+        archiveBaseName = task.project.name.capitalize()
     }
 
     repositories {
@@ -34,11 +34,11 @@ subprojects {
     }
 
     dependencies {
-        compile 'org.slf4j:slf4j-api:1.7.25'
-        compile 'ch.qos.logback:logback-classic:1.2.3'
+        implementation 'org.slf4j:slf4j-api:1.7.25'
+        implementation 'ch.qos.logback:logback-classic:1.2.3'
     }
 }
 
-project(':bot') {
+project(':launcher') {
     tasks.run.enabled = false
 }
