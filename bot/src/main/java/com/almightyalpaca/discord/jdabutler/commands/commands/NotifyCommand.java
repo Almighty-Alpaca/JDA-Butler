@@ -31,7 +31,7 @@ public class NotifyCommand extends Command
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        final Member member = channel.getGuild().getMember(sender);
+        final Member member = message.getMember();
         final Guild guild = channel.getGuild();
 
         if (!guild.equals(Bot.getGuildJda()))
