@@ -30,7 +30,7 @@ public class HelpCommand extends Command
         final int size = Bot.dispatcher.getCommands().stream().filter(c -> c.getHelp() != null).mapToInt(c -> c.getName().length()).max().orElse(0) + 1 + prefix.length();
 
         final String help = Bot.dispatcher.getCommands().stream().sorted(Comparator.comparing(Command::getName)).filter(c -> c.getHelp() != null).map(c -> String.format("`%s` - %s", StringUtils.rightPad(prefix + c.getName().toLowerCase() + "", size, "."), c.getHelp())).collect(Collectors.joining("\n"));
-        builder.setAuthor(channel.getGuild().getMember(sender).getEffectiveName(), null, sender.getEffectiveAvatarUrl());
+        builder.setAuthor(message.getMember().getEffectiveName(), null, sender.getEffectiveAvatarUrl());
         builder.setDescription(help);
         reply(event, new MessageBuilder().setEmbed(builder.build()).build());
     }

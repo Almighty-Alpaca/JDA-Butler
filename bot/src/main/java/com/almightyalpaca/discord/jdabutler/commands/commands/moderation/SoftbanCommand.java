@@ -26,7 +26,7 @@ public class SoftbanCommand extends Command
             return;
         }
 
-        final List<User> mentions = message.getMentionedUsers();
+        final List<Member> mentions = message.getMentionedMembers();
         if (mentions.isEmpty())
         {
             reply(event, "Please mention someone");
@@ -37,16 +37,13 @@ public class SoftbanCommand extends Command
         final Member self = guild.getSelfMember();
 
         final String reason = "Softban by " + sender.getName();
-        for (final User user : mentions)
+        for (final Member member : mentions)
         {
-            if (user == null)
-                continue;
-            final Member member = guild.getMember(user);
-            if (member != null && !self.canInteract(member))
+            if (!self.canInteract(member))
                 continue;
 
-            guild.ban(user, 7).reason(reason)
-                 .flatMap((v) -> guild.unban(user).reason(reason))
+            guild.ban(member.getUser(), 7).reason(reason)
+                 .flatMap((v) -> guild.unban(member.getUser()).reason(reason))
                  .queue();
         }
     }
