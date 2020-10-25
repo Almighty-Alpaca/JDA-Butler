@@ -9,6 +9,7 @@ import java.util.List;
 public enum RepoType
 {
     JCENTER("https://jcenter.bintray.com/", Pair.of("jcenter()", null), "bintray"),
+    JITPACK("https://jitpack.io/", Pair.of("maven { url \"https://jitpack.io/\" }", null), "jitpack"),
     MAVENCENTRAL("https://repo.maven.apache.org/maven2/", null, "central", "maven");
 
 
