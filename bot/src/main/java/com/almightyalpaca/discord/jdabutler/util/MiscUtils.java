@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MiscUtils
 {
-    private static final String HASTEBIN_SERVER = "https://hasteb.in/"; //requires trailing slash
+    private static String HASTEBIN_SERVER = "https://hastebin.com/"; //requires trailing slash
 
     public static ThreadFactory newThreadFactory(String threadName)
     {
