@@ -6,10 +6,12 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.filter.ThresholdFilter;
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.commands.commands.NotifyCommand;
+import com.almightyalpaca.discord.jdabutler.config.ButlerConfig;
 import com.almightyalpaca.discord.jdabutler.config.Config;
 import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
+import com.almightyalpaca.discord.jdabutler.config.impl.JsonConfigImpl;
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
@@ -29,13 +31,14 @@ import org.slf4j.LoggerFactory;
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Bot
 {
-    public static Config config;
+    public static ButlerConfig config;
     public static Dispatcher dispatcher;
     public static final String INVITE_LINK = "https://discord.gg/0hMr4ce0tIk3pSjp";
     public static JDAImpl jda;
@@ -51,17 +54,17 @@ public class Bot
 
     public static Guild getGuildJda()
     {
-        return Bot.jda.getGuildById("125227483518861312");
+        return Bot.jda.getGuildById(Bot.config.guildId());
     }
 
     public static Role getRoleBots()
     {
-        return Bot.getGuildJda().getRoleById("125616720156033024");
+        return Bot.getGuildJda().getRoleById(Bot.config.botRoleId());
     }
 
     public static Role getRoleStaff()
     {
-        return Bot.getGuildJda().getRoleById("169481978268090369");
+        return Bot.getGuildJda().getRoleById(Bot.config.staffRoleId());
     }
 
     public static boolean isAdmin(final User user)
@@ -72,7 +75,7 @@ public class Bot
 
     public static Role getRoleHelper()
     {
-        return Bot.getGuildJda().getRoleById("183963327033114624");
+        return Bot.getGuildJda().getRoleById(Bot.config.helperRoleId());
     }
 
     public static boolean isHelper(final User user)
@@ -91,9 +94,13 @@ public class Bot
 
         EXECUTOR.submit(JDoc::init);
 
-        Bot.config = ConfigFactory.getConfig(new File("config.json"));
+        if (Arrays.asList(args).contains("--env-config")) {
+            // use env config
+        } else {
+            Bot.config = new JsonConfigImpl();
+        }
 
-        final String token = Bot.config.getString("discord.token", "Your token");
+        final String token = Bot.config.botToken();
         final JDABuilder builder = JDABuilder.createDefault(token);
         builder.enableIntents(GatewayIntent.GUILD_MEMBERS); // used for join listener
         builder.setMemberCachePolicy(MemberCachePolicy.OWNER.or((member) ->
@@ -101,8 +108,8 @@ public class Bot
             // this is required for isAdmin and isHelper to work properly
             member.getGuild().equals(getGuildJda())
                 && member.getRoles().stream().mapToLong(Role::getIdLong).anyMatch(role ->
-                    role == 169481978268090369L || // staff
-                    role == 183963327033114624L)   // helper
+                    role == Bot.config.staffRoleId() || // staff
+                    role == Bot.config.helperRoleId())   // helper
         ));
         builder.setBulkDeleteSplittingEnabled(false);
 
@@ -115,23 +122,23 @@ public class Bot
 
         Bot.jda = (JDAImpl) builder.build().awaitReady();
 
-        if(Bot.config.getBoolean("webhook.enabled", false)) {
+        if(Bot.config.webhookEnabled()) {
             LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
 
             ThresholdFilter filter = new ThresholdFilter();
-            filter.setLevel(Bot.config.getString("webhook.level"));
+            filter.setLevel(Bot.config.webhookLevel());
             filter.setContext(lc);
             filter.start();
 
             PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-            encoder.setPattern(Bot.config.getString("webhook.pattern"));
+            encoder.setPattern(Bot.config.webhookPattern());
             encoder.setContext(lc);
             encoder.start();
 
             WebhookAppender appender = new WebhookAppender();
             appender.setEncoder(encoder);
             appender.addFilter(filter);
-            appender.setWebhookUrl(Bot.config.getString("webhook.webhookurl"));
+            appender.setWebhookUrl(Bot.config.webhookUrl());
             appender.setName("ERROR_WH");
             appender.setContext(lc);
             appender.start();
@@ -146,7 +153,7 @@ public class Bot
         {
             VersionCheckerRegistry.init();
             VersionedItem jdaItem = VersionCheckerRegistry.getItem("jda");
-            if(jdaItem.getVersion() != null && jdaItem.parseVersion().build != config.getInt("jda.version.build"))
+            if(jdaItem.getVersion() != null && jdaItem.parseVersion().build != config.jdaVersionBuild())
             {
                 //do not announce here as that might cause duplicate announcements when a new instance is fired up (or a very old one)
                 jdaItem.getUpdateHandler().onUpdate(jdaItem, config.getString("jda.version.name"), false);
