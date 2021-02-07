@@ -9,7 +9,8 @@ import com.almightyalpaca.discord.jdabutler.commands.commands.NotifyCommand;
 import com.almightyalpaca.discord.jdabutler.config.ButlerConfig;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
-import com.almightyalpaca.discord.jdabutler.config.impl.JsonConfigImpl;
+import com.almightyalpaca.discord.jdabutler.config.impl.EnvButlerConfig;
+import com.almightyalpaca.discord.jdabutler.config.impl.JsonButlerConfig;
 import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.almightyalpaca.discord.jdabutler.util.gradle.GradleProjectDropboxUtil;
 import com.almightyalpaca.discord.jdabutler.util.logging.WebhookAppender;
@@ -92,9 +93,9 @@ public class Bot
         EXECUTOR.submit(JDoc::init);
 
         if (Arrays.asList(args).contains("--env-config")) {
-            // use env config
+            Bot.config = new EnvButlerConfig();
         } else {
-            Bot.config = new JsonConfigImpl();
+            Bot.config = new JsonButlerConfig();
         }
 
         final String token = Bot.config.botToken();

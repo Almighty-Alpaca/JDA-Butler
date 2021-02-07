@@ -7,11 +7,11 @@ import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import java.io.File;
 import java.io.IOException;
 
-public class JsonConfigImpl implements ButlerConfig {
+public class JsonButlerConfig implements ButlerConfig {
 
     private final Config config;
 
-    public JsonConfigImpl() throws IOException {
+    public JsonButlerConfig() throws IOException {
         this.config = ConfigFactory.getConfig(new File("config.json"));
     }
 
