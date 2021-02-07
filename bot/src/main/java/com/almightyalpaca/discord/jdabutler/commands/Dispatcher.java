@@ -63,7 +63,7 @@ public class Dispatcher extends ListenerAdapter
         if(event.getAuthor().isBot() || event.getAuthor().isFake())
             return;
 
-        final String prefix = Bot.config.getString("prefix");
+        final String prefix = Bot.config.prefix();
         String message = event.getMessage().getContentRaw();
 
         if (Bot.isStealth)

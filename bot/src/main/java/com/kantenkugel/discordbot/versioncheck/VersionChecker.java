@@ -122,7 +122,7 @@ public class VersionChecker
                 return;
             }
 
-            boolean shouldAnnounce = !Bot.config.getBoolean("testing", true) && !Bot.isStealth;
+            boolean shouldAnnounce = !Bot.config.testing() && !Bot.isStealth;
 
             for (Pair<VersionedItem, String> changedItemPair : changedItems)
             {

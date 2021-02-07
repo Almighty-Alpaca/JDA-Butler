@@ -2,6 +2,10 @@ package com.almightyalpaca.discord.jdabutler.config;
 
 public interface ButlerConfig {
 
+    // General settings
+    boolean testing();
+    String prefix();
+
     // Webhook settings
     boolean webhookEnabled();
     String webhookLevel();
@@ -14,6 +18,7 @@ public interface ButlerConfig {
     long staffRoleId();
     long helperRoleId();
     String botToken();
+    boolean blacklistEnabled();
 
     // Api configs
     String dropboxAccessToken();
@@ -22,7 +27,9 @@ public interface ButlerConfig {
     // JDA Version settings
     int jdaVersionBuild();
     String jdaVersionName();
+    void setJDAVersionBuild(int newVersion);
+    void setJDAVersionName(String newName);
 
-    // dummy method for backwards compatibility
-    default void save() {}
+    // Used to save the results of setJDAVersionBuild and setJDAVersionName
+    void save();
 }

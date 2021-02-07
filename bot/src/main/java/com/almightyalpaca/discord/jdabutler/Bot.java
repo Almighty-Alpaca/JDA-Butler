@@ -7,8 +7,6 @@ import ch.qos.logback.classic.filter.ThresholdFilter;
 import com.almightyalpaca.discord.jdabutler.commands.Dispatcher;
 import com.almightyalpaca.discord.jdabutler.commands.commands.NotifyCommand;
 import com.almightyalpaca.discord.jdabutler.config.ButlerConfig;
-import com.almightyalpaca.discord.jdabutler.config.Config;
-import com.almightyalpaca.discord.jdabutler.config.ConfigFactory;
 import com.almightyalpaca.discord.jdabutler.config.exception.KeyNotFoundException;
 import com.almightyalpaca.discord.jdabutler.config.exception.WrongTypeException;
 import com.almightyalpaca.discord.jdabutler.config.impl.JsonConfigImpl;
@@ -29,7 +27,6 @@ import okhttp3.OkHttpClient;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
@@ -147,7 +144,9 @@ public class Bot
             root.addAppender(appender);
         }
 
-        NotifyCommand.reloadBlacklist(null);
+        if (config.blacklistEnabled()) {
+            NotifyCommand.reloadBlacklist(null);
+        }
 
         EXECUTOR.submit(() ->
         {
@@ -156,7 +155,7 @@ public class Bot
             if(jdaItem.getVersion() != null && jdaItem.parseVersion().build != config.jdaVersionBuild())
             {
                 //do not announce here as that might cause duplicate announcements when a new instance is fired up (or a very old one)
-                jdaItem.getUpdateHandler().onUpdate(jdaItem, config.getString("jda.version.name"), false);
+                jdaItem.getUpdateHandler().onUpdate(jdaItem, config.jdaVersionName(), false);
             }
             else
             {

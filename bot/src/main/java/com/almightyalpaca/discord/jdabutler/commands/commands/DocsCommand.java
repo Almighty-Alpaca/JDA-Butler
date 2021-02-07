@@ -155,7 +155,7 @@ public class DocsCommand extends ReactionCommand
         }
         if (content.trim().equalsIgnoreCase("help"))
         {
-            String cmd = Bot.config.getString("prefix") + "docs";
+            String cmd = Bot.config.prefix() + "docs";
             reply(event, "Searches and prints out documentation.\n"
                 + "Syntax: `" + cmd + " [term | search:[params:]term | java:term | help]`.\n"
                 + "\n"
@@ -276,7 +276,7 @@ public class DocsCommand extends ReactionCommand
     @Override
     public String getHelp()
     {
-        return "Displays documentation. Use `" + Bot.config.getString("prefix") + "docs help` for more help";
+        return "Displays documentation. Use `" + Bot.config.prefix() + "docs help` for more help";
     }
 
     @Override

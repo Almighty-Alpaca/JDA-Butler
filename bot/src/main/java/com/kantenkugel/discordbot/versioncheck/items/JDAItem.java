@@ -118,14 +118,14 @@ public class JDAItem extends VersionedItem implements UpdateHandler
         boolean isActualJDA = getName().equalsIgnoreCase("jda");
         String version = item.getVersion();
         int buildNumber = Integer.parseInt(version.substring(version.indexOf("_") + 1));
-        if (!isActualJDA || buildNumber != Bot.config.getInt("jda.version.build", -1))
+        if (!isActualJDA || buildNumber != Bot.config.jdaVersionBuild())
         {
             Bot.LOG.debug("Update found!");
 
             if(isActualJDA)
             {
-                Bot.config.put("jda.version.build", buildNumber);
-                Bot.config.put("jda.version.name", version);
+                Bot.config.setJDAVersionBuild(buildNumber);
+                Bot.config.setJDAVersionName(version);
 
                 Bot.config.save();
             }

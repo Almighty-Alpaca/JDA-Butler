@@ -16,6 +16,16 @@ public class JsonConfigImpl implements ButlerConfig {
     }
 
     @Override
+    public boolean testing() {
+        return this.config.getBoolean("testing", true);
+    }
+
+    @Override
+    public String prefix() {
+        return this.config.getString("prefix");
+    }
+
+    @Override
     public boolean webhookEnabled() {
         return this.config.getBoolean("webhook.enabled", false);
     }
@@ -61,23 +71,38 @@ public class JsonConfigImpl implements ButlerConfig {
     }
 
     @Override
+    public boolean blacklistEnabled() {
+        return this.config.getBoolean("discord.enable_blacklist", true);
+    }
+
+    @Override
     public String dropboxAccessToken() {
-        return null;
+        return this.config.getString("dropbox.access_token", "");
     }
 
     @Override
     public String githubToken() {
-        return null;
+        return this.config.getString("github_token", "");
     }
 
     @Override
     public int jdaVersionBuild() {
-        return this.config.getInt("jda.version.build");
+        return this.config.getInt("jda.version.build", -1);
     }
 
     @Override
     public String jdaVersionName() {
-        return null;
+        return this.config.getString("jda.version.name");
+    }
+
+    @Override
+    public void setJDAVersionBuild(int newVersion) {
+        this.config.put("jda.version.build", newVersion);
+    }
+
+    @Override
+    public void setJDAVersionName(String newName) {
+        this.config.put("jda.version.name", newName);
     }
 
     @Override
