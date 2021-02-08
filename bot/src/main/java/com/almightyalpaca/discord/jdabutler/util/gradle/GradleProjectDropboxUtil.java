@@ -165,8 +165,6 @@ public class GradleProjectDropboxUtil
             final DbxRequestConfig config = DbxRequestConfig.newBuilder("JDA-Butler").build();
 
             client = new DbxClientV2(config, ACCESS_TOKEN);
-
-            // TODO: attempt upload on init?
         }
     }
 }
