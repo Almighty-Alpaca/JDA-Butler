@@ -93,8 +93,10 @@ public class Bot
         EXECUTOR.submit(JDoc::init);
 
         if (Arrays.asList(args).contains("--env-config")) {
+            LOG.info("Using env var configuration");
             Bot.config = new EnvButlerConfig();
         } else {
+            LOG.info("Using json file configuration");
             Bot.config = new JsonButlerConfig();
         }
 
