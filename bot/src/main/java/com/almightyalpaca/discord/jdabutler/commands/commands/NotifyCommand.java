@@ -349,8 +349,8 @@ public class NotifyCommand extends Command
     {
         origMsg.getChannel().sendMessage(newMessageContent).queue(responseMsg ->
         {
-            responseMsg.delete().queueAfter(10, TimeUnit.SECONDS);
-            origMsg.delete().queueAfter(10, TimeUnit.SECONDS);
+            responseMsg.delete().queueAfter(10, TimeUnit.SECONDS, null, fail -> {});
+            origMsg.delete().queueAfter(10, TimeUnit.SECONDS, null, fail -> {});
         });
     }
 }
