@@ -9,7 +9,8 @@ import java.util.List;
 public enum RepoType
 {
     JCENTER("https://jcenter.bintray.com/", Pair.of("jcenter()", null), "bintray"),
-    MAVENCENTRAL("https://repo.maven.apache.org/maven2/", null, "central", "maven");
+    MAVENCENTRAL("https://repo.maven.apache.org/maven2/", null, "central", "maven"),
+    M2_DV8TION("https://m2.dv8tion.net/releases/", Pair.of("m2-dv8tion", "https://m2.dv8tion.net/releases"));
 
 
     private final String repoBase;

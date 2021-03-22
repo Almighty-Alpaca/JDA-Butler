@@ -66,7 +66,7 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     @Override
     public RepoType getRepoType()
     {
-        return RepoType.JCENTER;
+        return RepoType.M2_DV8TION;
     }
 
     @Override

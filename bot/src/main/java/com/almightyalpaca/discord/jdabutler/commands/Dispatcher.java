@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import javax.annotation.Nonnull;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -60,7 +61,7 @@ public class Dispatcher extends ListenerAdapter
     @Override
     public void onGuildMessageReceived(final GuildMessageReceivedEvent event)
     {
-        if(event.getAuthor().isBot() || event.getAuthor().isFake())
+        if(event.getAuthor().isBot() || event.getMessage().isWebhookMessage())
             return;
 
         final String prefix = Bot.config.getString("prefix");
@@ -108,13 +109,13 @@ public class Dispatcher extends ListenerAdapter
     }
 
     @Override
-    public void onMessageReactionAdd(final MessageReactionAddEvent event)
+    public void onMessageReactionAdd(final @Nonnull MessageReactionAddEvent event)
     {
         this.reactListReg.handle(event);
     }
 
     @Override
-    public void onShutdown(final ShutdownEvent event)
+    public void onShutdown(final @Nonnull ShutdownEvent event)
     {
         MoreExecutors.shutdownAndAwaitTermination(this.pool, 10, TimeUnit.SECONDS);
     }
