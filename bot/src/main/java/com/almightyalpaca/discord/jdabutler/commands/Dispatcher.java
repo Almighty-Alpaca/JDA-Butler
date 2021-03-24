@@ -61,7 +61,7 @@ public class Dispatcher extends ListenerAdapter
     @Override
     public void onGuildMessageReceived(final GuildMessageReceivedEvent event)
     {
-        if(event.getAuthor().isBot() || event.getMessage().isWebhookMessage())
+        if(event.getAuthor().isBot())
             return;
 
         final String prefix = Bot.config.getString("prefix");
