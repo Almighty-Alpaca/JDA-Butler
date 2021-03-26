@@ -62,7 +62,9 @@ public abstract class VersionedItem
      *
      * @return  The extra repositories needed for this maven artifact
      */
-    public abstract Set<RepoType> getAdditionalRepositories();
+    public Set<RepoType> getAdditionalRepositories() {
+        return EnumSet.noneOf(RepoType.class);
+    }
 
     /**
      * Helper method that combines all Elements off {@link #getAdditionalRepositories()} with {@link #getRepoType()}

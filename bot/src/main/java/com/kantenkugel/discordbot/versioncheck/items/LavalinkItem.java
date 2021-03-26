@@ -5,9 +5,7 @@ import com.kantenkugel.discordbot.versioncheck.RepoType;
 import net.dv8tion.jda.api.entities.User;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
 
@@ -39,11 +37,6 @@ public class LavalinkItem extends VersionedItem
     public RepoType getRepoType()
     {
         return null;
-    }
-
-    @Override
-    public Set<RepoType> getAdditionalRepositories() {
-        return Collections.emptySet();
     }
 
     @Override
