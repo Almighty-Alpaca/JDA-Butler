@@ -12,13 +12,6 @@ public class VersionCheckerRegistry
 
     private static final Map<String, VersionedItem> checkedItems = new LinkedHashMap<>();
 
-    public static void addItem(String name, String repoType, String groupId, String artifactId, String url)
-    {
-        addItem(new SimpleVersionedItem(name, RepoType.fromString(repoType), DependencyType.DEFAULT, groupId, artifactId)
-                .setUrl(url)
-        );
-    }
-
     public static boolean addItem(VersionedItem item)
     {
         String version = VersionChecker.getVersion(item);

@@ -1,13 +1,11 @@
 package com.almightyalpaca.discord.jdabutler.util.gradle;
 
+import com.kantenkugel.discordbot.versioncheck.RepoType;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class GradleUtil
 {
@@ -65,23 +63,25 @@ public class GradleUtil
     {
         StringBuilder text = new StringBuilder("repositories {\n");
         items.stream()
-                .map(item -> item.getRepoType().getGradleImport())
+                .filter(item -> item.getRepoType() != null)
+                .flatMap(item -> item.getAllRepositories().stream())
                 .filter(Objects::nonNull)
                 .distinct()
-                .forEach(pair ->
-                        text.append(GradleUtil.getRepositoryString(pair.getLeft(), pair.getRight(), "    ")).append("\n")
+                .sorted()
+                .forEach(repoType ->
+                        text.append(GradleUtil.getRepositoryString(repoType, "    ")).append("\n")
                 );
         text.append("}");
         return text.toString();
     }
 
-    public static String getRepositoryString(final String name, final String url, String indentation)
+    public static String getRepositoryString(final RepoType repoType, String indentation)
     {
         if (indentation == null)
             indentation = "";
-        if (url == null)
-            return indentation + name;
+        if (repoType.getGradleName() != null)
+            return indentation + repoType.getGradleName() + "()";
         else
-            return indentation + "maven {\n" + indentation + "    name '" + name + "'\n" + indentation + "    url '" + url + "'\n" + indentation + "}";
+            return indentation + "maven {\n" + indentation + "    name '" + repoType.getName() + "'\n" + indentation + "    url '" + repoType.getRepoBase() + "'\n" + indentation + "}";
     }
 }
