@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import static com.almightyalpaca.discord.jdabutler.Bot.LOG;
@@ -40,6 +41,11 @@ public class ButlerItem extends VersionedItem implements UpdateHandler
     public RepoType getRepoType()
     {
         return null;
+    }
+
+    @Override
+    public Set<RepoType> getAdditionalRepositories() {
+        return Collections.emptySet();
     }
 
     @Override

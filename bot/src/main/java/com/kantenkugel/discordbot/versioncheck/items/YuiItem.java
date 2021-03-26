@@ -6,6 +6,8 @@ import com.kantenkugel.discordbot.versioncheck.RepoType;
 import com.kantenkugel.discordbot.versioncheck.changelog.ChangelogProvider;
 import com.kantenkugel.discordbot.versioncheck.changelog.JenkinsChangelogProvider;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class YuiItem extends VersionedItem
@@ -24,6 +26,11 @@ public class YuiItem extends VersionedItem
     public RepoType getRepoType()
     {
         return null;
+    }
+
+    @Override
+    public Set<RepoType> getAdditionalRepositories() {
+        return Collections.emptySet();
     }
 
     @Override

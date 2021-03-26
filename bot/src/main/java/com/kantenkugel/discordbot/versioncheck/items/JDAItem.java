@@ -20,7 +20,9 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class JDAItem extends VersionedItem implements UpdateHandler
@@ -67,6 +69,11 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     public RepoType getRepoType()
     {
         return RepoType.M2_DV8TION;
+    }
+
+    @Override
+    public Set<RepoType> getAdditionalRepositories() {
+        return EnumSet.of(RepoType.MAVENCENTRAL);
     }
 
     @Override

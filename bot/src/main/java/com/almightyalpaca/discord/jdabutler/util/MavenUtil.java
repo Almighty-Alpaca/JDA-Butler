@@ -1,6 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.util;
 
 import com.kantenkugel.discordbot.versioncheck.DependencyType;
+import com.kantenkugel.discordbot.versioncheck.RepoType;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
 
 import java.util.List;
@@ -43,21 +44,25 @@ public class MavenUtil
         String subIndent = indent + "    ";
         StringBuilder text = new StringBuilder(indent).append("<repositories>\n");
         items.stream()
-                .map(VersionedItem::getRepoType)
+                .filter(item -> item.getRepoType() != null)
+                .flatMap(item -> item.getAllRepositories().stream())
                 .filter(Objects::nonNull)
                 .distinct()
+                .filter(item -> item != RepoType.MAVENCENTRAL)
+                .sorted()
                 .forEach(type ->
-                        text.append(getRepositoryString(type.toString(), type.toString(), type.getRepoBase(), subIndent))
+                        text.append(getRepositoryString(type, subIndent))
                 );
         text.append(indent).append("</repositories>");
         return text.toString();
     }
 
-    public static String getRepositoryString(final String id, final String name, final String url, String indentation)
+    public static String getRepositoryString(final RepoType repoType, String indentation)
     {
         if (indentation == null)
             indentation = "";
-        return indentation + "<repository>\n" + indentation + "    <id>" + id + "</id>\n" + indentation + "    <name>" + name + "</name>\n" + indentation + "    <url>" + url + "</url>\n" + indentation + "</repository>\n";
+        String name = repoType.getName();
+        return indentation + "<repository>\n" + indentation + "    <id>" + name + "</id>\n" + indentation + "    <name>" + name + "</name>\n" + indentation + "    <url>" + repoType.getRepoBase() + "</url>\n" + indentation + "</repository>\n";
     }
 
 }

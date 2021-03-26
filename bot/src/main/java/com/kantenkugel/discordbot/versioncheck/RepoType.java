@@ -1,27 +1,24 @@
 package com.kantenkugel.discordbot.versioncheck;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 public enum RepoType
 {
-    JCENTER("https://jcenter.bintray.com/", Pair.of("jcenter()", null), "bintray"),
-    MAVENCENTRAL("https://repo.maven.apache.org/maven2/", null, "central", "maven"),
-    M2_DV8TION("https://m2.dv8tion.net/releases/", Pair.of("m2-dv8tion", "https://m2.dv8tion.net/releases"));
+    M2_DV8TION("m2-dv8tion", "https://m2.dv8tion.net/releases", null),
+    MAVENCENTRAL("central", "https://repo.maven.apache.org/maven2", "mavenCentral"),
+    JCENTER("jcenter", "https://jcenter.bintray.com", "jcenter");
 
-
+    private final String name;
     private final String repoBase;
-    private final Pair<String, String> gradleImport;
-    private final List<String> aliases;
+    private final String gradleName;
 
-    RepoType(String repoBase, Pair<String, String> gradleImport, String... aliases)
+    RepoType(String name, String repoBase, String gradleName)
     {
+        this.name = name;
         this.repoBase = repoBase;
-        this.gradleImport = gradleImport;
-        this.aliases = Arrays.asList(aliases);
+        this.gradleName = gradleName;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getRepoBase()
@@ -29,14 +26,8 @@ public enum RepoType
         return repoBase;
     }
 
-    public Pair<String, String> getGradleImport()
-    {
-        return gradleImport;
-    }
-
-    public List<String> getAliases()
-    {
-        return Collections.unmodifiableList(aliases);
+    public String getGradleName() {
+        return gradleName;
     }
 
     public static RepoType fromString(String value)
@@ -44,7 +35,7 @@ public enum RepoType
         value = value.toLowerCase();
         for (RepoType repoType : RepoType.values())
         {
-            if (repoType.toString().equals(value) || repoType.aliases.contains(value))
+            if (repoType.toString().equals(value) || repoType.getName().toLowerCase().equals(value))
             {
                 return repoType;
             }

@@ -10,8 +10,10 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public abstract class VersionedItem
@@ -51,6 +53,29 @@ public abstract class VersionedItem
      * @return  The repository type of this maven artifact
      */
     public abstract RepoType getRepoType();
+
+    /**
+     * All additional repositories needed to fully resolve this dependency, including transitive dependencies.
+     * <br/>Used for the maven/gradle commands.
+     *
+     * <p><b>Note:</b> This may never be {@code null}.
+     *
+     * @return  The extra repositories needed for this maven artifact
+     */
+    public abstract Set<RepoType> getAdditionalRepositories();
+
+    /**
+     * Helper method that combines all Elements off {@link #getAdditionalRepositories()} with {@link #getRepoType()}
+     *
+     * @return Set of all relevant Repositories
+     */
+    public final Set<RepoType> getAllRepositories() {
+        EnumSet<RepoType> repoTypes = EnumSet.copyOf(getAdditionalRepositories());
+        if(getRepoType() != null) {
+            repoTypes.add(getRepoType());
+        }
+        return repoTypes;
+    }
 
     /**
      * The group id of this item (maven artifact).
@@ -194,7 +219,7 @@ public abstract class VersionedItem
      */
     public String getRepoUrl()
     {
-        return String.format("%s%s/%s/maven-metadata.xml", getRepoType().getRepoBase(),
+        return String.format("%s/%s/%s/maven-metadata.xml", getRepoType().getRepoBase(),
                 getGroupId().replace('.', '/'), getArtifactId());
     }
 
@@ -240,6 +265,6 @@ public abstract class VersionedItem
     @Override
     public String toString()
     {
-        return String.format("%s:%s:%s", getGroupId(), getArtifactId(), version == null ? "Unversioned" : version);
+        return String.format("%s (%s:%s:%s)", getName(), getGroupId(), getArtifactId(), version == null ? "Unversioned" : version);
     }
 }

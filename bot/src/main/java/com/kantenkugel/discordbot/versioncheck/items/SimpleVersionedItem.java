@@ -6,8 +6,7 @@ import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
 import net.dv8tion.jda.api.entities.User;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Simple wrapper class for {@link VersionedItem}.
@@ -20,6 +19,7 @@ public class SimpleVersionedItem extends VersionedItem
     private List<String> aliases;
 
     private final RepoType repoType;
+    private final Set<RepoType> additionalRepos;
     private final DependencyType depType;
     private final String groupId;
     private final String artifactId;
@@ -31,8 +31,14 @@ public class SimpleVersionedItem extends VersionedItem
 
     public SimpleVersionedItem(String name, RepoType repoType, DependencyType depType, String groupId, String artifactId)
     {
+        this(name, repoType, Collections.emptySet(), depType, groupId, artifactId);
+    }
+
+    public SimpleVersionedItem(String name, RepoType repoType, Set<RepoType> additionalRepos, DependencyType depType, String groupId, String artifactId)
+    {
         this.name = name;
         this.repoType = repoType;
+        this.additionalRepos = additionalRepos;
         this.depType = depType;
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -89,6 +95,11 @@ public class SimpleVersionedItem extends VersionedItem
     public RepoType getRepoType()
     {
         return repoType;
+    }
+
+    @Override
+    public Set<RepoType> getAdditionalRepositories() {
+        return additionalRepos;
     }
 
     @Override
