@@ -4,6 +4,7 @@ public enum RepoType
 {
     M2_DV8TION("m2-dv8tion", "https://m2.dv8tion.net/releases", null),
     MAVENCENTRAL("central", "https://repo.maven.apache.org/maven2", "mavenCentral"),
+    SEDMELLUQ("sedmelluq-bintray", "https://dl.bintray.com/sedmelluq/com.sedmelluq", null),
     JCENTER("jcenter", "https://jcenter.bintray.com", "jcenter");
 
     private final String name;
