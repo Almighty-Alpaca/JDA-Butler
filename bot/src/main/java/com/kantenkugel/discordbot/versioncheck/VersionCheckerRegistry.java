@@ -95,7 +95,7 @@ public class VersionCheckerRegistry
         //JDA
         addItem(new JDAItem());
         //Lavaplayer
-        addItem(new SimpleVersionedItem("Lavaplayer", RepoType.JCENTER, DependencyType.DEFAULT, "com.sedmelluq", "lavaplayer")
+        addItem(new SimpleVersionedItem("Lavaplayer", RepoType.M2_DV8TION, DependencyType.DEFAULT, "com.sedmelluq", "lavaplayer")
                 .setUrl("https://github.com/sedmelluq/lavaplayer#lavaplayer---audio-player-library-for-discord")
                 .setAliases("lava", "player")
                 .setAnnouncementRoleId(241948768113524762L)     //Lavaplayer Updates
