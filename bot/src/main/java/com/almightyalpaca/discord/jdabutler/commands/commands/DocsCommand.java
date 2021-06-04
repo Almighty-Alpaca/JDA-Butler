@@ -93,7 +93,7 @@ public class DocsCommand extends ReactionCommand
             .reply(paginator.getCurrent())
             .setActionRows(paginator.getButtons())
             .mentionRepliedUser(false)
-            .queue();
+            .queue(linkReply(event, null));
     }
 
     private void showRefinementEmbed(GuildMessageReceivedEvent event, User sender, String jDocBase, List<Documentation> docs)
