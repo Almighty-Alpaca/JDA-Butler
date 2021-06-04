@@ -1,9 +1,11 @@
 package com.almightyalpaca.discord.jdabutler.commands.commands;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import com.almightyalpaca.discord.jdabutler.commands.ButtonListener;
 import com.almightyalpaca.discord.jdabutler.commands.ReactionCommand;
 import com.almightyalpaca.discord.jdabutler.commands.ReactionListenerRegistry;
 import com.almightyalpaca.discord.jdabutler.util.EmbedUtil;
+import com.almightyalpaca.discord.jdabutler.util.Paginator;
 import com.kantenkugel.discordbot.jdocparser.Documentation;
 import com.kantenkugel.discordbot.jdocparser.JDoc;
 import com.kantenkugel.discordbot.jdocparser.JDocUtil;
@@ -15,16 +17,18 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
-import java.awt.Color;
+import java.awt.*;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DocsCommand extends ReactionCommand
 {
     private static final int RESULTS_PER_PAGE = 5;
     private static final String[] ALIASES = new String[]{"documentation", "doc", "jdoc", "jdocs"};
+    private final ButtonListener buttons = new ButtonListener();
+    private boolean first = true;
 
     public DocsCommand(ReactionListenerRegistry registry)
     {
@@ -79,26 +83,17 @@ public class DocsCommand extends ReactionCommand
 
     private void showPaginatorEmbed(GuildMessageReceivedEvent event, User sender, String jDocBase, Set<Documentation> items)
     {
-        AtomicInteger page = new AtomicInteger(0);
+        Paginator paginator = new Paginator(event.getMessage());
+        buttons.addListener(paginator.getId(), paginator::onButtonClick);
         List<Documentation> sorted = items.stream().sorted(Comparator.comparing(Documentation::getShortTitle)).collect(Collectors.toList());
-        reply(event, getMultiResult(jDocBase, sorted, page.get()),
-                m -> this.addReactions(
-                        m,
-                        Arrays.asList(ReactionCommand.LEFT_ARROW, ReactionCommand.RIGHT_ARROW, ReactionCommand.CANCEL),
-                        Collections.singleton(sender),
-                        3, TimeUnit.MINUTES,
-                        index -> {
-                            if (index >= 2)
-                            {   //cancel button or other error
-                                stopReactions(m, false);
-                                m.delete().queue();
-                                return;
-                            }
-                            int nextPage = page.updateAndGet(current -> index == 1 ? Math.min(current + 1, (sorted.size() - 1) / RESULTS_PER_PAGE) : Math.max(current - 1, 0));
-                            m.editMessage(getMultiResult(JDocUtil.JDOCBASE, sorted, nextPage)).queue();
-                        }
-                )
-        );
+        for (int i = 0; i <= (sorted.size() - 1) / RESULTS_PER_PAGE; i++)
+            paginator.addPage(getMultiResult(jDocBase, sorted, i));
+
+        event.getMessage()
+            .reply(paginator.getCurrent())
+            .setActionRows(paginator.getButtons())
+            .mentionRepliedUser(false)
+            .queue();
     }
 
     private void showRefinementEmbed(GuildMessageReceivedEvent event, User sender, String jDocBase, List<Documentation> docs)
@@ -148,6 +143,12 @@ public class DocsCommand extends ReactionCommand
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
+        if (first)
+        {
+            sender.getJDA().addEventListener(buttons);
+            first = false;
+        }
+
         if (content.trim().isEmpty())
         {
             reply(event, "See the docs here: " + JDocUtil.JDOCBASE);
