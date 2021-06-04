@@ -8,12 +8,14 @@ import com.almightyalpaca.discord.jdabutler.util.MiscUtils;
 import com.google.common.util.concurrent.MoreExecutors;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.ShutdownEvent;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageDeleteEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,12 +30,13 @@ public class Dispatcher extends ListenerAdapter
     private final Set<Command> commands = ConcurrentHashMap.newKeySet();
     private final ExecutorService pool = Executors.newCachedThreadPool(MiscUtils.newThreadFactory("command-runner", false));
     private final ReactionListenerRegistry reactListReg = new ReactionListenerRegistry();
+    private final ButtonListener buttonListener = new ButtonListener();
 
     public Dispatcher()
     {
         this.registerCommand(new BuildGradleCommand());
         this.registerCommand(new ChangelogCommand());
-        this.registerCommand(new DocsCommand(this.reactListReg));
+        this.registerCommand(new DocsCommand(this.reactListReg, this.buttonListener));
         this.registerCommand(new EvalCommand());
         this.registerCommand(new GradleCommand());
         this.registerCommand(new GradleProjectCommand());
@@ -56,6 +59,12 @@ public class Dispatcher extends ListenerAdapter
     public Set<Command> getCommands()
     {
         return Collections.unmodifiableSet(new HashSet<>(this.commands));
+    }
+
+    @Override
+    public void onButtonClick(@NotNull ButtonClickEvent event)
+    {
+        buttonListener.onEvent(event);
     }
 
     @Override
