@@ -62,7 +62,8 @@ public class Dispatcher extends ListenerAdapter
     }
 
     @Override
-    public void onButtonClick(@NotNull ButtonClickEvent event) {
+    public void onButtonClick(@NotNull ButtonClickEvent event)
+    {
         buttonListener.onEvent(event);
     }
 
