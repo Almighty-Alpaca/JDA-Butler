@@ -27,12 +27,12 @@ public class DocsCommand extends ReactionCommand
 {
     private static final int RESULTS_PER_PAGE = 5;
     private static final String[] ALIASES = new String[]{"documentation", "doc", "jdoc", "jdocs"};
-    private final ButtonListener buttons = new ButtonListener();
-    private boolean first = true;
+    private final ButtonListener buttons;
 
-    public DocsCommand(ReactionListenerRegistry registry)
+    public DocsCommand(ReactionListenerRegistry registry, ButtonListener buttons)
     {
         super(registry);
+        this.buttons = buttons;
     }
 
     private static Message getDocMessage(String jDocBase, Documentation documentation)
@@ -143,12 +143,6 @@ public class DocsCommand extends ReactionCommand
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
-        if (first)
-        {
-            sender.getJDA().addEventListener(buttons);
-            first = false;
-        }
-
         if (content.trim().isEmpty())
         {
             reply(event, "See the docs here: " + JDocUtil.JDOCBASE);
