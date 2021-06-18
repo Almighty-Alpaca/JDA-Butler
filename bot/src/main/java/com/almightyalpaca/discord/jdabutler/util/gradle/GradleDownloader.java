@@ -1,8 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.util.gradle;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -56,7 +55,7 @@ public class GradleDownloader
             getExecutableGradleFile().setExecutable(true);
             GRADLE_ZIP.delete();
         }
-        catch (IOException | ZipException e)
+        catch (IOException e)
         {
             Bot.LOG.error("There was an error downloading/extracting gradle", e);
         }

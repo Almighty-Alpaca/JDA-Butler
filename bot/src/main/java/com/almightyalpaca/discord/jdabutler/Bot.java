@@ -99,7 +99,7 @@ public class Bot
         builder.setMemberCachePolicy(MemberCachePolicy.OWNER.or((member) ->
             // Cache elevated members for specific whitelists
             // this is required for isAdmin and isHelper to work properly
-            member.getGuild().equals(getGuildJda())
+            member.getGuild().getIdLong() == 125227483518861312L //JDA Guild
                 && member.getRoles().stream().mapToLong(Role::getIdLong).anyMatch(role ->
                     role == 169481978268090369L || // staff
                     role == 183963327033114624L)   // helper
