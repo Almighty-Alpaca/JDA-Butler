@@ -9,10 +9,9 @@ import com.dropbox.core.v2.sharing.ListSharedLinksResult;
 import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 import com.kantenkugel.discordbot.versioncheck.VersionCheckerRegistry;
 import com.kantenkugel.discordbot.versioncheck.items.VersionedItem;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
+import net.lingala.zip4j.model.enums.CompressionLevel;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -87,14 +86,14 @@ public class GradleProjectDropboxUtil
             final ZipFile zip = new ZipFile(ZIP_FILE);
 
             final ZipParameters parameters = new ZipParameters();
-            parameters.setCompressionLevel(Zip4jConstants.DEFLATE_LEVEL_ULTRA);
+            parameters.setCompressionLevel(CompressionLevel.ULTRA);
 
             zip.addFolder(GRADLE_PROJECT_DIR, parameters);
 
             Bot.LOG.info("Zip creation finished!");
 
         }
-        catch (final IOException | InterruptedException | ZipException e)
+        catch (final IOException | InterruptedException e)
         {
             Bot.LOG.error("Error creating gradle example zip", e);
         }
