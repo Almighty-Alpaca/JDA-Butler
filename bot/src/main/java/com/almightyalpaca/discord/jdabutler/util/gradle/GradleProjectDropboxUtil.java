@@ -72,7 +72,7 @@ public class GradleProjectDropboxUtil
 
             List<VersionedItem> jdaSingleton = Collections.singletonList(VersionCheckerRegistry.getItem("jda"));
 
-            FileUtils.write(GRADLE_BUILD_FILE, GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "MessageListenerExample", "1.0", "1.8", jdaSingleton, false), Charset.forName("UTF-8"));
+            FileUtils.write(GRADLE_BUILD_FILE, GradleUtil.getBuildFile(false, GradleUtil.DEFAULT_PLUGINS, "MessageListenerExample", "1.0", "1.8", jdaSingleton, false), Charset.forName("UTF-8"));
 
             FileUtils.write(GRADLE_SETTINGS_FILE, "rootProject.name = 'Example gradle project for JDA'", Charset.forName("UTF-8"));
 
