@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 public class BuildGradleCommand extends Command
 {
+    private static final String[] ALIASES = {"build.gradle.kts"};
+
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
@@ -26,8 +28,10 @@ public class BuildGradleCommand extends Command
                 .collect(Collectors.toList());
 
         final boolean pretty = content.contains("pretty");
+        final boolean kotlin = message.getContentRaw().contains("build.gradle.kts");
 
-        mb.appendCodeBlock(GradleUtil.getBuildFile(GradleUtil.DEFAULT_PLUGINS, "com.example.jda.Bot", "1.0", "1.8", items, pretty), "gradle");
+        mb.appendCodeBlock(GradleUtil.getBuildFile(kotlin, GradleUtil.DEFAULT_PLUGINS, "com.example.jda.Bot", "1.0", "1.8", items, pretty),
+                kotlin ? "kotlin" : "gradle");
         reply(event, mb.build());
     }
 
@@ -41,5 +45,10 @@ public class BuildGradleCommand extends Command
     public String getName()
     {
         return "build.gradle";
+    }
+
+    @Override
+    public String[] getAliases() {
+        return ALIASES;
     }
 }

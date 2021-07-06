@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 public class GradleCommand extends Command
 {
+    private static final String[] ALIASES = {"gradle.kts"};
+
     @Override
     public void dispatch(final User sender, final TextChannel channel, final Message message, final String content, final GuildMessageReceivedEvent event)
     {
@@ -27,15 +29,17 @@ public class GradleCommand extends Command
                 .collect(Collectors.toList());
 
         final boolean pretty = content.contains("pretty");
+        final boolean kotlin = message.getContentRaw().contains("gradle.kts");
 
-        String description = "If you don't know gradle type `!build.gradle` for a complete gradle build file\n\n```gradle\n"
-                + GradleUtil.getDependencyBlock(items, pretty) + "\n"
+        final String lang = kotlin ? "kotlin" : "gradle";
+        String description = String.format("If you don't know gradle type `!build.gradle%s` for a complete gradle build file", kotlin ? ".kts" : "")
+                + "\n\n```" + lang + "\n"
+                + GradleUtil.getDependencyBlock(kotlin, items, pretty) + "\n"
                 + "\n"
-                + GradleUtil.getRepositoryBlock(items) + "\n"
+                + GradleUtil.getRepositoryBlock(kotlin, items) + "\n"
                 + "```";
 
         eb.setDescription(description);
-
         EmbedUtil.setColor(eb);
         reply(event, eb.build());
     }
@@ -50,5 +54,10 @@ public class GradleCommand extends Command
     public String getName()
     {
         return "gradle";
+    }
+
+    @Override
+    public String[] getAliases() {
+        return ALIASES;
     }
 }

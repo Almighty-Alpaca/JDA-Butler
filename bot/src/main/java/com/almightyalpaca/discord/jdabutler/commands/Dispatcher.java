@@ -42,7 +42,7 @@ public class Dispatcher extends ListenerAdapter
         this.registerCommand(new GradleProjectCommand());
         this.registerCommand(new GuildCommand());
         this.registerCommand(new HelpCommand());
-        this.registerCommand(new JarsCommand());
+//        this.registerCommand(new JarsCommand());
         this.registerCommand(new MavenCommand());
         this.registerCommand(new MavenProjectCommand());
         this.registerCommand(new NotifyCommand());

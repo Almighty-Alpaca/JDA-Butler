@@ -81,7 +81,7 @@ public class DocsCommand extends ReactionCommand
         return new MessageBuilder().setEmbed(embed.build()).build();
     }
 
-    private void showPaginatorEmbed(GuildMessageReceivedEvent event, User sender, String jDocBase, Set<Documentation> items)
+    private void showPaginatorEmbed(GuildMessageReceivedEvent event, String jDocBase, Set<Documentation> items)
     {
         Paginator paginator = new Paginator(event.getMessage());
         buttons.addListener(paginator.getId(), paginator::onButtonClick);
@@ -208,7 +208,7 @@ public class DocsCommand extends ReactionCommand
                     }
                     if (search.size() > RESULTS_PER_PAGE)
                     {
-                        showPaginatorEmbed(event, sender, JDocUtil.JDOCBASE, search);
+                        showPaginatorEmbed(event, JDocUtil.JDOCBASE, search);
                     }
                     else
                     {

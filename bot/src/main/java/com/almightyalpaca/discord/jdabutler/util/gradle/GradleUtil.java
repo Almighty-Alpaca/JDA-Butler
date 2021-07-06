@@ -14,52 +14,72 @@ public class GradleUtil
 
     public static final String SHADOW_VERSION = "6.0.0";
 
-    public static String getBuildFile(final Collection<Pair<String, String>> plugins, final String mainClassName, final String version, final String sourceCompatibility, final List<VersionedItem> items, final boolean pretty)
+    public static String getBuildFile(final boolean kotlin, final Collection<Pair<String, String>> plugins, final String mainClassName, final String version, final String sourceCompatibility, final List<VersionedItem> items, final boolean pretty)
     {
-        return GradleUtil.getPluginsBlock(plugins) +
-                "\n\nmainClassName = '" + mainClassName + '\'' +
-                "\n\nversion '" + version + '\'' +
-                "\n\nsourceCompatibility = " + sourceCompatibility +
+        char quote = kotlin ? '"' : '\'';
+        String base = GradleUtil.getPluginsBlock(kotlin, plugins) +
+                "\n\nmainClassName = " + quote + mainClassName + quote +
+                "\nversion " + quote + version + quote +
+                "\nsourceCompatibility = " + sourceCompatibility +
                 "\n\n" +
-                GradleUtil.getRepositoryBlock(items) +
+                GradleUtil.getRepositoryBlock(kotlin, items) +
                 "\n\n" +
-                GradleUtil.getDependencyBlock(items, pretty) +
-                "\n\ncompileJava.options.encoding = 'UTF-8'\n";
+                GradleUtil.getDependencyBlock(kotlin, items, pretty) +
+                "\n\n";
+        if(kotlin) {
+            return base + "tasks.withType<JavaCompile> {\n    options.encoding = \"UTF-8\"\n    options.isIncremental = true\n}\n";
+        } else {
+            return base + "compileJava.options.encoding = 'UTF-8'\n";
+        }
     }
 
-    public static String getDependencyBlock(final List<VersionedItem> items, final boolean pretty)
+    public static String getDependencyBlock(final boolean kotlin, final List<VersionedItem> items, final boolean pretty)
     {
         StringBuilder text = new StringBuilder("dependencies {\n");
         for (final VersionedItem item : items)
-            text.append("    ").append(GradleUtil.getDependencyString(item, pretty)).append("\n");
+            text.append("    ").append(GradleUtil.getDependencyString(kotlin, item, pretty)).append("\n");
         text.append("}");
         return text.toString();
     }
 
-    public static String getDependencyString(final VersionedItem item, final boolean pretty)
+    public static String getDependencyString(final boolean kotlin, final VersionedItem item, final boolean pretty)
     {
-        if (pretty)
-            return String.format("implementation group: '%s', name: '%s', version: '%s'",
-                    item.getGroupId(), item.getArtifactId(), item.getVersion());
-        else
-            return String.format("implementation '%s:%s:%s'", item.getGroupId(), item.getArtifactId(), item.getVersion());
+        if(kotlin) {
+            return String.format("implementation(\"%s:%s:%s\")", item.getGroupId(), item.getArtifactId(), item.getVersion());
+        } else {
+            if (pretty)
+                return String.format("implementation group: '%s', name: '%s', version: '%s'",
+                        item.getGroupId(), item.getArtifactId(), item.getVersion());
+            else
+                return String.format("implementation '%s:%s:%s'", item.getGroupId(), item.getArtifactId(), item.getVersion());
+        }
     }
 
-    public static String getPluginsBlock(final Collection<Pair<String, String>> plugins)
+    public static String getPluginsBlock(final boolean kotlin, final Collection<Pair<String, String>> plugins)
     {
         StringBuilder text = new StringBuilder("plugins {\n");
+        String indentation = "    ";
         for (final Pair<String, String> plugin : plugins)
         {
-            text.append("    id'").append(plugin.getLeft()).append("'");
-            if (plugin.getRight() != null)
-                text.append(" version '").append(plugin.getRight()).append("'");
+            if(kotlin) {
+                text.append(indentation);
+                if(plugin.getRight() != null) {
+                    text.append("id(\"").append(plugin.getLeft()).append("\") version \"").append(plugin.getRight()).append('"');
+                } else {
+                    text.append(plugin.getLeft());
+                }
+            } else {
+                text.append(indentation).append("id '").append(plugin.getLeft()).append("'");
+                if (plugin.getRight() != null)
+                    text.append(" version '").append(plugin.getRight()).append("'");
+            }
             text.append("\n");
         }
         text.append("}");
         return text.toString();
     }
 
-    public static String getRepositoryBlock(final List<VersionedItem> items)
+    public static String getRepositoryBlock(final boolean kotlin, final List<VersionedItem> items)
     {
         StringBuilder text = new StringBuilder("repositories {\n");
         items.stream()
@@ -69,18 +89,20 @@ public class GradleUtil
                 .distinct()
                 .sorted()
                 .forEach(repoType ->
-                        text.append(GradleUtil.getRepositoryString(repoType, "    ")).append("\n")
+                        text.append(GradleUtil.getRepositoryString(kotlin, repoType, "    ")).append("\n")
                 );
         text.append("}");
         return text.toString();
     }
 
-    public static String getRepositoryString(final RepoType repoType, String indentation)
+    public static String getRepositoryString(final boolean kotlin, final RepoType repoType, String indentation)
     {
         if (indentation == null)
             indentation = "";
         if (repoType.getGradleName() != null)
             return indentation + repoType.getGradleName() + "()";
+        else if (kotlin)
+            return indentation + "maven(\"" + repoType.getRepoBase() + "\")";
         else
             return indentation + "maven {\n" + indentation + "    name '" + repoType.getName() + "'\n" + indentation + "    url '" + repoType.getRepoBase() + "'\n" + indentation + "}";
     }
