@@ -1,0 +1,10 @@
+.git/
+.gradle/
+.idea/
+bot/build/
+bot/logs/
+launcher/build/
+logs
+*.json
+*.jar
+docker-compose.override.yml

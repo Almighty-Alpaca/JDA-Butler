@@ -25,7 +25,7 @@ public class HelpCommand extends Command
         final EmbedBuilder builder = new EmbedBuilder();
         EmbedUtil.setColor(builder);
 
-        final String prefix = Bot.config.getString("prefix");
+        final String prefix = Bot.config.prefix();
 
         final int size = Bot.dispatcher.getCommands().stream().filter(c -> c.getHelp() != null).mapToInt(c -> c.getName().length()).max().orElse(0) + 1 + prefix.length();
 

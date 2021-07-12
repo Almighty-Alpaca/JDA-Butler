@@ -1,0 +1,21 @@
+version: "3.7"
+services:
+    butler:
+        container_name: butler
+        build:
+            context: .
+        environment:
+            BUTLER_TESTING: 'true'
+            BUTLER_PREFIX: '|'
+            BUTLER_WEBHOOK_ENABLED: 'false'
+            BUTLER_WEBHOOK_LEVEL: 'warn'
+            BUTLER_WEBHOOK_PATTERN: "[%d{HH:mm:ss}] [%level] %logger{0}: %msg%n"
+            BUTLER_WEBHOOK_URL: ''
+            BUTLER_GUILD_ID: '125227483518861312'
+            BUTLER_BOT_ROLE_ID: '125616720156033024'
+            BUTLER_STAFF_ROLE_ID: '169481978268090369'
+            BUTLER_HELPER_ROLE_ID: '183963327033114624'
+            BUTLER_BOT_TOKEN: 'Your token'
+            BUTLER_BLACKLIST_ENABLED: 'false'
+            BUTLER_DROPBOX_TOKEN: ''
+            BUTLER_GITHUB_TOKEN: ''

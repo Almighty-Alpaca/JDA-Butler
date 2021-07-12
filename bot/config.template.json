@@ -1,6 +1,7 @@
 {
   "discord": {
-    "token": ""
+    "token": "",
+    "enable_blacklist": false
   },
   "proxy": {
     "host": "",
