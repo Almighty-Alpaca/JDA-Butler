@@ -25,7 +25,7 @@ public class EvalCommand extends Command
     {
         if (!Bot.isAdmin(sender))
         {
-            this.sendFailed(message);
+            reply(event, sender.getAsMention() + " is not in the sudoers file.  This incident will be reported.");
             return;
         }
 
