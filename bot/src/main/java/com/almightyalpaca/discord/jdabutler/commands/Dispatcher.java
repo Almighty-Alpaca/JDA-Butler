@@ -54,6 +54,7 @@ public class Dispatcher extends ListenerAdapter
         this.registerCommand(new SoftbanCommand());
         this.registerCommand(new SlowmodeCommand());
         this.registerCommand(new UpdateCommand());
+        this.registerCommand(new FormatCommand(buttonListener));
     }
 
     public Set<Command> getCommands()
