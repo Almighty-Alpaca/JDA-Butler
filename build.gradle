@@ -22,7 +22,7 @@ subprojects {
     apply plugin: 'com.github.ben-manes.versions'
     apply plugin: 'com.github.johnrengelman.shadow'
     
-    sourceCompatibility = targetCompatibility = 1.8
+    sourceCompatibility = targetCompatibility = 11
     compileJava.options.encoding = 'UTF-8'
 
     shadowJar { task ->
