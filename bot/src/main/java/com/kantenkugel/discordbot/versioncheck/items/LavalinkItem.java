@@ -11,10 +11,10 @@ import java.util.stream.LongStream;
 
 public class LavalinkItem extends VersionedItem
 {
-    private static final GithubVersionSupplier versionSupplier = new GithubVersionSupplier("Frederikam", "Lavalink");
+    private static final GithubVersionSupplier versionSupplier = new GithubVersionSupplier("freyacodes", "Lavalink");
     private static final List<String> aliases = Arrays.asList("ll", "link");
 
-    private static final long[] announcerIds = {81011298891993088L, 166604053629894657L}; //Fred, Napster
+    private static final long[] announcerIds = {81011298891993088L, 166604053629894657L}; //Freya, Napster
 
     @Override
     public String getName()
@@ -54,7 +54,7 @@ public class LavalinkItem extends VersionedItem
     @Override
     public String getUrl()
     {
-        return getVersion() == null ? null : "https://github.com/Frederikam/Lavalink/releases/tag/" + getVersion();
+        return getVersion() == null ? null : "https://github.com/freyacodes/Lavalink/releases/tag/" + getVersion();
     }
 
     @Override
