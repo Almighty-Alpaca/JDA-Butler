@@ -81,7 +81,7 @@ public class MiscUtils
             .flatMap(v -> channel.sendMessage(message))         // send announcement
             .flatMap(m -> {
                 if (channel.isNews())
-                    message.crosspost().queue();                // publish if it's a news channel
+                    m.crosspost().queue();                // publish if it's a news channel
                 return role.getManager().setMentionable(false); // make role unmentionable
             })
             .queue();
