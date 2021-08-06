@@ -89,7 +89,7 @@ public class NotifyCommand extends Command
         if(content.trim().isEmpty())
         {
             roles = VersionCheckerRegistry.getVersionedItems().stream()
-                    .filter(item -> item.getAnnouncementRole() != null && item.getAnnouncementChannelId() == channel.getIdLong())
+                    .filter(item -> item.getAnnouncementRole() != null && item.getNotifyChannelId() == channel.getIdLong())
                     .map(VersionedItem::getAnnouncementRole)
                     .distinct() //just in case 2 items use same announcement role
                     .collect(Collectors.toList());
