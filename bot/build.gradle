@@ -58,6 +58,9 @@ dependencies {
     
     // Remark for html -> markdown (docs)
     implementation "com.kotcrab.remark:remark:1.2.0"
+    
+    // palantir-java-format for java formatting
+    implementation "com.palantir.javaformat:palantir-java-format:2.2.0"
 
     testImplementation 'junit:junit:4.13.2'
 }
