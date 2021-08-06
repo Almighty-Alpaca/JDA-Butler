@@ -145,6 +145,21 @@ public abstract class VersionedItem
     }
 
     /**
+     * The channel used for the !notify command.
+     * <br>If this channel is a library channel such as #lavalink or #lavaplayer the notify command will default
+     * to the notify roles of that channel instead.
+     *
+     * <p>If {@link #getAnnouncementRoleId()} returns {@code 0}, then this is ignored,
+     * as announcements require a role.
+     *
+     * @return  TextChannel ID of the notify channel, or {@code 0} (zero) if unused
+     */
+    public long getNotifyChannelId()
+    {
+        return getAnnouncementChannelId();
+    }
+
+    /**
      * This method is used to determine if some specific User can use announcements for this item (!announce command).
      * Only used, when {@link #getAnnouncementRoleId()} and {@link #getAnnouncementChannelId()} are returning non-zero.
      *

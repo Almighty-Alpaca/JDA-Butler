@@ -30,19 +30,21 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     private final ChangelogProvider changelogProvider;
     private final Supplier<String> versionSupplier;
     private final long roleId;
-    private final long channelId;
+    private final long announcementChannelId;
+    private final long notifyCommandChannelId;
     private final String job;
     private final JenkinsApi jenkins;
 
     public JDAItem()
     {
-        this(JenkinsApi.JDA_JENKINS, 241948671325765632L, 125227483518861312L, "JDA");
+        this(JenkinsApi.JDA_JENKINS, 241948671325765632L, 125227483518861312L, 873100098022813718L, "JDA");
     }
 
-    public JDAItem(JenkinsApi api, long roleId, long channelId, String job)
+    public JDAItem(JenkinsApi api, long roleId, long notifyCommandChannelId, long announcementChannelId, String job)
     {
         this.roleId = roleId;
-        this.channelId = channelId;
+        this.announcementChannelId = announcementChannelId;
+        this.notifyCommandChannelId = notifyCommandChannelId;
         this.job = job;
         this.changelogProvider = new JenkinsChangelogProvider(api, "https://github.com/DV8FromTheWorld/JDA/");
         this.versionSupplier = new JenkinsVersionSupplier(api);
@@ -103,7 +105,13 @@ public class JDAItem extends VersionedItem implements UpdateHandler
     @Override
     public long getAnnouncementChannelId()
     {
-        return channelId;
+        return announcementChannelId;
+    }
+
+    @Override
+    public long getNotifyChannelId()
+    {
+        return notifyCommandChannelId;
     }
 
     @Override
