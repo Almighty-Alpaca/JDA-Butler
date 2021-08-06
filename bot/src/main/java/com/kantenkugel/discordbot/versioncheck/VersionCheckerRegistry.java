@@ -115,8 +115,6 @@ public class VersionCheckerRegistry
          */
         //Butler
         addItem(new ButlerItem());
-        //Yui
-        addItem(new YuiItem());
         //JDAction
         addItem(new JDActionItem());
         //LavaLink
