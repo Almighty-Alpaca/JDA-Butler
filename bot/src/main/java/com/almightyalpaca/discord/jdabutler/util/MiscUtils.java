@@ -77,10 +77,9 @@ public class MiscUtils
             channel.getManager().setSlowmode(30).queue(v -> channel.getManager().setSlowmode(0).queueAfter(2, TimeUnit.MINUTES));
         }
 
-        role.getManager().setMentionable(true).queue(v ->
-                channel.sendMessage(message).queue(v2 ->
-                        role.getManager().setMentionable(false).queue()
-                )
-        );
+        role.getManager().setMentionable(true)                              // make role mentionable
+            .flatMap(v -> channel.sendMessage(message))                     // send announcement
+            .flatMap(m -> channel.isNews(), Message::crosspost)             // publish if it's a news channel
+            .queue(  v -> role.getManager().setMentionable(false).queue()); // make role unmentionable
     }
 }

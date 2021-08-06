@@ -216,11 +216,11 @@ public class JDAItem extends VersionedItem implements UpdateHandler
 
             final MessageEmbed embed = eb.build();
 
-            mb.setEmbed(embed);
+            mb.setEmbeds(embed);
 
             final TextChannel channel = getAnnouncementChannel();
 
-            MiscUtils.announce(channel, announcementRole, mb.build(), true);
+            MiscUtils.announce(channel, announcementRole, mb.build(), false);
         }
     }
 }
