@@ -1,6 +1,7 @@
 package com.almightyalpaca.discord.jdabutler.util;
 
 import com.almightyalpaca.discord.jdabutler.Bot;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -80,8 +81,8 @@ public class MiscUtils
         role.getManager().setMentionable(true)                  // make role mentionable
             .flatMap(v -> channel.sendMessage(message))         // send announcement
             .flatMap(m -> {
-                if (channel.isNews())
-                    m.crosspost().queue();                // publish if it's a news channel
+                if (channel.isNews() && channel.getGuild().getSelfMember().hasPermission(channel, Permission.MESSAGE_MANAGE))
+                    m.crosspost().queue();                      // publish if it's a news channel
                 return role.getManager().setMentionable(false); // make role unmentionable
             })
             .queue();
