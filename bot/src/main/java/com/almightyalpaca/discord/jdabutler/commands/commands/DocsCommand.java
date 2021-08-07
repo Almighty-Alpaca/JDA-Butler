@@ -53,7 +53,7 @@ public class DocsCommand extends ReactionCommand
         if (documentation.getContent().length() > MessageEmbed.TEXT_MAX_LENGTH)
         {
             embed.appendDescription("Description too long. Please refer to [the online docs](" + documentation.getUrl(jDocBase) + ')');
-            return new MessageBuilder().setEmbed(embed.build()).build();
+            return new MessageBuilder().setEmbeds(embed.build()).build();
         }
         if (documentation.getContent().length() == 0)
         {
@@ -78,7 +78,7 @@ public class DocsCommand extends ReactionCommand
                 }
             }
         }
-        return new MessageBuilder().setEmbed(embed.build()).build();
+        return new MessageBuilder().setEmbeds(embed.build()).build();
     }
 
     private void showPaginatorEmbed(GuildMessageReceivedEvent event, String jDocBase, Set<Documentation> items)
@@ -132,7 +132,7 @@ public class DocsCommand extends ReactionCommand
             Documentation documentation = search.get(index);
             embed.appendDescription('[' + documentation.getShortTitle() + "](" + documentation.getUrl(jDocBase) + ")\n");
         }
-        return new MessageBuilder().setEmbed(embed.build()).build();
+        return new MessageBuilder().setEmbeds(embed.build()).build();
     }
 
     private static EmbedBuilder getDefaultEmbed()

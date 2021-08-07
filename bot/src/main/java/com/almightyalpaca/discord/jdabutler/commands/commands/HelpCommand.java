@@ -32,7 +32,7 @@ public class HelpCommand extends Command
         final String help = Bot.dispatcher.getCommands().stream().sorted(Comparator.comparing(Command::getName)).filter(c -> c.getHelp() != null).map(c -> String.format("`%s` - %s", StringUtils.rightPad(prefix + c.getName().toLowerCase() + "", size, "."), c.getHelp())).collect(Collectors.joining("\n"));
         builder.setAuthor(message.getMember().getEffectiveName(), null, sender.getEffectiveAvatarUrl());
         builder.setDescription(help);
-        reply(event, new MessageBuilder().setEmbed(builder.build()).build());
+        reply(event, new MessageBuilder().setEmbeds(builder.build()).build());
     }
 
     @Override
