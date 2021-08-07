@@ -7,6 +7,7 @@ import com.google.gson.*;
 import org.apache.commons.text.translate.UnicodeUnescaper;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class RootConfig extends Config
 {
@@ -15,7 +16,7 @@ public class RootConfig extends Config
 
     RootConfig(final File file) throws WrongTypeException, KeyNotFoundException, JsonIOException, JsonSyntaxException, FileNotFoundException
     {
-        super(null, new JsonParser().parse(new FileReader(file)).getAsJsonObject());
+        super(null, JsonParser.parseReader(new FileReader(file)).getAsJsonObject());
         this.configFile = file;
     }
 
@@ -30,11 +31,9 @@ public class RootConfig extends Config
     {
         final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().serializeSpecialFloatingPointValues().create();
         final String json = gson.toJson(this.config);
-        try
+        try(Writer writer = new OutputStreamWriter(new FileOutputStream(this.configFile), StandardCharsets.UTF_8))
         {
-            final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.configFile), "UTF-8"));
             new UnicodeUnescaper().translate(json, writer);
-            writer.close();
         }
         catch (final IOException e)
         {

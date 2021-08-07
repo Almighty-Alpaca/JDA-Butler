@@ -120,7 +120,7 @@ public class AnnouncementCommand extends Command
         eb.setThumbnail(image);
         eb.setFooter(sender.getName(), sender.getEffectiveAvatarUrl());
 
-        mb.setEmbed(eb.build());
+        mb.setEmbeds(eb.build());
 
         MiscUtils.announce(channel, role, mb.build(), true);
 
