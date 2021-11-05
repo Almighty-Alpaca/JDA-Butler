@@ -17,7 +17,7 @@ public class GithubVersionSupplier implements Supplier<String>
 
     static
     {
-        String ghToken = Bot.config.getString("github_token", "");
+        String ghToken = Bot.config.githubToken();
         if(ghToken.isEmpty())
         {
             VersionChecker.LOG.warn("No GH token set up. GithubVersionSupplier will not work");
